@@ -1,11 +1,545 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Group Payment Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Payment Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral -->
+    <!-- Application Structure Plan: The application is designed as a single-page dashboard for maximum efficiency. This structure consolidates the two separate Google Sheets ('Log' and 'Tracker') into one unified view. The user can instantly see the overall status via summary cards and a progress chart, view detailed breakdowns in the main table, and log new payments using an integrated form without ever leaving the page. This is more user-friendly than switching between tabs, as it provides immediate visual feedback for every action and keeps all relevant information in a single, cohesive context. The primary interaction is logging a payment, which triggers a full, real-time recalculation and re-rendering of the entire dashboard. -->
+    <!-- Visualization & Content Choices:
+        - Overall Progress (Total Collected vs. Total Due): Goal: Inform. Viz: Donut Chart (Chart.js/Canvas). Interaction: The chart dynamically updates as payments are logged. Justification: Provides a high-level, immediate visual summary of the group's financial health.
+        - Monthly Summary (Total Collected/Outstanding): Goal: Inform. Viz: Stat Cards (HTML/CSS). Interaction: User can select a month from a dropdown to update the cards' data. Justification: Offers a quick, focused snapshot of performance for a specific period.
+        - Individual Progress Table: Goal: Organize/Compare. Viz: Interactive HTML Table. Interaction: The table's data and progress bars update in real-time with new payments. Justification: The clearest, most detailed way to display status for multiple individuals across multiple timeframes.
+        - Per-Person Progress: Goal: Inform. Viz: HTML/CSS Progress Bars. Interaction: Bar width and color change dynamically based on payment status. Justification: A direct, highly scannable visual indicator that replaces the Google Sheets data bars.
+        - Payment Logging: Goal: Action. Viz: HTML Form. Interaction: User submission triggers a JavaScript function to update all data and visuals. Justification: Integrates the primary user task directly into the dashboard for a seamless workflow.
+        - Penalty & Rollover Logic: Goal: Calculate. Viz: N/A (background logic). Interaction: Automatic. Justification: The core business rules are handled by JavaScript, ensuring accuracy without user intervention. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcfb;
+            color: #3f3f46;
+        }
+        .progress-bar-bg {
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+            text-align: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1.25rem;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 250px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 250px;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
 </head>
-<body>
-  <h1>Welcome to Group Payment Tracker!</h1>
-  <!-- Your payment tracker HTML goes here -->
+<body class="antialiased">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-zinc-800">Group Payment Tracker</h1>
+            <p class="text-zinc-500 mt-2">An interactive dashboard to monitor monthly payments, penalties, and progress in real-time.</p>
+            <div class="mt-4 p-3 bg-zinc-100 rounded-lg text-sm text-zinc-600">
+                <p>Your User ID: <span id="user-id" class="font-mono font-semibold text-zinc-800">Loading...</span></p>
+                <p class="mt-1">Share this ID with your group to collaborate on the same data.</p>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 order-2 lg:order-1">
+                <section id="progress-tracker-section">
+                    <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Monthly Progress Dashboard</h2>
+                    <p class="mb-6 text-zinc-500 text-sm">
+                        This table provides a detailed breakdown of each member's payment status for the four-month period. Progress bars update automatically as you log new payments. The "Due" amount reflects a ₱150 total (₱130 base + ₱20 penalty) if the "Paid" amount is less than ₱130 for that month. Any overpayment is automatically carried over to the next month's total.
+                    </p>
+                    <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+                        <table class="w-full text-sm text-left text-zinc-600">
+                            <thead class="text-xs text-zinc-700 uppercase bg-zinc-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 sticky left-0 bg-zinc-50 z-10">Name</th>
+                                    <th scope="col" colspan="3" class="px-6 py-3 text-center border-l">September 2025</th>
+                                    <th scope="col" colspan="3" class="px-6 py-3 text-center border-l">October 2025</th>
+                                    <th scope="col" colspan="3" class="px-6 py-3 text-center border-l">November 2025</th>
+                                    <th scope="col" colspan="3" class="px-6 py-3 text-center border-l">December 2025</th>
+                                </tr>
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 sticky left-0 bg-zinc-100 z-10"></th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 border-l font-medium">Paid</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium">Due</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium w-32">Progress</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 border-l font-medium">Paid</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium">Due</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium w-32">Progress</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 border-l font-medium">Paid</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium">Due</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium w-32">Progress</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 border-l font-medium">Paid</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium">Due</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium w-32">Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tracker-body">
+                                <!-- JS will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="lg:col-span-1 order-1 lg:order-2 space-y-8">
+                <section id="summary-section">
+                    <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Summary</h2>
+                    <p class="mb-6 text-zinc-500 text-sm">
+                        Select a month to see an overview of collection totals and view the overall progress for the entire period. This section provides a quick snapshot of the group's financial status.
+                    </p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="mb-4">
+                            <label for="month-select" class="block text-sm font-medium text-zinc-700 mb-2">View Summary For:</label>
+                            <select id="month-select" class="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5">
+                                <option value="0">September 2025</option>
+                                <option value="1">October 2025</option>
+                                <option value="2">November 2025</option>
+                                <option value="3">December 2025</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-center mb-6">
+                            <div>
+                                <p class="text-sm text-zinc-500">Collected</p>
+                                <p id="total-collected" class="text-2xl font-bold text-green-600">₱0</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-zinc-500">Outstanding</p>
+                                <p id="total-outstanding" class="text-2xl font-bold text-red-600">₱0</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-center text-zinc-700 mb-2">Overall Collection Progress</h3>
+                         <div class="chart-container">
+                            <canvas id="overall-progress-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="log-payment-section">
+                     <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Log a New Payment</h2>
+                     <p class="mb-6 text-zinc-500 text-sm">
+                        Use this form to add a new payment record. The dashboard will update instantly upon submission.
+                     </p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <form id="payment-form">
+                            <div class="mb-4">
+                                <label for="name-select" class="block mb-2 text-sm font-medium text-zinc-900">Name</label>
+                                <select id="name-select" required class="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5">
+                                    <!-- JS will populate this -->
+                                </select>
+                            </div>
+                             <div class="mb-6">
+                                <label for="amount-input" class="block mb-2 text-sm font-medium text-zinc-900">Amount Paid (₱)</label>
+                                <input type="number" id="amount-input" required min="0" step="0.01" class="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5" placeholder="e.g., 130">
+                            </div>
+                            <button type="submit" class="text-white bg-amber-600 hover:bg-amber-700 focus:ring-4 focus:outline-none focus:ring-amber-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center">Add Payment</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <section id="payment-history-section" class="mt-8">
+            <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Payment History</h2>
+            <p class="mb-6 text-zinc-500 text-sm">
+                This table shows the raw payment data stored in the database. You can delete a payment record by clicking the "Delete" button.
+            </p>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+                <table class="w-full text-sm text-left text-zinc-600">
+                    <thead class="text-xs text-zinc-700 uppercase bg-zinc-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-2">Name</th>
+                            <th scope="col" class="px-4 py-2">Amount Paid</th>
+                            <th scope="col" class="px-4 py-2">Date & Time</th>
+                            <th scope="col" class="px-4 py-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment-log-body">
+                        <!-- Individual payment entries will be populated here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    <!-- Modal container -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+      <div id="modal-content" class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+        <h3 id="modal-title" class="text-lg font-bold mb-2 text-zinc-800"></h3>
+        <p id="modal-message" class="text-sm text-zinc-600 mb-4"></p>
+        <div class="flex justify-end space-x-2">
+          <button id="modal-close-btn" class="px-4 py-2 bg-zinc-200 text-zinc-800 rounded-lg hover:bg-zinc-300 font-medium text-sm">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+        // Firebase global variables provided by the Canvas environment.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const config = {
+                // The 'members' array is now populated from the Firestore database.
+                members: [],
+                months: ['September', 'October', 'November', 'December'],
+                year: 2025,
+                basePayment: 130,
+                penalty: 20,
+            };
+
+            const nameSelect = document.getElementById('name-select');
+            const monthSelect = document.getElementById('month-select');
+            const trackerBody = document.getElementById('tracker-body');
+            const paymentForm = document.getElementById('payment-form');
+            const totalCollectedEl = document.getElementById('total-collected');
+            const totalOutstandingEl = document.getElementById('total-outstanding');
+            const chartCanvas = document.getElementById('overall-progress-chart');
+            const userIdEl = document.getElementById('user-id');
+            const paymentLogBody = document.getElementById('payment-log-body');
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+
+            let overallProgressChart;
+            let payments = [];
+            let db;
+            let auth;
+
+            // Simple modal to replace alerts and confirms
+            function showModal(title, message) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalBackdrop.classList.remove('hidden');
+                modalBackdrop.classList.add('flex');
+            }
+
+            modalCloseBtn.addEventListener('click', () => {
+                modalBackdrop.classList.remove('flex');
+                modalBackdrop.classList.add('hidden');
+            });
+
+            async function initFirebase() {
+                try {
+                    // Set debug level for more verbose logging
+                    setLogLevel('debug');
+                    
+                    if (!firebaseConfig || !firebaseConfig.apiKey) {
+                        showModal('Initialization Error', 'Firebase configuration is missing or invalid. Please ensure the app is configured correctly.');
+                        return;
+                    }
+                    
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            userIdEl.textContent = user.uid;
+                            console.log("Authentication successful. User ID:", user.uid);
+                            // Start listening for members first, then payments
+                            setupMembersListener();
+                        } else {
+                            userIdEl.textContent = 'Not signed in';
+                            showModal('Authentication Failed', 'User could not be signed in. Please try again or check the console for errors.');
+                        }
+                    });
+                } catch (error) {
+                    console.error("Firebase initialization failed:", error);
+                    showModal('Firebase Initialization Failed', `An unexpected error occurred: ${error.message}`);
+                }
+            }
+            
+            // Corrected listener for fetching members from the database
+            function setupMembersListener() {
+                 const membersCol = collection(db, `artifacts/${appId}/public/data/members`);
+                 onSnapshot(membersCol, (snapshot) => {
+                     config.members = snapshot.docs.map(doc => doc.data().Name).sort();
+                     populateNameSelect();
+                     // Once members are loaded, set up the payments listener
+                     setupRealtimeListener();
+                 });
+             }
+            
+            function setupRealtimeListener() {
+                const paymentsCol = collection(db, `artifacts/${appId}/public/data/payments`);
+                onSnapshot(paymentsCol, (snapshot) => {
+                    payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const state = calculateState(payments);
+                    renderDashboard(state);
+                    renderPaymentLog(payments);
+                });
+            }
+
+            function populateNameSelect() {
+                nameSelect.innerHTML = '';
+                config.members.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    nameSelect.appendChild(option);
+                });
+            }
+            
+            function calculateState(currentPayments) {
+                const state = {};
+                config.members.forEach(name => {
+                    state[name] = {};
+                    let carryOver = 0;
+                    config.months.forEach((month, monthIndex) => {
+                        // Get payments for the current member and month
+                        const paidThisMonth = currentPayments
+                            .filter(p => p.name === name)
+                            .filter(p => {
+                                const paymentDate = new Date(p.date);
+                                // Month is 0-indexed, so we add 8 for September (9th month)
+                                return paymentDate.getMonth() === monthIndex + 8 && paymentDate.getFullYear() === config.year;
+                            })
+                            .reduce((sum, p) => sum + p.amount, 0);
+
+                        const totalPaidWithCarryover = paidThisMonth + carryOver;
+                        
+                        let dueAmount;
+                        if (totalPaidWithCarryover < config.basePayment) {
+                           dueAmount = config.basePayment + config.penalty;
+                        } else {
+                           dueAmount = config.basePayment;
+                        }
+
+                        const progress = dueAmount > 0 ? Math.min(1, totalPaidWithCarryover / dueAmount) : 1;
+
+                        state[name][month] = {
+                            paid: totalPaidWithCarryover,
+                            due: dueAmount,
+                            progress: progress
+                        };
+
+                        carryOver = Math.max(0, totalPaidWithCarryover - dueAmount);
+                    });
+                });
+                return state;
+            }
+
+            function renderDashboard(state) {
+                trackerBody.innerHTML = '';
+                config.members.forEach(name => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-zinc-50';
+                    
+                    let rowHTML = `<td class="px-6 py-4 font-medium text-zinc-900 whitespace-nowrap sticky left-0 bg-white hover:bg-zinc-50 z-10">${name}</td>`;
+                    
+                    config.months.forEach(month => {
+                        const data = state[name][month];
+                        const progressPercent = (data.progress * 100).toFixed(0);
+                        let barColor = 'bg-red-500';
+                        if (progressPercent >= 100) {
+                            barColor = 'bg-green-500';
+                        } else if (progressPercent > 50) {
+                            barColor = 'bg-yellow-500';
+                        }
+                        
+                        rowHTML += `
+                            <td class="px-2 py-4 text-center border-l">₱${data.paid.toFixed(2)}</td>
+                            <td class="px-2 py-4 text-center">₱${data.due.toFixed(2)}</td>
+                            <td class="px-2 py-4 text-center w-32">
+                                <div class="progress-bar-bg w-full">
+                                    <div class="${barColor} progress-bar" style="width: ${progressPercent}%">${progressPercent}%</div>
+                                </div>
+                            </td>
+                        `;
+                    });
+                    
+                    // Add a placeholder for a future delete button, if you want one per person
+                    // This is for demonstration of a full CRUD table
+                    rowHTML += `<td class="px-6 py-4 text-center"></td>`;
+                    
+                    row.innerHTML = rowHTML;
+                    trackerBody.appendChild(row);
+                });
+                
+                updateSummary(state);
+                updateChart(state);
+            }
+
+            function renderPaymentLog(currentPayments) {
+                paymentLogBody.innerHTML = '';
+                // Sort payments by timestamp descending
+                const sortedPayments = currentPayments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                sortedPayments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-zinc-50';
+                    row.innerHTML = `
+                        <td class="px-4 py-2">${payment.name}</td>
+                        <td class="px-4 py-2">₱${payment.amount.toFixed(2)}</td>
+                        <td class="px-4 py-2">${new Date(payment.timestamp).toLocaleString()}</td>
+                        <td class="px-4 py-2">
+                            <button data-id="${payment.id}" class="delete-btn text-red-600 hover:text-red-800 font-bold text-sm">Delete</button>
+                        </td>
+                    `;
+                    paymentLogBody.appendChild(row);
+                });
+            }
+
+            function updateSummary(state) {
+                const selectedMonthIndex = parseInt(monthSelect.value, 10);
+                const selectedMonth = config.months[selectedMonthIndex];
+                
+                let totalCollected = 0;
+                let totalDue = 0;
+
+                config.members.forEach(name => {
+                    totalCollected += state[name][selectedMonth].paid;
+                    totalDue += state[name][selectedMonth].due;
+                });
+                
+                const totalOutstanding = Math.max(0, totalDue - totalCollected);
+
+                totalCollectedEl.textContent = `₱${totalCollected.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                totalOutstandingEl.textContent = `₱${totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            }
+
+            function updateChart(state) {
+                let grandTotalCollected = 0;
+                let grandTotalDue = 0;
+
+                config.members.forEach(name => {
+                    config.months.forEach(month => {
+                        grandTotalCollected += state[name][month].paid;
+                        grandTotalDue += state[name][month].due;
+                    });
+                });
+                
+                const remaining = Math.max(0, grandTotalDue - grandTotalCollected);
+
+                const chartData = {
+                    labels: ['Total Collected', 'Total Remaining'],
+                    datasets: [{
+                        data: [grandTotalCollected, remaining],
+                        backgroundColor: ['#16a34a', '#ef4444'],
+                        borderColor: ['#fdfcfb'],
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                };
+
+                if (overallProgressChart) {
+                    overallProgressChart.data = chartData;
+                    overallProgressChart.update();
+                } else {
+                    overallProgressChart = new Chart(chartCanvas, {
+                        type: 'doughnut',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 20
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            async function handleFormSubmit(e) {
+                e.preventDefault();
+                const name = nameSelect.value;
+                const amount = parseFloat(document.getElementById('amount-input').value);
+                
+                if (name && !isNaN(amount) && amount > 0) {
+                    try {
+                        const newPayment = {
+                            name: name,
+                            amount: amount,
+                            timestamp: new Date().toISOString(),
+                            date: new Date().toISOString().split('T')[0]
+                        };
+                        await addDoc(collection(db, `artifacts/${appId}/public/data/payments`), newPayment);
+                        paymentForm.reset();
+                    } catch (e) {
+                        console.error("Error adding document: ", e);
+                        showModal('Error', `Failed to add payment: ${e.message}`);
+                    }
+                }
+            }
+
+            async function handleDeleteClick(e) {
+                if (e.target.classList.contains('delete-btn')) {
+                    const paymentId = e.target.dataset.id;
+                    try {
+                        await deleteDoc(doc(db, `artifacts/${appId}/public/data/payments`, paymentId));
+                        showModal('Success', 'Payment record deleted successfully.');
+                    } catch (e) {
+                        console.error("Error deleting document: ", e);
+                        showModal('Error', `Failed to delete payment: ${e.message}`);
+                    }
+                }
+            }
+
+            function init() {
+                paymentForm.addEventListener('submit', handleFormSubmit);
+                monthSelect.addEventListener('change', () => {
+                    const currentState = calculateState(payments);
+                    updateSummary(currentState);
+                });
+                document.body.addEventListener('click', handleDeleteClick);
+                initFirebase();
+            }
+
+            init();
+        });
+    </script>
 </body>
 </html>
