@@ -210,14 +210,14 @@
         const appId = 'group-payment-tracker'; // Replace with a fixed string
         const initialAuthToken = null; // We are using anonymous auth instead of a token
         const firebaseConfig = {
-            apiKey: "AIzaSyDPs_i-a-d227nE_2n77242_1-177-g",
+            apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
             authDomain: "group-payment-tracker.firebaseapp.com",
             projectId: "group-payment-tracker",
             storageBucket: "group-payment-tracker.appspot.com",
             messagingSenderId: "3333333333",
             appId: "1:3333333333:web:33333333333"
         };
-        
+
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -270,12 +270,12 @@
                 try {
                     // Set debug level for more verbose logging
                     setLogLevel('debug');
-                    
+
                     if (!firebaseConfig || !firebaseConfig.apiKey) {
                         showModal('Initialization Error', 'Firebase configuration is missing or invalid. Please ensure the app is configured correctly.');
                         return;
                     }
-                    
+
                     const app = initializeApp(firebaseConfig);
                     auth = getAuth(app);
                     db = getFirestore(app);
@@ -298,7 +298,7 @@
                     showModal('Firebase Initialization Failed', `An unexpected error occurred: ${error.message}`);
                 }
             }
-            
+
             // Corrected listener for fetching members from the database
             function setupMembersListener() {
                  const membersCol = collection(db, 'members');
@@ -309,7 +309,7 @@
                      setupRealtimeListener();
                  });
              }
-            
+
             function setupRealtimeListener() {
                 const paymentsCol = collection(db, `artifacts/${appId}/public/data/payments`);
                 onSnapshot(paymentsCol, (snapshot) => {
@@ -329,7 +329,7 @@
                     nameSelect.appendChild(option);
                 });
             }
-            
+
             function calculateState(currentPayments) {
                 const state = {};
                 config.members.forEach(name => {
@@ -347,7 +347,7 @@
                             .reduce((sum, p) => sum + p.amount, 0);
 
                         const totalPaidWithCarryover = paidThisMonth + carryOver;
-                        
+
                         let dueAmount;
                         if (totalPaidWithCarryover < config.basePayment) {
                            dueAmount = config.basePayment + config.penalty;
@@ -374,9 +374,9 @@
                 config.members.forEach(name => {
                     const row = document.createElement('tr');
                     row.className = 'bg-white border-b hover:bg-zinc-50';
-                    
+
                     let rowHTML = `<td class="px-6 py-4 font-medium text-zinc-900 whitespace-nowrap sticky left-0 bg-white hover:bg-zinc-50 z-10">${name}</td>`;
-                    
+
                     config.months.forEach(month => {
                         const data = state[name][month];
                         const progressPercent = (data.progress * 100).toFixed(0);
@@ -386,7 +386,7 @@
                         } else if (progressPercent > 50) {
                             barColor = 'bg-yellow-500';
                         }
-                        
+
                         rowHTML += `
                             <td class="px-2 py-4 text-center border-l">₱${data.paid.toFixed(2)}</td>
                             <td class="px-2 py-4 text-center">₱${data.due.toFixed(2)}</td>
@@ -397,15 +397,15 @@
                             </td>
                         `;
                     });
-                    
+
                     // Add a placeholder for a future delete button, if you want one per person
                     // This is for demonstration of a full CRUD table
                     rowHTML += `<td class="px-6 py-4 text-center"></td>`;
-                    
+
                     row.innerHTML = rowHTML;
                     trackerBody.appendChild(row);
                 });
-                
+
                 updateSummary(state);
                 updateChart(state);
             }
@@ -432,7 +432,7 @@
             function updateSummary(state) {
                 const selectedMonthIndex = parseInt(monthSelect.value, 10);
                 const selectedMonth = config.months[selectedMonthIndex];
-                
+
                 let totalCollected = 0;
                 let totalDue = 0;
 
@@ -440,7 +440,7 @@
                     totalCollected += state[name][selectedMonth].paid;
                     totalDue += state[name][selectedMonth].due;
                 });
-                
+
                 const totalOutstanding = Math.max(0, totalDue - totalCollected);
 
                 totalCollectedEl.textContent = `₱${totalCollected.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
@@ -457,7 +457,7 @@
                         grandTotalDue += state[name][month].due;
                     });
                 });
-                
+
                 const remaining = Math.max(0, grandTotalDue - grandTotalCollected);
 
                 const chartData = {
@@ -495,12 +495,12 @@
                     });
                 }
             }
-            
+
             async function handleFormSubmit(e) {
                 e.preventDefault();
                 const name = nameSelect.value;
                 const amount = parseFloat(document.getElementById('amount-input').value);
-                
+
                 if (name && !isNaN(amount) && amount > 0) {
                     try {
                         const newPayment = {
