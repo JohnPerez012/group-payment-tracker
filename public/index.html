@@ -15,7 +15,7 @@
         - Individual Progress Table: Goal: Organize/Compare. Viz: Interactive HTML Table. Interaction: The table's data and progress bars update in real-time with new payments. Justification: The clearest, most detailed way to display status for multiple individuals across multiple timeframes.
         - Per-Person Progress: Goal: Inform. Viz: HTML/CSS Progress Bars. Interaction: Bar width and color change dynamically based on payment status. Justification: A direct, highly scannable visual indicator that replaces the Google Sheets data bars.
         - Payment Logging: Goal: Action. Viz: HTML Form. Interaction: User submission triggers a JavaScript function to update all data and visuals. Justification: Integrates the primary user task directly into the dashboard for a seamless workflow.
-        - Penalty & Rollover Logic: Goal: Calculate. Viz: N/A (background logic). Interaction: Automatic. Justification: The core business rules are handled by JavaScript, ensuring accuracy without user intervention. -->
+        - Penalty & Rollover Logic: Goal: Calculate. Viz: N/A (background logic). Interaction: Automatic. Justification: The core business rules are handled by JavaScript, ensuring accuracy without user-entry. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -207,13 +207,20 @@
 
     <script type="module">
         // Firebase global variables provided by the Canvas environment.
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = 'group-payment-tracker'; // Replace with a fixed string
+        const initialAuthToken = null; // We are using anonymous auth instead of a token
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPs_i-a-d227nE_2n77242_1-177-g",
+            authDomain: "group-payment-tracker.firebaseapp.com",
+            projectId: "group-payment-tracker",
+            storageBucket: "group-payment-tracker.appspot.com",
+            messagingSenderId: "3333333333",
+            appId: "1:3333333333:web:33333333333"
+        };
         
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
@@ -273,11 +280,7 @@
                     auth = getAuth(app);
                     db = getFirestore(app);
 
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    await signInAnonymously(auth);
 
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
