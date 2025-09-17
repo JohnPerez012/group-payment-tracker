@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE-html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -206,9 +206,13 @@
     </div>
 
     <script type="module">
+        // Replace with your actual Firebase config
+        const firebaseConfig = {
+          /* YOUR FIREBASE CONFIG HERE */
+        };
+        
         // Firebase global variables provided by the Canvas environment.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
         // Firebase SDK imports
@@ -298,7 +302,7 @@
             
             // Corrected listener for fetching members from the database
             function setupMembersListener() {
-                 const membersCol = collection(db, `artifacts/${appId}/public/data/members`);
+                 const membersCol = collection(db, 'members');
                  onSnapshot(membersCol, (snapshot) => {
                      config.members = snapshot.docs.map(doc => doc.data().Name).sort();
                      populateNameSelect();
