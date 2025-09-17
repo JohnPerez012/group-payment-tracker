@@ -206,19 +206,10 @@
     </div>
 
     <script type="module">
-        // Replace with your actual Firebase config
-        const firebaseConfig = {
-          apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
-          authDomain: "group-payment-tracker.firebaseapp.com",
-          projectId: "group-payment-tracker",
-          storageBucket: "group-payment-tracker.firebasestorage.app",
-          messagingSenderId: "208078945785",
-          appId: "1:208078945785:web:5164201a43e0bd37c8d128"
-        };
-        
         // Firebase global variables provided by the Canvas environment.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
