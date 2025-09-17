@@ -209,15 +209,19 @@
         // Firebase global variables provided by the Canvas environment.
         const appId = 'group-payment-tracker'; // Replace with a fixed string
         const initialAuthToken = null; // We are using anonymous auth instead of a token
+        
+        // This is your Firebase configuration. You MUST replace all the placeholder values
+        // with the actual values from your Firebase project.
+        // You can find them in your project settings > "Your apps" section.
         const firebaseConfig = {
-            apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
-            authDomain: "group-payment-tracker.firebaseapp.com",
-            projectId: "group-payment-tracker",
-            storageBucket: "group-payment-tracker.appspot.com",
-            messagingSenderId: "3333333333",
-            appId: "1:3333333333:web:33333333333"
-        };
-
+  apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
+  authDomain: "group-payment-tracker.firebaseapp.com",
+  projectId: "group-payment-tracker",
+  storageBucket: "group-payment-tracker.firebasestorage.app",
+  messagingSenderId: "208078945785",
+  appId: "1:208078945785:web:5164201a43e0bd37c8d128"
+};
+        
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
