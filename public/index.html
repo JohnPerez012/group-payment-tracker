@@ -3,98 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed Syntax Example</title>
-    <!-- Tailwind CSS -->
+    <title>Interactive Payment Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+            background-color: #fdfcfb;
+            color: #3f3f46;
+        }
+        .progress-bar-bg {
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+            text-align: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1.25rem;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 250px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 250px;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="antialiased">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
 
-    <div id="app-container" class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full text-center">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">Code Status</h1>
-        <p id="message" class="text-gray-600 mb-6">Checking for issues...</p>
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-zinc-800">Group Payment Tracker</h1>
+            <p class="text-zinc-500 mt-2">An interactive dashboard to monitor monthly payments, penalties, and progress in real-time.</p>
+            <div class="mt-4 p-3 bg-zinc-100 rounded-lg text-sm text-zinc-600 flex items-center justify-between">
+                <p>You are viewing this tracker as <span id="user-status" class="font-mono font-semibold text-zinc-800">a guest</span>.</p>
+                <button id="auth-button" class="px-4 py-2 bg-zinc-200 text-zinc-800 rounded-lg hover:bg-zinc-300 font-medium text-sm">Sign In</button>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 order-2 lg:order-1">
+                <section id="progress-tracker-section">
+                    <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Monthly Progress Dashboard</h2>
+                    <p class="mb-6 text-zinc-500 text-sm">
+                        This table provides a detailed breakdown of each member's payment status for the four-month period. Progress bars update automatically as you log new payments. The "Due" amount reflects a ₱150 total (₱130 base + ₱20 penalty) if the "Paid" amount is less than ₱130 for that month. Any overpayment is automatically carried over to the next month's total.
+                    </p>
+                    <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+                        <table class="w-full text-sm text-left text-zinc-600">
+                            <thead class="text-xs text-zinc-700 uppercase bg-zinc-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 sticky left-0 bg-zinc-50 z-10">Name</th>
+                                    <th scope="col" colspan="3" class="px-6 py-3 text-center border-l">September 2025</th>
+                                    <th scope="col" colspan="3" class="px-6 py-3 text-center border-l">October 2025</th>
+                                    <th scope="col" colspan="3" class="px-6 py-3 text-center border-l">November 2025</th>
+                                    <th scope="col" colspan="3" class="px-6 py-3 text-center border-l">December 2025</th>
+                                </tr>
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 sticky left-0 bg-zinc-100 z-10"></th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 border-l font-medium">Paid</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium">Due</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium w-32">Progress</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 border-l font-medium">Paid</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium">Due</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium w-32">Progress</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 border-l font-medium">Paid</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium">Due</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium w-32">Progress</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 border-l font-medium">Paid</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium">Due</th>
+                                    <th class="px-2 py-3 text-center bg-zinc-100 font-medium w-32">Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tracker-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="lg:col-span-1 order-1 lg:order-2 space-y-8">
+                <section id="summary-section">
+                    <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Summary</h2>
+                    <p class="mb-6 text-zinc-500 text-sm">
+                        Select a month to see an overview of collection totals and view the overall progress for the entire period. This section provides a quick snapshot of the group's financial status.
+                    </p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="mb-4">
+                            <label for="month-select" class="block text-sm font-medium text-zinc-700 mb-2">View Summary For:</label>
+                            <select id="month-select" class="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5">
+                                <option value="0">September 2025</option>
+                                <option value="1">October 2025</option>
+                                <option value="2">November 2025</option>
+                                <option value="3">December 2025</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-center mb-6">
+                            <div>
+                                <p class="text-sm text-zinc-500">Collected</p>
+                                <p id="total-collected" class="text-2xl font-bold text-green-600">₱0</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-zinc-500">Outstanding</p>
+                                <p id="total-outstanding" class="text-2xl font-bold text-red-600">₱0</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-center text-zinc-700 mb-2">Overall Collection Progress</h3>
+                         <div class="chart-container">
+                            <canvas id="overall-progress-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="log-payment-section">
+                     <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Log a New Payment</h2>
+                     <p class="mb-6 text-zinc-500 text-sm">
+                        Use this form to add a new payment record. The dashboard will update instantly upon submission.
+                     </p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <form id="payment-form">
+                            <div class="mb-4">
+                                <label for="name-select" class="block mb-2 text-sm font-medium text-zinc-900">Name</label>
+                                <select id="name-select" required class="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5">
+                                    </select>
+                            </div>
+                            <div class="mb-6">
+                                <label for="amount-input" class="block mb-2 text-sm font-medium text-zinc-900">Amount Paid (₱)</label>
+                                <input type="number" id="amount-input" required min="0" step="0.01" class="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5" placeholder="e.g., 130">
+                            </div>
+                            <button type="submit" class="text-white bg-amber-600 hover:bg-amber-700 focus:ring-4 focus:outline-none focus:ring-amber-300 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center">Add Payment</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <section id="payment-history-section" class="mt-8">
+            <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Payment History</h2>
+            <p class="mb-6 text-zinc-500 text-sm">
+                This table shows the raw payment data stored in the database. You can delete a payment record by clicking the "Delete" button.
+            </p>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+                <table class="w-full text-sm text-left text-zinc-600">
+                    <thead class="text-xs text-zinc-700 uppercase bg-zinc-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-2">Name</th>
+                            <th scope="col" class="px-4 py-2">Amount Paid</th>
+                            <th scope="col" class="px-4 py-2">Date & Time</th>
+                            <th scope="col" class="px-4 py-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment-log-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+      <div id="modal-content" class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+        <h3 id="modal-title" class="text-lg font-bold mb-2 text-zinc-800"></h3>
+        <p id="modal-message" class="text-sm text-zinc-600 mb-4"></p>
+        <div class="flex justify-end space-x-2">
+          <button id="modal-close-btn" class="px-4 py-2 bg-zinc-200 text-zinc-800 rounded-lg hover:bg-zinc-300 font-medium text-sm">Close</button>
+        </div>
+      </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        document.addEventListener('DOMContentLoaded', () => {
+            // Firebase global variables provided by the Canvas environment.
+            const appId = 'group-payment-tracker'; // Replace with a fixed string
+            const initialAuthToken = null; // We are using anonymous auth instead of a token
+            
+            // This is your Firebase configuration. You MUST replace all the placeholder values
+            // with the actual values from your Firebase project.
+            const firebaseConfig = {
+                apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
+                authDomain: "group-payment-tracker.firebaseapp.com",
+                projectId: "group-payment-tracker",
+                storageBucket: "group-payment-tracker.firebasestorage.app",
+                messagingSenderId: "208078945785",
+                appId: "1:208078945785:web:5164201a43e0bd37c8d128"
+            };
+            
+            // Firebase SDK imports
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+            import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+            import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables provided by the Canvas environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            const config = {
+                members: [],
+                months: ['September', 'October', 'November', 'December'],
+                year: 2025,
+                basePayment: 130,
+                penalty: 20,
+            };
 
-        const messageEl = document.getElementById('message');
+            const nameSelect = document.getElementById('name-select');
+            const monthSelect = document.getElementById('month-select');
+            const trackerBody = document.getElementById('tracker-body');
+            const paymentForm = document.getElementById('payment-form');
+            const totalCollectedEl = document.getElementById('total-collected');
+            const totalOutstandingEl = document.getElementById('total-outstanding');
+            const chartCanvas = document.getElementById('overall-progress-chart');
+            const userIdEl = document.getElementById('user-id');
+            const paymentLogBody = document.getElementById('payment-log-body');
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
 
-        /**
-         * The main function to initialize the application and handle logic.
-         * This is where a common syntax error might occur. The correct syntax
-         * for an async function is `async function functionName() { ... }`.
-         * An unexpected '{' token often appears if a parenthesis is missing.
-         */
-        async function init() {
-            if (!firebaseConfig) {
-                console.error("Firebase config is not available. Please ensure it is provided.");
-                messageEl.textContent = "Error: Firebase configuration is missing.";
-                return;
+            let overallProgressChart;
+            let payments = [];
+            let db;
+            let auth;
+
+            // NEW: Sign-in/Sign-out logic
+            const provider = new GoogleAuthProvider();
+
+            async function handleSignIn() {
+                try {
+                    await signInWithPopup(auth, provider);
+                } catch (error) {
+                    console.error("Sign-in failed:", error);
+                    showModal("Sign-in Failed", `An error occurred during sign-in: ${error.message}`);
+                }
             }
 
-            try {
-                // Initialize Firebase services
-                const app = initializeApp(firebaseConfig);
-                const db = getFirestore(app);
-                const auth = getAuth(app);
-                
-                // Sign in the user. If a custom token exists, use it. Otherwise, sign in anonymously.
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
+            async function handleSignOut() {
+                try {
+                    await signOut(auth);
+                } catch (error) {
+                    console.error("Sign-out failed:", error);
+                    showModal("Sign-out Failed", `An error occurred during sign-out: ${error.message}`);
                 }
+            }
 
-                // Log user info and a success message
-                const user = auth.currentUser;
-                if (!user) {
-                    messageEl.textContent = "Error: User is not authenticated.";
-                    return;
+            // Simple modal to replace alerts and confirms
+            function showModal(title, message) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalBackdrop.classList.remove('hidden');
+                modalBackdrop.classList.add('flex');
+            }
+
+            modalCloseBtn.addEventListener('click', () => {
+                modalBackdrop.classList.remove('flex');
+                modalBackdrop.classList.add('hidden');
+            });
+
+            async function initFirebase() {
+                try {
+                    // Set debug level for more verbose logging
+                    setLogLevel('debug');
+
+                    if (!firebaseConfig || !firebaseConfig.apiKey) {
+                        showModal('Initialization Error', 'Firebase configuration is missing or invalid. Please ensure the app is configured correctly.');
+                        return;
+                    }
+
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    // Update the onAuthStateChanged listener to handle the UI changes
+                    onAuthStateChanged(auth, (user) => {
+                        const authButton = document.getElementById('auth-button');
+                        const userStatus = document.getElementById('user-status');
+
+                        if (user && user.displayName) {
+                            // User is signed in with Google
+                            userStatus.textContent = user.displayName;
+                            authButton.textContent = 'Sign Out';
+                            authButton.onclick = handleSignOut;
+                            console.log("Authentication successful. User:", user.displayName, "ID:", user.uid);
+                            setupMembersListener(); // Fetch members once authenticated
+                        } else {
+                            // User is signed out or anonymous
+                            userStatus.textContent = 'a guest';
+                            authButton.textContent = 'Sign In';
+                            authButton.onclick = handleSignIn;
+                            console.log("User is signed out.");
+                            // You may want to clear data or show a default view for guests
+                        }
+                    });
+
+                } catch (error) {
+                    console.error("Firebase initialization failed:", error);
+                    showModal('Firebase Initialization Failed', `An unexpected error occurred: ${error.message}`);
                 }
-                const userId = user.uid;
-                console.log("User signed in with UID:", userId);
+            }
 
-                // Construct the correct Firestore path using the provided __app_id and the user's UID.
-                const userFirestorePath = `artifacts/${appId}/users/${userId}/documents`;
+            // Corrected listener for fetching members from the database
+            function setupMembersListener() {
+                const membersCol = collection(db, 'members');
+                onSnapshot(membersCol, (snapshot) => {
+                    config.members = snapshot.docs.map(doc => doc.data().Name).sort();
+                    populateNameSelect();
+                    // Once members are loaded, set up the payments listener
+                    setupRealtimeListener();
+                });
+            }
 
-                messageEl.textContent = `User signed in with UID: ${userId}. Checking Firestore path: ${userFirestorePath}`;
+            function setupRealtimeListener() {
+                const paymentsCol = collection(db, `artifacts/${appId}/public/data/payments`);
+                onSnapshot(paymentsCol, (snapshot) => {
+                    payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const state = calculateState(payments);
+                    renderDashboard(state);
+                    renderPaymentLog(payments);
+                });
+            }
 
-                // Example of a Firestore query to demonstrate correct syntax and permissions.
-                const querySnapshot = await getDocs(collection(db, userFirestorePath));
-                
-                let documentsCount = 0;
-                querySnapshot.forEach((doc) => {
-                    // doc.data() is never undefined for a document snapshot
-                    console.log(doc.id, " => ", doc.data());
-                    documentsCount++;
+            function populateNameSelect() {
+                nameSelect.innerHTML = '';
+                config.members.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    nameSelect.appendChild(option);
+                });
+            }
+
+            function calculateState(currentPayments) {
+                const state = {};
+                config.members.forEach(name => {
+                    state[name] = {};
+                    let carryOver = 0;
+                    config.months.forEach((month, monthIndex) => {
+                        const paidThisMonth = currentPayments
+                            .filter(p => p.name === name)
+                            .filter(p => {
+                                const paymentDate = new Date(p.date);
+                                return paymentDate.getMonth() === monthIndex + 8 && paymentDate.getFullYear() === config.year;
+                            })
+                            .reduce((sum, p) => sum + p.amount, 0);
+
+                        const totalPaidWithCarryover = paidThisMonth + carryOver;
+
+                        let dueAmount;
+                        if (totalPaidWithCarryover < config.basePayment) {
+                           dueAmount = config.basePayment + config.penalty;
+                        } else {
+                           dueAmount = config.basePayment;
+                        }
+
+                        const progress = dueAmount > 0 ? Math.min(1, totalPaidWithCarryover / dueAmount) : 1;
+
+                        state[name][month] = {
+                            paid: totalPaidWithCarryover,
+                            due: dueAmount,
+                            progress: progress
+                        };
+
+                        carryOver = Math.max(0, totalPaidWithCarryover - dueAmount);
+                    });
+                });
+                return state;
+            }
+
+            function renderDashboard(state) {
+                trackerBody.innerHTML = '';
+                config.members.forEach(name => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-zinc-50';
+
+                    let rowHTML = `<td class="px-6 py-4 font-medium text-zinc-900 whitespace-nowrap sticky left-0 bg-white hover:bg-zinc-50 z-10">${name}</td>`;
+
+                    config.months.forEach(month => {
+                        const data = state[name][month];
+                        const progressPercent = (data.progress * 100).toFixed(0);
+                        let barColor = 'bg-red-500';
+                        if (progressPercent >= 100) {
+                            barColor = 'bg-green-500';
+                        } else if (progressPercent > 50) {
+                            barColor = 'bg-yellow-500';
+                        }
+
+                        rowHTML += `
+                            <td class="px-2 py-4 text-center border-l">₱${data.paid.toFixed(2)}</td>
+                            <td class="px-2 py-4 text-center">₱${data.due.toFixed(2)}</td>
+                            <td class="px-2 py-4 text-center w-32">
+                                <div class="progress-bar-bg w-full">
+                                    <div class="${barColor} progress-bar" style="width: ${progressPercent}%">${progressPercent}%</div>
+                                </div>
+                            </td>
+                        `;
+                    });
+
+                    rowHTML += `<td class="px-6 py-4 text-center"></td>`;
+
+                    row.innerHTML = rowHTML;
+                    trackerBody.appendChild(row);
                 });
 
-                messageEl.textContent = `Successfully accessed Firestore. Found ${documentsCount} documents.`;
-                console.log(`Found ${documentsCount} documents in ${userFirestorePath}.`);
-
-            } catch (error) {
-                // Correct syntax for a catch block.
-                console.error("An error occurred:", error);
-                messageEl.textContent = `An error occurred: ${error.message}`;
+                updateSummary(state);
+                updateChart(state);
             }
-        }
 
-        // Run the initialization function when the page loads
-        window.onload = init;
+            function renderPaymentLog(currentPayments) {
+                paymentLogBody.innerHTML = '';
+                const sortedPayments = currentPayments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                sortedPayments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-zinc-50';
+                    row.innerHTML = `
+                        <td class="px-4 py-2">${payment.name}</td>
+                        <td class="px-4 py-2">₱${payment.amount.toFixed(2)}</td>
+                        <td class="px-4 py-2">${new Date(payment.timestamp).toLocaleString()}</td>
+                        <td class="px-4 py-2">
+                            <button data-id="${payment.id}" class="delete-btn text-red-600 hover:text-red-800 font-bold text-sm">Delete</button>
+                        </td>
+                    `;
+                    paymentLogBody.appendChild(row);
+                });
+            }
 
+            function updateSummary(state) {
+                const selectedMonthIndex = parseInt(monthSelect.value, 10);
+                const selectedMonth = config.months[selectedMonthIndex];
+
+                let totalCollected = 0;
+                let totalDue = 0;
+
+                config.members.forEach(name => {
+                    totalCollected += state[name][selectedMonth].paid;
+                    totalDue += state[name][selectedMonth].due;
+                });
+
+                const totalOutstanding = Math.max(0, totalDue - totalCollected);
+
+                totalCollectedEl.textContent = `₱${totalCollected.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                totalOutstandingEl.textContent = `₱${totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            }
+
+            function updateChart(state) {
+                let grandTotalCollected = 0;
+                let grandTotalDue = 0;
+
+                config.members.forEach(name => {
+                    config.months.forEach(month => {
+                        grandTotalCollected += state[name][month].paid;
+                        grandTotalDue += state[name][month].due;
+                    });
+                });
+
+                const remaining = Math.max(0, grandTotalDue - grandTotalCollected);
+
+                const chartData = {
+                    labels: ['Total Collected', 'Total Remaining'],
+                    datasets: [{
+                        data: [grandTotalCollected, remaining],
+                        backgroundColor: ['#16a34a', '#ef4444'],
+                        borderColor: ['#fdfcfb'],
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                };
+
+                if (overallProgressChart) {
+                    overallProgressChart.data = chartData;
+                    overallProgressChart.update();
+                } else {
+                    overallProgressChart = new Chart(chartCanvas, {
+                        type: 'doughnut',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 20
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            async function handleFormSubmit(e) {
+                e.preventDefault();
+                const name = nameSelect.value;
+                const amount = parseFloat(document.getElementById('amount-input').value);
+
+                if (name && !isNaN(amount) && amount > 0) {
+                    try {
+                        const newPayment = {
+                            name: name,
+                            amount: amount,
+                            timestamp: new Date().toISOString(),
+                            date: new Date().toISOString().split('T')[0]
+                        };
+                        await addDoc(collection(db, `artifacts/${appId}/public/data/payments`), newPayment);
+                        paymentForm.reset();
+                    } catch (e) {
+                        console.error("Error adding document: ", e);
+                        showModal('Error', `Failed to add payment: ${e.message}`);
+                    }
+                }
+            }
+
+            async function handleDeleteClick(e) {
+                if (e.target.classList.contains('delete-btn')) {
+                    const paymentId = e.target.dataset.id;
+                    try {
+                        await deleteDoc(doc(db, `artifacts/${appId}/public/data/payments`, paymentId));
+                        showModal('Success', 'Payment record deleted successfully.');
+                    } catch (e) {
+                        console.error("Error deleting document: ", e);
+                        showModal('Error', `Failed to delete payment: ${e.message}`);
+                    }
+                }
+            }
+
+            function init() {
+                paymentForm.addEventListener('submit', handleFormSubmit);
+                monthSelect.addEventListener('change', () => {
+                    const currentState = calculateState(payments);
+                    updateSummary(currentState);
+                });
+                document.body.addEventListener('click', handleDeleteClick);
+                initFirebase();
+            }
+
+            init();
+        });
     </script>
 </body>
 </html>
