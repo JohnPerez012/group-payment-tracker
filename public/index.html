@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Interactive Payment Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -10,23 +10,25 @@
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #fdfcfb; color: #3f3f46; }
     .progress-bar-bg { background-color: #e5e7eb; border-radius: 9999px; overflow: hidden; }
-    .progress-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out; text-align: center; color: white; font-size: 0.75rem; font-weight: 500; line-height: 1.25rem; }
-    .chart-container { position: relative; width: 100%; max-width: 250px; margin-left: auto; margin-right: auto; height: 250px; max-height: 250px; }
+    .progress-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+      text-align: center; color: white; font-size: 0.75rem; font-weight: 500; line-height: 1.25rem; }
+    .chart-container { position: relative; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; height: 300px; max-height: 300px; }
   </style>
 </head>
 <body class="antialiased">
   <div class="container mx-auto p-4 md:p-8 max-w-7xl">
     <header class="mb-8">
       <h1 class="text-4xl font-bold text-zinc-800">Group Payment Tracker</h1>
-      <p class="text-zinc-500 mt-2">An interactive dashboard to monitor monthly payments, penalties, and progress in real-time.</p>
+      <p class="text-zinc-500 mt-2">Track monthly payments with automatic carry-over and real-time progress updates.</p>
       <div class="mt-4 p-3 bg-zinc-100 rounded-lg text-sm text-zinc-600 flex items-center justify-between">
         <p>You are viewing this tracker as <span id="user-status" class="font-mono font-semibold text-zinc-800">a guest</span>.</p>
         <button id="auth-button" class="px-4 py-2 bg-zinc-200 text-zinc-800 rounded-lg hover:bg-zinc-300 font-medium text-sm">Sign In</button>
       </div>
     </header>
 
+    <!-- MAIN -->
     <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Tracker -->
+      <!-- LEFT SIDE -->
       <div class="lg:col-span-2 order-2 lg:order-1">
         <section>
           <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Monthly Progress Dashboard</h2>
@@ -34,9 +36,26 @@
             <table class="w-full text-sm text-left text-zinc-600">
               <thead class="text-xs text-zinc-700 uppercase bg-zinc-50">
                 <tr>
-                  <th class="px-6 py-3">Name</th>
-                  <th class="px-6 py-3">Amount</th>
-                  <th class="px-6 py-3">Month</th>
+                  <th class="px-6 py-3 sticky left-0 bg-zinc-50 z-10">Name</th>
+                  <th colspan="3" class="px-6 py-3 text-center border-l">September</th>
+                  <th colspan="3" class="px-6 py-3 text-center border-l">October</th>
+                  <th colspan="3" class="px-6 py-3 text-center border-l">November</th>
+                  <th colspan="3" class="px-6 py-3 text-center border-l">December</th>
+                </tr>
+                <tr>
+                  <th></th>
+                  <th class="px-2 py-3 text-center">Paid</th>
+                  <th class="px-2 py-3 text-center">Due</th>
+                  <th class="px-2 py-3 text-center w-32">Progress</th>
+                  <th class="px-2 py-3 text-center">Paid</th>
+                  <th class="px-2 py-3 text-center">Due</th>
+                  <th class="px-2 py-3 text-center w-32">Progress</th>
+                  <th class="px-2 py-3 text-center">Paid</th>
+                  <th class="px-2 py-3 text-center">Due</th>
+                  <th class="px-2 py-3 text-center w-32">Progress</th>
+                  <th class="px-2 py-3 text-center">Paid</th>
+                  <th class="px-2 py-3 text-center">Due</th>
+                  <th class="px-2 py-3 text-center w-32">Progress</th>
                 </tr>
               </thead>
               <tbody id="tracker-body"></tbody>
@@ -45,63 +64,53 @@
         </section>
       </div>
 
-      <!-- Summary + Log -->
+      <!-- RIGHT SIDE -->
       <div class="lg:col-span-1 order-1 lg:order-2 space-y-8">
+        <!-- SUMMARY -->
+        <section>
+          <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Summary</h2>
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="grid grid-cols-2 gap-4 text-center mb-6">
+              <div>
+                <p class="text-sm text-zinc-500">Collected</p>
+                <p id="total-collected" class="text-2xl font-bold text-green-600">₱0</p>
+              </div>
+              <div>
+                <p class="text-sm text-zinc-500">Outstanding</p>
+                <p id="total-outstanding" class="text-2xl font-bold text-red-600">₱0</p>
+              </div>
+            </div>
+            <h3 class="text-lg font-semibold text-center text-zinc-700 mb-2">Payments Overview</h3>
+            <div class="chart-container">
+              <canvas id="payments-pie"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- LOG PAYMENT -->
         <section>
           <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Log a New Payment</h2>
-          <div class="bg-white p-6 rounded-lg shadow-md crud-control hidden">
+          <div class="bg-white p-6 rounded-lg shadow-md">
             <form id="payment-form">
               <div class="mb-4">
-                <label for="name-input" class="block mb-2 text-sm font-medium">Name</label>
-                <input type="text" id="name-input" required class="w-full border p-2 rounded"/>
+                <label for="name-select" class="block mb-2 text-sm font-medium text-zinc-900">Name</label>
+                <select id="name-select" required class="w-full bg-zinc-50 border border-zinc-300 text-sm rounded-lg p-2.5"></select>
               </div>
-              <div class="mb-4">
-                <label for="amount-input" class="block mb-2 text-sm font-medium">Amount Paid</label>
-                <input type="number" id="amount-input" required class="w-full border p-2 rounded"/>
+              <div class="mb-6">
+                <label for="amount-input" class="block mb-2 text-sm font-medium text-zinc-900">Amount Paid (₱)</label>
+                <input type="number" id="amount-input" required min="0" step="0.01" class="w-full bg-zinc-50 border border-zinc-300 text-sm rounded-lg p-2.5">
               </div>
-              <div class="mb-4">
-                <label for="month-input" class="block mb-2 text-sm font-medium">Month</label>
-                <input type="text" id="month-input" required class="w-full border p-2 rounded"/>
-              </div>
-              <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded w-full">Add Payment</button>
+              <button type="submit" class="text-white bg-amber-600 hover:bg-amber-700 rounded-lg text-sm w-full px-5 py-2.5">Add Payment</button>
             </form>
           </div>
         </section>
       </div>
     </main>
-
-    <!-- History -->
-    <section class="mt-8">
-      <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Payment History</h2>
-      <div class="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table class="w-full text-sm text-left text-zinc-600">
-          <thead class="bg-zinc-50 text-xs text-zinc-700 uppercase">
-            <tr>
-              <th class="px-4 py-2">Name</th>
-              <th class="px-4 py-2">Amount</th>
-              <th class="px-4 py-2">Month</th>
-              <th class="px-4 py-2">Action</th>
-            </tr>
-          </thead>
-          <tbody id="payment-log-body"></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-
-  <!-- Modal -->
-  <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
-      <h3 id="modal-title" class="text-lg font-bold mb-2"></h3>
-      <p id="modal-message" class="text-sm mb-4"></p>
-      <div class="flex justify-end"><button id="modal-close-btn" class="px-4 py-2 bg-zinc-200 rounded-lg">Close</button></div>
-    </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
@@ -113,103 +122,111 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
 
-    const authButton = document.getElementById("auth-button");
-    const userStatus = document.getElementById("user-status");
+    const months = ["September", "October", "November", "December"];
+    const memberList = [];
+    let payments = {}; // {name: {month: paidAmount}}
+
     const trackerBody = document.getElementById("tracker-body");
-    const logBody = document.getElementById("payment-log-body");
-    const form = document.getElementById("payment-form");
-    const modalBackdrop = document.getElementById("modal-backdrop");
-    const modalTitle = document.getElementById("modal-title");
-    const modalMessage = document.getElementById("modal-message");
-    const modalCloseBtn = document.getElementById("modal-close-btn");
+    const nameSelect = document.getElementById("name-select");
+    const totalCollected = document.getElementById("total-collected");
+    const totalOutstanding = document.getElementById("total-outstanding");
 
-    function showModal(title, message) {
-      modalTitle.textContent = title;
-      modalMessage.textContent = message;
-      modalBackdrop.classList.remove("hidden");
-      modalBackdrop.classList.add("flex");
-    }
-    modalCloseBtn.addEventListener("click", () => modalBackdrop.classList.add("hidden"));
+    let pieChart;
 
-    // 🔹 Auth button
-    authButton.addEventListener("click", () => {
-      if (!auth.currentUser) {
-        signInWithPopup(auth, provider).catch(e => showModal("Sign-in Failed", e.message));
-      } else {
-        signOut(auth).catch(e => showModal("Sign-out Failed", e.message));
-      }
-    });
-
-    // 🔹 Render payments
-    function renderPayments(snapshot, user) {
-      trackerBody.innerHTML = "";
-      logBody.innerHTML = "";
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        // tracker
-        trackerBody.innerHTML += `
-          <tr>
-            <td class="px-6 py-2">${data.name}</td>
-            <td class="px-6 py-2">₱${data.amount}</td>
-            <td class="px-6 py-2">${data.month}</td>
-          </tr>
-        `;
-        // history log
-        logBody.innerHTML += `
-          <tr>
-            <td class="px-4 py-2">${data.name}</td>
-            <td class="px-4 py-2">₱${data.amount}</td>
-            <td class="px-4 py-2">${data.month}</td>
-            <td class="px-4 py-2">
-              <button data-id="${docSnap.id}" class="delete-btn bg-red-500 text-white px-2 py-1 rounded crud-control ${user ? "" : "hidden"}">Delete</button>
-            </td>
-          </tr>
-        `;
+    // Load members
+    async function loadMembers() {
+      const snapshot = await getDocs(collection(db, "members"));
+      snapshot.forEach(doc => {
+        const name = doc.data().Name;
+        memberList.push(name);
+        payments[name] = {September:0, October:0, November:0, December:0};
       });
+      populateDropdown();
+      renderTable();
+      updateSummary();
+    }
 
-      // attach delete handlers
-      document.querySelectorAll(".delete-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          if (!auth.currentUser) return showModal("Access Denied", "Sign in to delete.");
-          await deleteDoc(doc(db, "payments", e.target.dataset.id));
+    function populateDropdown() {
+      memberList.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        nameSelect.appendChild(option);
+      });
+    }
+
+    function renderTable() {
+      trackerBody.innerHTML = "";
+      memberList.forEach(name => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="px-6 py-3 font-medium">${name}</td>
+          ${months.map(m => {
+            const paid = payments[name][m];
+            const due = Math.max(130 - paid, 0);
+            const progress = Math.min((paid/130)*100, 100);
+            return `
+              <td class="text-center">₱${paid}</td>
+              <td class="text-center">₱${due}</td>
+              <td>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar" style="width:${progress}%;background:${progress==100?"green":"red"}">${progress.toFixed(0)}%</div>
+                </div>
+              </td>`;
+          }).join("")}
+        `;
+        trackerBody.appendChild(row);
+      });
+    }
+
+    function updateSummary() {
+      let collected=0, outstanding=0;
+      memberList.forEach(name => {
+        months.forEach(m => {
+          collected += payments[name][m];
+          outstanding += Math.max(130 - payments[name][m], 0);
         });
       });
+      totalCollected.textContent = "₱"+collected;
+      totalOutstanding.textContent = "₱"+outstanding;
+
+      const ctx = document.getElementById("payments-pie").getContext("2d");
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: ["Collected", "Outstanding"],
+          datasets: [{
+            data: [collected, outstanding],
+            backgroundColor: ["#22c55e", "#ef4444"] // green & red
+          }]
+        }
+      });
     }
 
-    // 🔹 Listen to Firestore
-    onSnapshot(collection(db, "payments"), (snap) => {
-      renderPayments(snap, auth.currentUser);
-    });
-
-    // 🔹 Handle form submit
-    form.addEventListener("submit", async (e) => {
+    // Auto-allocate payments
+    document.getElementById("payment-form").addEventListener("submit", e => {
       e.preventDefault();
-      if (!auth.currentUser) return showModal("Access Denied", "Please sign in to add records.");
-      await addDoc(collection(db, "payments"), {
-        name: form["name-input"].value,
-        amount: Number(form["amount-input"].value),
-        month: form["month-input"].value,
-        createdAt: serverTimestamp()
+      const name = nameSelect.value;
+      let amount = parseFloat(document.getElementById("amount-input").value);
+
+      months.forEach(m => {
+        if (amount>0) {
+          const need = Math.max(130 - payments[name][m], 0);
+          const applied = Math.min(need, amount);
+          payments[name][m] += applied;
+          amount -= applied;
+        }
       });
-      form.reset();
+
+      renderTable();
+      updateSummary();
+      e.target.reset();
     });
 
-    // 🔹 Watch auth state
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        userStatus.textContent = user.displayName || user.email;
-        authButton.textContent = "Sign Out";
-        document.querySelectorAll(".crud-control").forEach(el => el.classList.remove("hidden"));
-      } else {
-        userStatus.textContent = "a guest";
-        authButton.textContent = "Sign In";
-        document.querySelectorAll(".crud-control").forEach(el => el.classList.add("hidden"));
-      }
-    });
+    loadMembers();
   </script>
 </body>
 </html>
