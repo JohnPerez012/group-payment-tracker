@@ -3,117 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Payment Tracker</title>
+  <title>Group Payment Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #fdfcfb; color: #3f3f46; }
-    .progress-bar-bg { background-color: #e5e7eb; border-radius: 9999px; overflow: hidden; }
-    .progress-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
-      text-align: center; color: white; font-size: 0.75rem; font-weight: 500; line-height: 1.25rem; }
-    .chart-container { position: relative; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; height: 300px; max-height: 300px; }
+    body { font-family: 'Inter', sans-serif; background: #fafafa; }
+    .progress-bar-bg { background: #e5e7eb; border-radius: 9999px; overflow: hidden; }
+    .progress-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-in-out; text-align: center; font-size: 0.75rem; font-weight: 500; }
   </style>
 </head>
 <body class="antialiased">
-  <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-    <header class="mb-8">
-      <h1 class="text-4xl font-bold text-zinc-800">Group Payment Tracker</h1>
-      <p class="text-zinc-500 mt-2">Track monthly payments with automatic carry-over and real-time progress updates.</p>
-      <div class="mt-4 p-3 bg-zinc-100 rounded-lg text-sm text-zinc-600 flex items-center justify-between">
-        <p>You are viewing this tracker as <span id="user-status" class="font-mono font-semibold text-zinc-800">a guest</span>.</p>
-        <button id="auth-button" class="px-4 py-2 bg-zinc-200 text-zinc-800 rounded-lg hover:bg-zinc-300 font-medium text-sm">Sign In</button>
+  <div class="container mx-auto p-4 max-w-7xl">
+    <!-- Header -->
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold">Group Payment Tracker</h1>
+      <p class="text-gray-600">Monitor monthly payments with live updates.</p>
+      <div class="mt-3 flex justify-between items-center bg-gray-100 px-4 py-2 rounded">
+        <span>You are viewing as <span id="user-status" class="font-bold">Guest</span></span>
+        <button id="auth-button" class="bg-gray-200 px-3 py-1 rounded">Sign In</button>
       </div>
     </header>
 
-    <!-- MAIN -->
-    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- LEFT SIDE -->
-      <div class="lg:col-span-2 order-2 lg:order-1">
-        <section>
-          <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Monthly Progress Dashboard</h2>
-          <div class="overflow-x-auto bg-white rounded-lg shadow-md">
-            <table class="w-full text-sm text-left text-zinc-600">
-              <thead class="text-xs text-zinc-700 uppercase bg-zinc-50">
-                <tr>
-                  <th class="px-6 py-3 sticky left-0 bg-zinc-50 z-10">Name</th>
-                  <th colspan="3" class="px-6 py-3 text-center border-l">September</th>
-                  <th colspan="3" class="px-6 py-3 text-center border-l">October</th>
-                  <th colspan="3" class="px-6 py-3 text-center border-l">November</th>
-                  <th colspan="3" class="px-6 py-3 text-center border-l">December</th>
-                </tr>
-                <tr>
-                  <th></th>
-                  <th class="px-2 py-3 text-center">Paid</th>
-                  <th class="px-2 py-3 text-center">Due</th>
-                  <th class="px-2 py-3 text-center w-32">Progress</th>
-                  <th class="px-2 py-3 text-center">Paid</th>
-                  <th class="px-2 py-3 text-center">Due</th>
-                  <th class="px-2 py-3 text-center w-32">Progress</th>
-                  <th class="px-2 py-3 text-center">Paid</th>
-                  <th class="px-2 py-3 text-center">Due</th>
-                  <th class="px-2 py-3 text-center w-32">Progress</th>
-                  <th class="px-2 py-3 text-center">Paid</th>
-                  <th class="px-2 py-3 text-center">Due</th>
-                  <th class="px-2 py-3 text-center w-32">Progress</th>
-                </tr>
-              </thead>
-              <tbody id="tracker-body"></tbody>
-            </table>
-          </div>
-        </section>
+    <!-- Progress Dashboard -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-2">Monthly Progress Dashboard</h2>
+      <div class="overflow-x-auto bg-white rounded shadow">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2">Name</th>
+              <th class="px-3 py-2">September</th>
+              <th class="px-3 py-2">October</th>
+              <th class="px-3 py-2">November</th>
+              <th class="px-3 py-2">December</th>
+            </tr>
+          </thead>
+          <tbody id="progress-body"></tbody>
+        </table>
       </div>
+    </section>
 
-      <!-- RIGHT SIDE -->
-      <div class="lg:col-span-1 order-1 lg:order-2 space-y-8">
-        <!-- SUMMARY -->
-        <section>
-          <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Summary</h2>
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="grid grid-cols-2 gap-4 text-center mb-6">
-              <div>
-                <p class="text-sm text-zinc-500">Collected</p>
-                <p id="total-collected" class="text-2xl font-bold text-green-600">₱0</p>
-              </div>
-              <div>
-                <p class="text-sm text-zinc-500">Outstanding</p>
-                <p id="total-outstanding" class="text-2xl font-bold text-red-600">₱0</p>
-              </div>
-            </div>
-            <h3 class="text-lg font-semibold text-center text-zinc-700 mb-2">Payments Overview</h3>
-            <div class="chart-container">
-              <canvas id="payments-pie"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <!-- LOG PAYMENT -->
-        <section>
-          <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Log a New Payment</h2>
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <form id="payment-form">
-              <div class="mb-4">
-                <label for="name-select" class="block mb-2 text-sm font-medium text-zinc-900">Name</label>
-                <select id="name-select" required class="w-full bg-zinc-50 border border-zinc-300 text-sm rounded-lg p-2.5"></select>
-              </div>
-              <div class="mb-6">
-                <label for="amount-input" class="block mb-2 text-sm font-medium text-zinc-900">Amount Paid (₱)</label>
-                <input type="number" id="amount-input" required min="0" step="0.01" class="w-full bg-zinc-50 border border-zinc-300 text-sm rounded-lg p-2.5">
-              </div>
-              <button type="submit" class="text-white bg-amber-600 hover:bg-amber-700 rounded-lg text-sm w-full px-5 py-2.5">Add Payment</button>
-            </form>
-          </div>
-        </section>
+    <!-- Summary & Chart -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-2">Collection Summary</h2>
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="bg-white rounded shadow p-4 text-center">
+          <p class="text-gray-500">Collected</p>
+          <p id="summary-collected" class="text-2xl font-bold text-green-600">₱0</p>
+        </div>
+        <div class="bg-white rounded shadow p-4 text-center">
+          <p class="text-gray-500">Outstanding</p>
+          <p id="summary-outstanding" class="text-2xl font-bold text-red-600">₱0</p>
+        </div>
       </div>
-    </main>
+      <canvas id="summary-chart" class="bg-white p-4 rounded shadow"></canvas>
+    </section>
+
+    <!-- Log Payment (only visible when signed in) -->
+    <section id="log-section" class="mb-8 hidden">
+      <h2 class="text-xl font-semibold mb-2">Log a New Payment</h2>
+      <form id="payment-form" class="bg-white rounded shadow p-4">
+        <label class="block mb-2">Name</label>
+        <select id="member-select" required class="border rounded p-2 w-full mb-4"></select>
+        <label class="block mb-2">Amount Paid (₱)</label>
+        <input type="number" id="amount-input" min="0" required class="border rounded p-2 w-full mb-4">
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Add Payment</button>
+      </form>
+    </section>
+
+    <!-- Payment History -->
+    <section>
+      <h2 class="text-xl font-semibold mb-2">Payment History</h2>
+      <div class="overflow-x-auto bg-white rounded shadow">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2">Name</th>
+              <th class="px-3 py-2">Amount</th>
+              <th class="px-3 py-2">Date</th>
+              <th class="px-3 py-2 crud-only hidden">Action</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
- <script type="module">
-    // Firebase imports
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+    // 🔹 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
       authDomain: "group-payment-tracker.firebaseapp.com",
@@ -122,148 +104,153 @@
       messagingSenderId: "208078945785",
       appId: "1:208078945785:web:5164201a43e0bd37c8d128"
     };
-// Init Firebase
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
     const db = getFirestore(app);
 
-    // Elements
-    const dashboard = document.getElementById("dashboard");
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const crudSection = document.getElementById("crud");
-    const paymentForm = document.getElementById("paymentForm");
-    const memberSelect = document.getElementById("memberSelect");
-    const chartCanvas = document.getElementById("paymentChart");
+    // 🔹 UI Elements
+    const authButton = document.getElementById("auth-button");
+    const userStatus = document.getElementById("user-status");
+    const logSection = document.getElementById("log-section");
+    const historyBody = document.getElementById("history-body");
+    const progressBody = document.getElementById("progress-body");
+    const memberSelect = document.getElementById("member-select");
+    const summaryCollected = document.getElementById("summary-collected");
+    const summaryOutstanding = document.getElementById("summary-outstanding");
 
-    let chartInstance = null;
+    let chart;
 
-    // Load members
-    async function loadMembers() {
-      const snap = await getDocs(collection(db, "members"));
-      return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    }
-
-    // Load payments
-    async function loadPayments() {
-      const q = query(collection(db, "payments"), orderBy("timestamp", "asc"));
-      const snap = await getDocs(q);
-      return snap.docs.map(doc => doc.data());
-    }
-
-    // Render dashboard
-    async function renderDashboard(user) {
-      const members = await loadMembers();
-      const payments = await loadPayments();
-
-      dashboard.innerHTML = "";
-      let totalPaid = 0;
-      let totalExpected = members.length * 130; // one month
-
-      members.forEach(member => {
-        const memberPayments = payments.filter(p => p.name === member.Name);
-        const total = memberPayments.reduce((sum, p) => sum + p.amount, 0);
-        totalPaid += total;
-
-        const div = document.createElement("div");
-        if (total > 0) {
-          div.textContent = `💳 ${member.Name} paid ₱${total}`;
-        } else {
-          div.textContent = `💳 ${member.Name} has not paid yet.`;
-        }
-        dashboard.appendChild(div);
-      });
-
-      // Render pie chart
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(chartCanvas, {
-        type: "pie",
-        data: {
-          labels: ["Paid", "Unpaid"],
-          datasets: [{
-            data: [totalPaid, Math.max(totalExpected - totalPaid, 0)],
-            backgroundColor: ["#22c55e", "#ef4444"]
-          }]
-        }
-      });
-
-      // If user logged in → show CRUD
-      crudSection.style.display = user ? "block" : "none";
-
-      // Populate dropdown
-      memberSelect.innerHTML = "";
-      members.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m.Name;
-        opt.textContent = m.Name;
-        memberSelect.appendChild(opt);
-      });
-    }
-
-    // Handle payment submission
-    paymentForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = memberSelect.value;
-      const amount = parseInt(document.getElementById("amount").value);
-
-      if (!name || !amount) return;
-
-      await addDoc(collection(db, "payments"), {
-        name,
-        amount,
-        timestamp: new Date()
-      });
-
-      paymentForm.reset();
-      renderDashboard(auth.currentUser);
+    // 🔹 Handle Sign In / Out
+    authButton.addEventListener("click", () => {
+      if (auth.currentUser) {
+        signOut(auth);
+      } else {
+        signInWithPopup(auth, provider);
+      }
     });
 
-    // Auth state
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
+        userStatus.textContent = user.displayName || user.email;
+        authButton.textContent = "Sign Out";
+        logSection.classList.remove("hidden");
+        document.querySelectorAll(".crud-only").forEach(el => el.classList.remove("hidden"));
       } else {
-        loginBtn.style.display = "inline-block";
-        logoutBtn.style.display = "none";
+        userStatus.textContent = "Guest";
+        authButton.textContent = "Sign In";
+        logSection.classList.add("hidden");
+        document.querySelectorAll(".crud-only").forEach(el => el.classList.add("hidden"));
       }
-      renderDashboard(user);
+      renderDashboard();
     });
 
-    // Sign in/out
-    loginBtn.addEventListener("click", () => signInWithPopup(auth, provider));
-    logoutBtn.addEventListener("click", () => signOut(auth));
+    // 🔹 Load Members + Payments
+    async function renderDashboard() {
+      const membersSnap = await getDocs(collection(db, "members"));
+      const paymentsSnap = await getDocs(query(collection(db, "payments"), orderBy("timestamp", "asc")));
+
+      let members = [];
+      membersSnap.forEach(doc => members.push(doc.data().Name));
+
+      let payments = [];
+      paymentsSnap.forEach(doc => payments.push({ id: doc.id, ...doc.data() }));
+
+      renderMembers(members, payments);
+      renderHistory(payments);
+      renderSummary(members, payments);
+    }
+
+    // 🔹 Render Members + Progress Bars
+    function renderMembers(members, payments) {
+      progressBody.innerHTML = "";
+      memberSelect.innerHTML = "";
+
+      members.forEach(name => {
+        memberSelect.innerHTML += `<option value="${name}">${name}</option>`;
+
+        // compute per month progress
+        let monthProgress = [0,0,0,0];
+        let balance = 0;
+        const months = ["September","October","November","December"];
+
+        payments.filter(p => p.name === name).forEach(p => balance += p.amount);
+
+        for (let i=0;i<4;i++) {
+          if (balance >= 130) {
+            monthProgress[i] = 100;
+            balance -= 130;
+          } else if (balance > 0) {
+            let percent = (balance / 130) * 100;
+            monthProgress[i] = percent;
+            balance = 0;
+          }
+        }
+
+        let row = `<tr>
+          <td class="px-3 py-2 font-medium">${name}</td>`;
+        monthProgress.forEach(p => {
+          row += `<td class="px-3 py-2"><div class="progress-bar-bg"><div class="progress-bar ${p===100 ? 'bg-green-500' : p===0 ? 'bg-red-500' : 'bg-yellow-400'}" style="width:${p}%">${Math.round(p)}%</div></div></td>`;
+        });
+        row += `</tr>`;
+        progressBody.innerHTML += row;
+      });
+    }
+
+    // 🔹 Render Payment History
+    function renderHistory(payments) {
+      historyBody.innerHTML = "";
+      payments.forEach(p => {
+        let row = `<tr>
+          <td class="px-3 py-2">${p.name}</td>
+          <td class="px-3 py-2">₱${p.amount}</td>
+          <td class="px-3 py-2">${p.timestamp?.toDate?.().toLocaleString() || ""}</td>
+          <td class="px-3 py-2 crud-only hidden">
+            <button class="bg-red-500 text-white px-2 py-1 rounded" data-id="${p.id}">Delete</button>
+          </td>
+        </tr>`;
+        historyBody.innerHTML += row;
+      });
+
+      document.querySelectorAll("[data-id]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          await deleteDoc(doc(db, "payments", btn.dataset.id));
+          renderDashboard();
+        });
+      });
+    }
+
+    // 🔹 Render Summary + Chart
+    function renderSummary(members, payments) {
+      let collected = payments.reduce((sum, p) => sum+p.amount, 0);
+      let expected = members.length * 130 * 4;
+      let outstanding = expected - collected;
+
+      summaryCollected.textContent = "₱" + collected;
+      summaryOutstanding.textContent = "₱" + outstanding;
+
+      if (chart) chart.destroy();
+      chart = new Chart(document.getElementById("summary-chart"), {
+        type: "pie",
+        data: {
+          labels: ["Collected","Outstanding"],
+          datasets: [{ data:[collected, outstanding], backgroundColor:["green","red"] }]
+        }
+      });
+    }
+
+    // 🔹 Handle Add Payment
+    document.getElementById("payment-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = memberSelect.value;
+      const amount = parseFloat(document.getElementById("amount-input").value);
+      await addDoc(collection(db,"payments"), { name, amount, timestamp: serverTimestamp() });
+      document.getElementById("payment-form").reset();
+      renderDashboard();
+    });
+//PLEASE WORK 🙏
+    renderDashboard();
   </script>
-</head>
-<body class="p-4">
-  <h1>📊 Fund Tracker</h1>
-
-  <!-- Auth buttons -->
-  <button id="loginBtn">Sign In with Google</button>
-  <button id="logoutBtn" style="display:none;">Sign Out</button>
-
-  <!-- Dashboard -->
-  <h2>Monthly Progress Dashboard</h2>
-  <div id="dashboard" class="space-y-2"></div>
-
-  <!-- Pie chart -->
-  <canvas id="paymentChart" width="300" height="300"></canvas>
-
-  <!-- CRUD -->
-  <div id="crud" style="display:none; margin-top:20px;">
-    <h2>Log a New Payment</h2>
-    <form id="paymentForm">
-      <label>Name: 
-        <select id="memberSelect"></select>
-      </label>
-      <br>
-      <label>Amount Paid: 
-        <input type="number" id="amount" required />
-      </label>
-      <br>
-      <button type="submit">Save</button>
-    </form>
-  </div>
 </body>
 </html>
