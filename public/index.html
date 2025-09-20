@@ -1,4 +1,4 @@
-<!DOCTYPE-html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -206,7 +206,8 @@
     </div>
 
     <script type="module">
-        // Global variables provided by the Canvas environment.
+        // This web application requires the Firebase configuration and authentication token
+        // to be provided by the hosting environment. It will not work if opened as a local file.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'group-payment-tracker';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -346,9 +347,9 @@
 
                         let dueAmount;
                         if (totalPaidWithCarryover < config.basePayment) {
-                           dueAmount = config.basePayment + config.penalty;
+                            dueAmount = config.basePayment + config.penalty;
                         } else {
-                           dueAmount = config.basePayment;
+                            dueAmount = config.basePayment;
                         }
 
                         const progress = dueAmount > 0 ? Math.min(1, totalPaidWithCarryover / dueAmount) : 1;
