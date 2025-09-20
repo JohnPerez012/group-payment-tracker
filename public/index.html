@@ -108,9 +108,11 @@
     </main>
   </div>
 
-  <script type="module">
+ <script type="module">
+    // Firebase imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
@@ -120,113 +122,148 @@
       messagingSenderId: "208078945785",
       appId: "1:208078945785:web:5164201a43e0bd37c8d128"
     };
-
+// Init Firebase
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
     const db = getFirestore(app);
 
-    const months = ["September", "October", "November", "December"];
-    const memberList = [];
-    let payments = {}; // {name: {month: paidAmount}}
+    // Elements
+    const dashboard = document.getElementById("dashboard");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const crudSection = document.getElementById("crud");
+    const paymentForm = document.getElementById("paymentForm");
+    const memberSelect = document.getElementById("memberSelect");
+    const chartCanvas = document.getElementById("paymentChart");
 
-    const trackerBody = document.getElementById("tracker-body");
-    const nameSelect = document.getElementById("name-select");
-    const totalCollected = document.getElementById("total-collected");
-    const totalOutstanding = document.getElementById("total-outstanding");
-
-    let pieChart;
+    let chartInstance = null;
 
     // Load members
     async function loadMembers() {
-      const snapshot = await getDocs(collection(db, "members"));
-      snapshot.forEach(doc => {
-        const name = doc.data().Name;
-        memberList.push(name);
-        payments[name] = {September:0, October:0, November:0, December:0};
-      });
-      populateDropdown();
-      renderTable();
-      updateSummary();
+      const snap = await getDocs(collection(db, "members"));
+      return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
 
-    function populateDropdown() {
-      memberList.forEach(name => {
-        const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
-        nameSelect.appendChild(option);
-      });
+    // Load payments
+    async function loadPayments() {
+      const q = query(collection(db, "payments"), orderBy("timestamp", "asc"));
+      const snap = await getDocs(q);
+      return snap.docs.map(doc => doc.data());
     }
 
-    function renderTable() {
-      trackerBody.innerHTML = "";
-      memberList.forEach(name => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="px-6 py-3 font-medium">${name}</td>
-          ${months.map(m => {
-            const paid = payments[name][m];
-            const due = Math.max(130 - paid, 0);
-            const progress = Math.min((paid/130)*100, 100);
-            return `
-              <td class="text-center">₱${paid}</td>
-              <td class="text-center">₱${due}</td>
-              <td>
-                <div class="progress-bar-bg">
-                  <div class="progress-bar" style="width:${progress}%;background:${progress==100?"green":"red"}">${progress.toFixed(0)}%</div>
-                </div>
-              </td>`;
-          }).join("")}
-        `;
-        trackerBody.appendChild(row);
-      });
-    }
+    // Render dashboard
+    async function renderDashboard(user) {
+      const members = await loadMembers();
+      const payments = await loadPayments();
 
-    function updateSummary() {
-      let collected=0, outstanding=0;
-      memberList.forEach(name => {
-        months.forEach(m => {
-          collected += payments[name][m];
-          outstanding += Math.max(130 - payments[name][m], 0);
-        });
-      });
-      totalCollected.textContent = "₱"+collected;
-      totalOutstanding.textContent = "₱"+outstanding;
+      dashboard.innerHTML = "";
+      let totalPaid = 0;
+      let totalExpected = members.length * 130; // one month
 
-      const ctx = document.getElementById("payments-pie").getContext("2d");
-      if (pieChart) pieChart.destroy();
-      pieChart = new Chart(ctx, {
+      members.forEach(member => {
+        const memberPayments = payments.filter(p => p.name === member.Name);
+        const total = memberPayments.reduce((sum, p) => sum + p.amount, 0);
+        totalPaid += total;
+
+        const div = document.createElement("div");
+        if (total > 0) {
+          div.textContent = `💳 ${member.Name} paid ₱${total}`;
+        } else {
+          div.textContent = `💳 ${member.Name} has not paid yet.`;
+        }
+        dashboard.appendChild(div);
+      });
+
+      // Render pie chart
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(chartCanvas, {
         type: "pie",
         data: {
-          labels: ["Collected", "Outstanding"],
+          labels: ["Paid", "Unpaid"],
           datasets: [{
-            data: [collected, outstanding],
-            backgroundColor: ["#22c55e", "#ef4444"] // green & red
+            data: [totalPaid, Math.max(totalExpected - totalPaid, 0)],
+            backgroundColor: ["#22c55e", "#ef4444"]
           }]
         }
       });
+
+      // If user logged in → show CRUD
+      crudSection.style.display = user ? "block" : "none";
+
+      // Populate dropdown
+      memberSelect.innerHTML = "";
+      members.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.Name;
+        opt.textContent = m.Name;
+        memberSelect.appendChild(opt);
+      });
     }
 
-    // Auto-allocate payments
-    document.getElementById("payment-form").addEventListener("submit", e => {
+    // Handle payment submission
+    paymentForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const name = nameSelect.value;
-      let amount = parseFloat(document.getElementById("amount-input").value);
+      const name = memberSelect.value;
+      const amount = parseInt(document.getElementById("amount").value);
 
-      months.forEach(m => {
-        if (amount>0) {
-          const need = Math.max(130 - payments[name][m], 0);
-          const applied = Math.min(need, amount);
-          payments[name][m] += applied;
-          amount -= applied;
-        }
+      if (!name || !amount) return;
+
+      await addDoc(collection(db, "payments"), {
+        name,
+        amount,
+        timestamp: new Date()
       });
 
-      renderTable();
-      updateSummary();
-      e.target.reset();
+      paymentForm.reset();
+      renderDashboard(auth.currentUser);
     });
 
-    loadMembers();
+    // Auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+      } else {
+        loginBtn.style.display = "inline-block";
+        logoutBtn.style.display = "none";
+      }
+      renderDashboard(user);
+    });
+
+    // Sign in/out
+    loginBtn.addEventListener("click", () => signInWithPopup(auth, provider));
+    logoutBtn.addEventListener("click", () => signOut(auth));
   </script>
+</head>
+<body class="p-4">
+  <h1>📊 Fund Tracker</h1>
+
+  <!-- Auth buttons -->
+  <button id="loginBtn">Sign In with Google</button>
+  <button id="logoutBtn" style="display:none;">Sign Out</button>
+
+  <!-- Dashboard -->
+  <h2>Monthly Progress Dashboard</h2>
+  <div id="dashboard" class="space-y-2"></div>
+
+  <!-- Pie chart -->
+  <canvas id="paymentChart" width="300" height="300"></canvas>
+
+  <!-- CRUD -->
+  <div id="crud" style="display:none; margin-top:20px;">
+    <h2>Log a New Payment</h2>
+    <form id="paymentForm">
+      <label>Name: 
+        <select id="memberSelect"></select>
+      </label>
+      <br>
+      <label>Amount Paid: 
+        <input type="number" id="amount" required />
+      </label>
+      <br>
+      <button type="submit">Save</button>
+    </form>
+  </div>
 </body>
 </html>
