@@ -142,17 +142,17 @@
                             </div>
                         </div>
                         <h3 class="text-lg font-semibold text-center text-zinc-700 mb-2">Overall Collection Progress</h3>
-                         <div class="chart-container">
+                        <div class="chart-container">
                             <canvas id="overall-progress-chart"></canvas>
                         </div>
                     </div>
                 </section>
 
                 <section id="log-payment-section">
-                     <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Log a New Payment</h2>
-                     <p class="mb-6 text-zinc-500 text-sm">
+                    <h2 class="text-2xl font-semibold text-zinc-700 mb-4">Log a New Payment</h2>
+                    <p class="mb-6 text-zinc-500 text-sm">
                         Use this form to add a new payment record. The dashboard will update instantly upon submission.
-                     </p>
+                    </p>
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <form id="payment-form">
                             <div class="mb-4">
@@ -161,7 +161,7 @@
                                     <!-- JS will populate this -->
                                 </select>
                             </div>
-                             <div class="mb-6">
+                            <div class="mb-6">
                                 <label for="amount-input" class="block mb-2 text-sm font-medium text-zinc-900">Amount Paid (₱)</label>
                                 <input type="number" id="amount-input" required min="0" step="0.01" class="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5" placeholder="e.g., 130">
                             </div>
@@ -206,25 +206,14 @@
     </div>
 
     <script type="module">
-        // Firebase global variables provided by the Canvas environment.
-        const appId = 'group-payment-tracker'; // Replace with a fixed string
-        const initialAuthToken = null; // We are using anonymous auth instead of a token
-        
-        // This is your Firebase configuration. You MUST replace all the placeholder values
-        // with the actual values from your Firebase project.
-        // You can find them in your project settings > "Your apps" section.
-        const firebaseConfig = {
-  apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
-  authDomain: "group-payment-tracker.firebaseapp.com",
-  projectId: "group-payment-tracker",
-  storageBucket: "group-payment-tracker.firebasestorage.app",
-  messagingSenderId: "208078945785",
-  appId: "1:208078945785:web:5164201a43e0bd37c8d128"
-};
+        // Global variables provided by the Canvas environment.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'group-payment-tracker';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
@@ -275,7 +264,7 @@
                     // Set debug level for more verbose logging
                     setLogLevel('debug');
 
-                    if (!firebaseConfig || !firebaseConfig.apiKey) {
+                    if (!firebaseConfig) {
                         showModal('Initialization Error', 'Firebase configuration is missing or invalid. Please ensure the app is configured correctly.');
                         return;
                     }
@@ -284,7 +273,11 @@
                     auth = getAuth(app);
                     db = getFirestore(app);
 
-                    await signInAnonymously(auth);
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
 
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
@@ -305,14 +298,14 @@
 
             // Corrected listener for fetching members from the database
             function setupMembersListener() {
-                 const membersCol = collection(db, 'members');
-                 onSnapshot(membersCol, (snapshot) => {
-                     config.members = snapshot.docs.map(doc => doc.data().Name).sort();
-                     populateNameSelect();
-                     // Once members are loaded, set up the payments listener
-                     setupRealtimeListener();
-                 });
-             }
+                const membersCol = collection(db, `artifacts/${appId}/public/data/members`);
+                onSnapshot(membersCol, (snapshot) => {
+                    config.members = snapshot.docs.map(doc => doc.data().Name).sort();
+                    populateNameSelect();
+                    // Once members are loaded, set up the payments listener
+                    setupRealtimeListener();
+                });
+            }
 
             function setupRealtimeListener() {
                 const paymentsCol = collection(db, `artifacts/${appId}/public/data/payments`);
@@ -344,8 +337,7 @@
                         const paidThisMonth = currentPayments
                             .filter(p => p.name === name)
                             .filter(p => {
-                                const paymentDate = new Date(p.date);
-                                // Month is 0-indexed, so we add 8 for September (9th month)
+                                const paymentDate = new Date(p.timestamp);
                                 return paymentDate.getMonth() === monthIndex + 8 && paymentDate.getFullYear() === config.year;
                             })
                             .reduce((sum, p) => sum + p.amount, 0);
