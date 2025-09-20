@@ -60,13 +60,20 @@
 
                 // Log user info and a success message
                 const user = auth.currentUser;
+                if (!user) {
+                    messageEl.textContent = "Error: User is not authenticated.";
+                    return;
+                }
                 const userId = user.uid;
                 console.log("User signed in with UID:", userId);
-                messageEl.textContent = `User signed in with UID: ${userId}. Firestore is ready!`;
 
-                // Example of a Firestore query to demonstrate correct syntax.
-                // This code is a placeholder and may not retrieve data if collections are empty.
-                const querySnapshot = await getDocs(collection(db, "example-collection"));
+                // Construct the correct Firestore path using the provided __app_id and the user's UID.
+                const userFirestorePath = `artifacts/${appId}/users/${userId}/documents`;
+
+                messageEl.textContent = `User signed in with UID: ${userId}. Checking Firestore path: ${userFirestorePath}`;
+
+                // Example of a Firestore query to demonstrate correct syntax and permissions.
+                const querySnapshot = await getDocs(collection(db, userFirestorePath));
                 
                 let documentsCount = 0;
                 querySnapshot.forEach((doc) => {
@@ -75,7 +82,8 @@
                     documentsCount++;
                 });
 
-                console.log(`Found ${documentsCount} documents in example-collection.`);
+                messageEl.textContent = `Successfully accessed Firestore. Found ${documentsCount} documents.`;
+                console.log(`Found ${documentsCount} documents in ${userFirestorePath}.`);
 
             } catch (error) {
                 // Correct syntax for a catch block.
