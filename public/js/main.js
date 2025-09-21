@@ -346,9 +346,10 @@ function renderTable() {
       row += `
         <td class="px-4 py-3">
           <div class="progress-bar-bg mb-2" title="${tooltipText}">
-            <div class="progress-bar ${barColor}" style="width:${monthData.progress}%"></div>
+            <div class="progress-bar ${barColor}" style="width:${monthData.progress}%">
+              <span class="progress-percentage">${progressText}</span>
+            </div>
           </div>
-          <p class="text-xs font-semibold text-center progress-percentage">${progressText}</p>
           ${statusIndicator}
         </td>`;
     });
