@@ -105,13 +105,16 @@ function renderTable(members, payments) {
       const endOfMonth = new Date(2025, monthIndex + 1, 0);
 
       // Calculate payments up to this month
-      const paymentsUpToMonth = memberPayments.filter(p => p.timestamp.toDate() <= endOfMonth);
+      const paymentsUpToMonth = memberPayments.filter(p => {
+        const pDate = p.timestamp?.toDate ? p.timestamp.toDate() : new Date(p.timestamp || 0);
+        return pDate <= endOfMonth;
+      });
       let cumulativePaid = paymentsUpToMonth.reduce((sum, p) => sum + p.amount, 0);
 
       // Adjust remaining based on previous months
       if (index > 0) {
         const prevMonthsPaid = memberPayments.filter(p => {
-          const pDate = p.timestamp.toDate();
+          const pDate = p.timestamp?.toDate ? p.timestamp.toDate() : new Date(p.timestamp || 0);
           return pDate < new Date(2025, monthIndex, 1);
         }).reduce((sum, p) => sum + p.amount, 0);
         cumulativePaid -= prevMonthsPaid; // Only count payments for this month
@@ -175,10 +178,20 @@ function renderHistory(payments) {
   tbody.innerHTML = "";
   payments.forEach(p => {
     const tr = document.createElement("tr");
+    let dateStr = "";
+    if (p.timestamp) {
+      if (typeof p.timestamp === "object" && p.timestamp.toDate) {
+        dateStr = p.timestamp.toDate().toLocaleString();
+      } else if (typeof p.timestamp === "string") {
+        dateStr = new Date(p.timestamp).toLocaleString();
+      } else {
+        dateStr = "N/A";
+      }
+    }
     tr.innerHTML = `
       <td class="px-3 py-2">${p.name}</td>
       <td class="px-3 py-2">₱${p.amount}</td>
-      <td class="px-3 py-2">${p.timestamp?.toDate().toLocaleString() || ""}</td>
+      <td class="px-3 py-2">${dateStr}</td>
       <td class="px-3 py-2">
         ${currentUser && !currentUser.isAnonymous
           ? `<button data-id="${p.id}" class="delete-btn text-red-600 hover:underline">Delete</button>`
