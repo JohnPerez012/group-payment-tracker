@@ -95,52 +95,40 @@ function renderTable(members, payments) {
   const months = ["Sept", "Oct", "Nov", "Dec"];
 
   members.forEach(m => {
+    const memberPayments = payments.filter(p => p.name === m.Name);
+    const totalPaid = memberPayments.reduce((sum, p) => sum + p.amount, 0);
+    let remaining = totalPaid;
     let row = `<tr class="border-b"><td class="px-3 py-2 font-medium">${m.Name}</td>`;
-    let cumulativePaid = 0;
-    let cumulativeRequired = 0;
 
-    months.forEach((month, i) => {
-      const monthIndex = new Date(`2025-${month}`).getMonth();
-      const endOfMonth = new Date(2025, monthIndex + 1, 0);
-
-      payments.filter(p => p.name === m.Name && p.timestamp.toDate() <= endOfMonth)
-        .forEach(p => cumulativePaid += p.amount);
-      cumulativeRequired += requiredAmount;
-
-      let progress = Math.min(100, (cumulativePaid / cumulativeRequired) * 100);
-      const barColor = progress === 100 ? "bg-green-500" : (progress > 0 ? "bg-orange-400" : "bg-red-500");
+    months.forEach(() => {
+      const thisMonthPaid = Math.min(requiredAmount, remaining);
+      const progress = (thisMonthPaid / requiredAmount) * 100;
+      const barColor = progress >= 100 ? "bg-green-500" : (progress > 0 ? "bg-orange-400" : "bg-red-500");
       const progressText = `${Math.round(progress)}%`;
-
       row += `
         <td class="px-3 py-2">
           <div class="progress-bar-bg mb-1"><div class="progress-bar ${barColor}" style="width:${progress}%"></div></div>
           <p class="text-xs font-semibold text-center">${progressText}</p>
         </td>`;
-
-      if (i === months.length - 1) {
-        totalCollected += cumulativePaid;
-        totalOutstanding += (cumulativeRequired - cumulativePaid) > 0 ? (cumulativeRequired - cumulativePaid) + (cumulativeRequired - cumulativePaid > 0 ? 20 : 0) : 0;
-      }
+      remaining -= thisMonthPaid;
+      if (remaining < 0) remaining = 0;
     });
+
     row += "</tr>";
     tbody.innerHTML += row;
+
+    // Update totals for this member
+    totalCollected += totalPaid;
+    const totalRequired = requiredAmount * months.length;
+    const baseOutstanding = Math.max(0, totalRequired - totalPaid);
+    totalOutstanding += baseOutstanding + (baseOutstanding > 0 ? 20 : 0);
   });
 
-  // Recalculate totals
-  totalCollected = 0;
-  totalOutstanding = 0;
-  members.forEach(m => {
-    const paymentsForMember = payments.filter(p => p.name === m.Name);
-    const cumulativePaid = paymentsForMember.reduce((sum, p) => sum + p.amount, 0);
-    const cumulativeRequired = requiredAmount * months.length;
-    totalCollected += cumulativePaid;
-    totalOutstanding += (cumulativeRequired - cumulativePaid) > 0 ? (cumulativeRequired - cumulativePaid) + 20 : 0;
-  });
-
-  // Update summary + chart
+  // Update summary
   document.getElementById("total-collected").textContent = "₱" + totalCollected;
   document.getElementById("total-outstanding").textContent = "₱" + totalOutstanding;
 
+  // Update chart
   const ctx = document.getElementById("overall-progress-chart").getContext("2d");
   if (chart) chart.destroy();
   chart = new Chart(ctx, {
