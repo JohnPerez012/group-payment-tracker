@@ -331,24 +331,24 @@ function renderTable() {
         tooltipText += `\nPenalty applied: +₱${PENALTY_AMOUNT}`;
       }
       
-      // Status indicators
+      // Status indicators with better styling
       let statusIndicator = '';
       if (monthData.isPaid) {
         if (monthData.penaltyApplied) {
-          statusIndicator = '<p class="text-xs text-yellow-600 text-center font-bold">⚠️ + Penalty</p>';
+          statusIndicator = '<p class="text-xs text-center font-bold status-penalty">⚠️ + Penalty</p>';
         } else {
-          statusIndicator = '<p class="text-xs text-green-600 text-center font-bold">✓ Complete</p>';
+          statusIndicator = '<p class="text-xs text-center font-bold status-complete">✓ Complete</p>';
         }
       } else if (monthData.amountRemaining > 0) {
-        statusIndicator = `<p class="text-xs text-red-600 text-center">Need: ₱${monthData.amountRemaining}</p>`;
+        statusIndicator = `<p class="text-xs text-center status-need">Need: ₱${monthData.amountRemaining}</p>`;
       }
       
       row += `
         <td class="px-4 py-3">
-          <div class="progress-bar-bg mb-1" title="${tooltipText}">
+          <div class="progress-bar-bg mb-2" title="${tooltipText}">
             <div class="progress-bar ${barColor}" style="width:${monthData.progress}%"></div>
           </div>
-          <p class="text-xs font-semibold text-center">${progressText}</p>
+          <p class="text-xs font-semibold text-center progress-percentage">${progressText}</p>
           ${statusIndicator}
         </td>`;
     });
