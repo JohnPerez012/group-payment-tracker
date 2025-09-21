@@ -12,11 +12,11 @@ const firebaseConfig = {
   appId: "1:208078945785:web:5164201a43e0bd37c8d128"
 };
 
-// Constants
+// Constants - Updated to 2025
 const REQUIRED_AMOUNT_PER_MONTH = 130;
 const PENALTY_AMOUNT = 20;
 const MONTHS = [
-  { name: "Sept", year: 2025, index: 8 }, // Change to 2025
+  { name: "Sept", year: 2025, index: 8 }, // September 2025
   { name: "Oct", year: 2025, index: 9 },
   { name: "Nov", year: 2025, index: 10 },
   { name: "Dec", year: 2025, index: 11 }
