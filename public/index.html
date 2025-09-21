@@ -174,7 +174,7 @@
             }));
             populateMemberSelect(members);
 
-            const paymentsQuery = query(collection(db, "payments"), orderBy("timestamp", "asc")); // order by ascending to calculate carry-over correctly
+            const paymentsQuery = query(collection(db, "payments"), orderBy("timestamp", "asc"));
             onSnapshot(paymentsQuery, snap => {
                 const payments = snap.docs.map(d => ({
                     id: d.id,
@@ -208,7 +208,9 @@
 
             members.forEach(m => {
                 let row = `<tr class="border-b"><td class="px-3 py-2 font-medium">${m.Name}</td>`;
-                let carryOver = 0;
+                let carriedOverAmount = 0;
+                let memberTotalCollected = 0;
+                let memberTotalOutstanding = 0;
 
                 months.forEach((month, i) => {
                     const monthStartDate = new Date(2025, i + 8, 1); // Sept is month 8
@@ -221,23 +223,26 @@
                     });
                     
                     const monthlyPaid = paymentsForMonth.reduce((sum, p) => sum + p.amount, 0);
-                    let combinedPaid = monthlyPaid + carryOver;
-                    
-                    let progress = Math.min(100, (combinedPaid / requiredAmount) * 100);
-                    const barColor = progress === 100 ? "bg-green-500" : (progress > 0 ? "bg-orange-400" : "bg-red-500");
-                    const progressText = `${Math.round(progress)}%`;
+                    let combinedPaid = monthlyPaid + carriedOverAmount;
+                    let amountDue = requiredAmount;
 
-                    let outstandingForMonth = 0;
-                    if (combinedPaid >= requiredAmount) {
-                        carryOver = combinedPaid - requiredAmount;
-                        outstandingForMonth = 0;
+                    let progress = Math.min(100, (combinedPaid / amountDue) * 100);
+                    let barColor = progress === 100 ? "bg-green-500" : (progress > 0 ? "bg-orange-400" : "bg-red-500");
+                    let progressText = `${Math.round(progress)}%`;
+
+                    if (combinedPaid >= amountDue) {
+                        carriedOverAmount = combinedPaid - amountDue;
+                        memberTotalCollected += amountDue;
                     } else {
-                        carryOver = 0;
-                        outstandingForMonth = requiredAmount - combinedPaid + 20;
+                        amountDue += 20; // Add penalty
+                        progress = Math.min(100, (combinedPaid / amountDue) * 100);
+                        barColor = progress === 100 ? "bg-green-500" : (progress > 0 ? "bg-orange-400" : "bg-red-500");
+                        progressText = `${Math.round(progress)}%`;
+                        
+                        memberTotalCollected += combinedPaid;
+                        memberTotalOutstanding += (amountDue - combinedPaid);
+                        carriedOverAmount = 0;
                     }
-
-                    totalCollected += Math.min(combinedPaid, requiredAmount);
-                    totalOutstanding += outstandingForMonth;
 
                     row += `
                         <td class="px-3 py-2">
@@ -247,6 +252,9 @@
                 });
                 row += "</tr>";
                 tbody.innerHTML += row;
+                
+                totalCollected += memberTotalCollected;
+                totalOutstanding += memberTotalOutstanding;
             });
             
             // Update summary + chart
