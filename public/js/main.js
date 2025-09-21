@@ -22,6 +22,11 @@ const MONTHS = [
   { name: "Dec", year: 2024, index: 11 }
 ];
 
+// Helper function to get month end date
+const getMonthEndDate = (year, monthIndex) => {
+  return new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
+};
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -130,39 +135,97 @@ onAuthStateChanged(auth, user => {
   if (user) setupListeners();
 });
 
-// Fixed payment calculation logic - track payments by actual month
+// Fixed payment calculation logic with overpayment rollover and penalty handling
 function calculateMemberProgress(memberName, payments) {
-  const memberPayments = payments.filter(p => p.name === memberName);
+  const memberPayments = payments
+    .filter(p => p.name === memberName)
+    .sort((a, b) => {
+      const aDate = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
+      const bDate = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
+      return aDate - bDate; // Sort by payment date ascending
+    });
+
   const monthlyProgress = [];
+  let carryOverAmount = 0; // Amount to carry over from previous months
   
-  MONTHS.forEach(month => {
-    // Get payments made during this specific month
+  MONTHS.forEach((month, monthIndex) => {
+    const monthEndDate = getMonthEndDate(month.year, month.index);
+    
+    // Get payments made specifically in this month
     const monthPayments = memberPayments.filter(payment => {
       const paymentDate = payment.timestamp?.toDate ? 
         payment.timestamp.toDate() : 
         new Date(payment.timestamp || 0);
       
-      // Check if payment was made in this specific month and year
       return paymentDate.getFullYear() === month.year && 
              paymentDate.getMonth() === month.index;
     });
     
-    // Calculate total amount paid in this month
-    const amountPaid = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+    // Calculate total paid in this month + carry over from previous month
+    const monthPaymentAmount = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+    const totalAvailableForMonth = monthPaymentAmount + carryOverAmount;
     
-    // Calculate progress percentage (capped at 100%)
-    const progress = Math.min((amountPaid / REQUIRED_AMOUNT_PER_MONTH) * 100, 100);
-    const isPaid = progress >= 100;
-    const amountRemaining = Math.max(0, REQUIRED_AMOUNT_PER_MONTH - amountPaid);
+    // Check if previous months are incomplete (for penalty calculation)
+    let penaltyApplied = false;
+    let requiredAmountForMonth = REQUIRED_AMOUNT_PER_MONTH;
+    
+    // Check if this month needs to cover penalty from previous months
+    if (monthIndex > 0) {
+      const previousMonth = monthlyProgress[monthIndex - 1];
+      if (!previousMonth.isPaid) {
+        requiredAmountForMonth = REQUIRED_AMOUNT_PER_MONTH + PENALTY_AMOUNT; // ₱150
+        penaltyApplied = true;
+      }
+    }
+    
+    // Determine if current month was paid on time (within the month)
+    const paidOnTime = monthPaymentAmount >= REQUIRED_AMOUNT_PER_MONTH;
+    
+    // If not paid on time and we're past this month, apply penalty
+    const currentDate = new Date();
+    const isMonthPassed = currentDate > monthEndDate;
+    
+    if (!paidOnTime && isMonthPassed && totalAvailableForMonth < REQUIRED_AMOUNT_PER_MONTH) {
+      // Month is incomplete and time has passed - penalty will apply for future payments
+    }
+    
+    // Calculate how much goes to this month
+    let amountAllocatedToMonth = 0;
+    let progress = 0;
+    let isPaid = false;
+    
+    if (totalAvailableForMonth >= requiredAmountForMonth) {
+      // Enough to cover this month (including any penalty)
+      amountAllocatedToMonth = requiredAmountForMonth;
+      progress = 100;
+      isPaid = true;
+      carryOverAmount = totalAvailableForMonth - requiredAmountForMonth; // Excess carries over
+    } else if (totalAvailableForMonth > 0) {
+      // Partial payment
+      amountAllocatedToMonth = totalAvailableForMonth;
+      progress = (totalAvailableForMonth / requiredAmountForMonth) * 100;
+      carryOverAmount = 0; // All used up
+    } else {
+      // No payment
+      carryOverAmount = 0;
+    }
+    
+    const amountRemaining = Math.max(0, requiredAmountForMonth - amountAllocatedToMonth);
     
     monthlyProgress.push({
       month: month.name,
-      progress,
+      progress: Math.min(progress, 100), // Cap at 100%
       isPaid,
-      amountPaid,
+      amountPaid: amountAllocatedToMonth,
       amountRemaining,
+      requiredAmount: requiredAmountForMonth,
       paymentsCount: monthPayments.length,
-      payments: monthPayments // Store individual payments for detailed view
+      payments: monthPayments,
+      monthPaymentAmount, // Amount actually paid in this specific month
+      carryOverReceived: monthIndex === 0 ? 0 : (totalAvailableForMonth - monthPaymentAmount),
+      penaltyApplied,
+      paidOnTime,
+      totalAvailableForMonth
     });
   });
   
@@ -214,7 +277,7 @@ function populateMemberSelect(members) {
     });
 }
 
-// Enhanced table rendering with month-specific payment tracking
+// Enhanced table rendering with overpayment and penalty tracking
 function renderTable() {
   const tbody = document.getElementById("tracker-body");
   tbody.innerHTML = "";
@@ -226,7 +289,7 @@ function renderTable() {
   
   let totalCollected = 0;
   let totalRequired = 0;
-  let totalPaidMonths = 0; // Track completed months across all members
+  let totalPaidMonths = 0;
   let totalPossibleMonths = members.length * MONTHS.length;
   
   members.forEach(member => {
@@ -238,7 +301,6 @@ function renderTable() {
     totalCollected += memberTotalPaid;
     totalRequired += REQUIRED_AMOUNT_PER_MONTH * MONTHS.length;
     
-    // Count completed months for this member
     const completedMonths = memberProgress.filter(m => m.isPaid).length;
     totalPaidMonths += completedMonths;
     
@@ -246,18 +308,51 @@ function renderTable() {
       <td class="px-4 py-3 font-medium">${member.Name}</td>`;
 
     memberProgress.forEach(monthData => {
-      const barColor = monthData.progress >= 100 ? "bg-green-500" : 
-                      monthData.progress > 0 ? "bg-orange-400" : "bg-red-500";
+      // Determine bar color based on status
+      let barColor = "bg-red-500"; // Default: not paid
+      if (monthData.isPaid) {
+        barColor = monthData.penaltyApplied ? "bg-yellow-500" : "bg-green-500";
+      } else if (monthData.progress > 0) {
+        barColor = "bg-orange-400"; // Partial payment
+      }
+      
       const progressText = `${Math.round(monthData.progress)}%`;
       
-      // Create detailed tooltip with individual payments
-      let tooltipText = `${monthData.month}: ${formatCurrency(monthData.amountPaid)} of ${formatCurrency(REQUIRED_AMOUNT_PER_MONTH)}`;
-      if (monthData.paymentsCount > 0) {
-        tooltipText += `\n${monthData.paymentsCount} payment${monthData.paymentsCount > 1 ? 's' : ''}`;
+      // Create detailed tooltip
+      let tooltipText = `${monthData.month} - Required: ₱${monthData.requiredAmount}`;
+      tooltipText += `\nAllocated to this month: ₱${monthData.amountPaid}`;
+      
+      if (monthData.monthPaymentAmount > 0) {
+        tooltipText += `\nActual payments in ${monthData.month}: ₱${monthData.monthPaymentAmount}`;
+      }
+      
+      if (monthData.carryOverReceived > 0) {
+        tooltipText += `\nCarry-over from previous: ₱${monthData.carryOverReceived}`;
+      }
+      
+      if (monthData.penaltyApplied) {
+        tooltipText += `\n⚠️ Penalty applied: +₱${PENALTY_AMOUNT}`;
+      }
+      
+      if (monthData.payments.length > 0) {
+        tooltipText += `\n\nPayment details:`;
         monthData.payments.forEach(payment => {
           const date = payment.timestamp?.toDate ? payment.timestamp.toDate() : new Date(payment.timestamp || 0);
-          tooltipText += `\n• ${formatCurrency(payment.amount)} on ${date.toLocaleDateString()}`;
+          tooltipText += `\n• ₱${payment.amount} on ${date.toLocaleDateString()}`;
         });
+      }
+      
+      // Status indicators
+      let statusIndicator = '';
+      if (monthData.isPaid) {
+        if (monthData.penaltyApplied) {
+          statusIndicator = '<p class="text-xs text-yellow-600 text-center">⚠️ Paid + Penalty</p>';
+        } else {
+          statusIndicator = '<p class="text-xs text-green-600 text-center">✓ Complete</p>';
+        }
+      } else if (monthData.amountRemaining > 0) {
+        const needsAmount = monthData.amountRemaining;
+        statusIndicator = `<p class="text-xs text-red-600 text-center">Need: ₱${needsAmount}</p>`;
       }
       
       row += `
@@ -266,16 +361,18 @@ function renderTable() {
             <div class="progress-bar ${barColor}" style="width:${monthData.progress}%"></div>
           </div>
           <p class="text-xs font-semibold text-center">${progressText}</p>
-          ${monthData.amountRemaining > 0 ? `<p class="text-xs text-red-600 text-center">Need: ${formatCurrency(monthData.amountRemaining)}</p>` : ''}
-          ${monthData.progress >= 100 ? `<p class="text-xs text-green-600 text-center">✓ Complete</p>` : ''}
+          ${statusIndicator}
         </td>`;
     });
 
-    // Show member's total with breakdown
+    // Calculate total expected vs actual for this member
+    const expectedTotal = REQUIRED_AMOUNT_PER_MONTH * MONTHS.length;
     const completionRate = (completedMonths / MONTHS.length * 100).toFixed(0);
+    
     row += `<td class="px-4 py-3 text-sm text-right">
       <div class="font-semibold">${formatCurrency(memberTotalPaid)}</div>
-      <div class="text-gray-500 text-xs">${completedMonths}/${MONTHS.length} months (${completionRate}%)</div>
+      <div class="text-gray-500 text-xs">${completedMonths}/${MONTHS.length} months</div>
+      <div class="text-gray-500 text-xs">(${completionRate}% complete)</div>
     </td></tr>`;
     tbody.innerHTML += row;
   });
