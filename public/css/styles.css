@@ -1,17 +1,22 @@
+/* Enhanced Group Payment Tracker Styles */
+
+/* Base Styles with Inter Font */
 body {
-  font-family: 'Inter', sans-serif;
-  background: #fafafa;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
+/* Container and Layout */
+.container {
+  max-width: 1280px;
+}
+
+/* Progress Bars - Enhanced with smoother animations */
 .progress-bar-bg {
-  background: #e5e7eb;
-  border-radius: 9999px;
+  background: linear-gradient(to right, #f1f5f9, #e2e8f0);
+  border-radius: 12px;
   overflow: hidden;
-  height: 14px;
-}
-
-.progress-bar {
-  height: 100%;
-  border-radius: 9999px;
-  transition: width 0.4s ease, background-color 0.4s ease;
-}
+  height: 16px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
