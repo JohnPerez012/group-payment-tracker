@@ -100,18 +100,37 @@ function renderTable(members, payments) {
     let remaining = totalPaid;
     let row = `<tr class="border-b"><td class="px-3 py-2 font-medium">${m.Name}</td>`;
 
-    months.forEach(() => {
-      const thisMonthPaid = Math.min(requiredAmount, remaining);
-      const progress = (thisMonthPaid / requiredAmount) * 100;
+    months.forEach((month, index) => {
+      const monthIndex = new Date(`2025-${month}`).getMonth();
+      const endOfMonth = new Date(2025, monthIndex + 1, 0);
+
+      // Calculate payments up to this month
+      const paymentsUpToMonth = memberPayments.filter(p => p.timestamp.toDate() <= endOfMonth);
+      let cumulativePaid = paymentsUpToMonth.reduce((sum, p) => sum + p.amount, 0);
+
+      // Adjust remaining based on previous months
+      if (index > 0) {
+        const prevMonthsPaid = memberPayments.filter(p => {
+          const pDate = p.timestamp.toDate();
+          return pDate < new Date(2025, monthIndex, 1);
+        }).reduce((sum, p) => sum + p.amount, 0);
+        cumulativePaid -= prevMonthsPaid; // Only count payments for this month
+      }
+
+      let progress = Math.min(100, (cumulativePaid / requiredAmount) * 100);
+      if (progress >= 100) {
+        remaining -= requiredAmount;
+        if (remaining < 0) remaining = 0;
+      }
+
       const barColor = progress >= 100 ? "bg-green-500" : (progress > 0 ? "bg-orange-400" : "bg-red-500");
       const progressText = `${Math.round(progress)}%`;
+
       row += `
         <td class="px-3 py-2">
           <div class="progress-bar-bg mb-1"><div class="progress-bar ${barColor}" style="width:${progress}%"></div></div>
           <p class="text-xs font-semibold text-center">${progressText}</p>
         </td>`;
-      remaining -= thisMonthPaid;
-      if (remaining < 0) remaining = 0;
     });
 
     row += "</tr>";
