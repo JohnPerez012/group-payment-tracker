@@ -1,0 +1,17 @@
+body {
+  font-family: 'Inter', sans-serif;
+  background: #fafafa;
+}
+
+.progress-bar-bg {
+  background: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+  height: 14px;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.4s ease, background-color 0.4s ease;
+}
