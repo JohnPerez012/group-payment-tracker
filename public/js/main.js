@@ -96,8 +96,7 @@ function renderTable(members, payments) {
 
   members.forEach(m => {
     const memberPayments = payments.filter(p => p.name === m.Name);
-    const totalPaid = memberPayments.reduce((sum, p) => sum + p.amount, 0);
-    let remaining = totalPaid;
+    let remaining = memberPayments.reduce((sum, p) => sum + p.amount, 0); // Total paid by member
     let row = `<tr class="border-b"><td class="px-3 py-2 font-medium">${m.Name}</td>`;
 
     months.forEach((month, index) => {
@@ -109,20 +108,26 @@ function renderTable(members, payments) {
         const pDate = p.timestamp?.toDate ? p.timestamp.toDate() : new Date(p.timestamp || 0);
         return pDate <= endOfMonth;
       });
-      let cumulativePaid = paymentsUpToMonth.reduce((sum, p) => sum + p.amount, 0);
+      let cumulativePaidForMonth = 0;
 
-      // Adjust remaining based on previous months
-      if (index > 0) {
-        const prevMonthsPaid = memberPayments.filter(p => {
+      if (index === 0) {
+        // For the first month, use all payments up to this point
+        cumulativePaidForMonth = paymentsUpToMonth.reduce((sum, p) => sum + p.amount, 0);
+      } else {
+        // For subsequent months, subtract payments allocated to previous months
+        const prevMonthEnd = new Date(2025, monthIndex, 0);
+        const prevPayments = memberPayments.filter(p => {
           const pDate = p.timestamp?.toDate ? p.timestamp.toDate() : new Date(p.timestamp || 0);
-          return pDate < new Date(2025, monthIndex, 1);
+          return pDate <= prevMonthEnd;
         }).reduce((sum, p) => sum + p.amount, 0);
-        cumulativePaid -= prevMonthsPaid; // Only count payments for this month
+        cumulativePaidForMonth = paymentsUpToMonth.reduce((sum, p) => sum + p.amount, 0) - prevPayments;
       }
 
-      let progress = Math.min(100, (cumulativePaid / requiredAmount) * 100);
-      if (progress >= 100) {
-        remaining -= requiredAmount;
+      let progress = 0;
+      if (remaining > 0) {
+        const amountForThisMonth = Math.min(requiredAmount, remaining);
+        progress = (amountForThisMonth / requiredAmount) * 100;
+        remaining -= amountForThisMonth;
         if (remaining < 0) remaining = 0;
       }
 
@@ -140,9 +145,9 @@ function renderTable(members, payments) {
     tbody.innerHTML += row;
 
     // Update totals for this member
-    totalCollected += totalPaid;
+    totalCollected += memberPayments.reduce((sum, p) => sum + p.amount, 0);
     const totalRequired = requiredAmount * months.length;
-    const baseOutstanding = Math.max(0, totalRequired - totalPaid);
+    const baseOutstanding = Math.max(0, totalRequired - totalCollected);
     totalOutstanding += baseOutstanding + (baseOutstanding > 0 ? 20 : 0);
   });
 
