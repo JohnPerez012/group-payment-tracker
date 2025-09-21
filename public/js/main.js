@@ -130,41 +130,39 @@ onAuthStateChanged(auth, user => {
   if (user) setupListeners();
 });
 
-// Enhanced payment calculation logic
+// Fixed payment calculation logic - track payments by actual month
 function calculateMemberProgress(memberName, payments) {
-  const memberPayments = payments
-    .filter(p => p.name === memberName)
-    .sort((a, b) => {
-      const aDate = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
-      const bDate = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
-      return aDate - bDate; // Sort by date ascending
-    });
-
-  let remainingPayment = memberPayments.reduce((sum, p) => sum + p.amount, 0);
+  const memberPayments = payments.filter(p => p.name === memberName);
   const monthlyProgress = [];
   
   MONTHS.forEach(month => {
-    let progress = 0;
-    let isPaid = false;
-    let amountPaid = 0;
+    // Get payments made during this specific month
+    const monthPayments = memberPayments.filter(payment => {
+      const paymentDate = payment.timestamp?.toDate ? 
+        payment.timestamp.toDate() : 
+        new Date(payment.timestamp || 0);
+      
+      // Check if payment was made in this specific month and year
+      return paymentDate.getFullYear() === month.year && 
+             paymentDate.getMonth() === month.index;
+    });
     
-    if (remainingPayment >= REQUIRED_AMOUNT_PER_MONTH) {
-      progress = 100;
-      isPaid = true;
-      amountPaid = REQUIRED_AMOUNT_PER_MONTH;
-      remainingPayment -= REQUIRED_AMOUNT_PER_MONTH;
-    } else if (remainingPayment > 0) {
-      progress = (remainingPayment / REQUIRED_AMOUNT_PER_MONTH) * 100;
-      amountPaid = remainingPayment;
-      remainingPayment = 0;
-    }
+    // Calculate total amount paid in this month
+    const amountPaid = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    // Calculate progress percentage (capped at 100%)
+    const progress = Math.min((amountPaid / REQUIRED_AMOUNT_PER_MONTH) * 100, 100);
+    const isPaid = progress >= 100;
+    const amountRemaining = Math.max(0, REQUIRED_AMOUNT_PER_MONTH - amountPaid);
     
     monthlyProgress.push({
       month: month.name,
       progress,
       isPaid,
       amountPaid,
-      amountRemaining: REQUIRED_AMOUNT_PER_MONTH - amountPaid
+      amountRemaining,
+      paymentsCount: monthPayments.length,
+      payments: monthPayments // Store individual payments for detailed view
     });
   });
   
@@ -216,18 +214,20 @@ function populateMemberSelect(members) {
     });
 }
 
-// Enhanced table rendering with better calculations
+// Enhanced table rendering with month-specific payment tracking
 function renderTable() {
   const tbody = document.getElementById("tracker-body");
   tbody.innerHTML = "";
   
   if (members.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No members found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No members found</td></tr>';
     return;
   }
   
   let totalCollected = 0;
   let totalRequired = 0;
+  let totalPaidMonths = 0; // Track completed months across all members
+  let totalPossibleMonths = members.length * MONTHS.length;
   
   members.forEach(member => {
     const memberProgress = calculateMemberProgress(member.Name, payments);
@@ -238,36 +238,53 @@ function renderTable() {
     totalCollected += memberTotalPaid;
     totalRequired += REQUIRED_AMOUNT_PER_MONTH * MONTHS.length;
     
+    // Count completed months for this member
+    const completedMonths = memberProgress.filter(m => m.isPaid).length;
+    totalPaidMonths += completedMonths;
+    
     let row = `<tr class="border-b hover:bg-gray-50">
-      <td class="px-3 py-2 font-medium">${member.Name}</td>`;
+      <td class="px-4 py-3 font-medium">${member.Name}</td>`;
 
     memberProgress.forEach(monthData => {
       const barColor = monthData.progress >= 100 ? "bg-green-500" : 
                       monthData.progress > 0 ? "bg-orange-400" : "bg-red-500";
       const progressText = `${Math.round(monthData.progress)}%`;
       
+      // Create detailed tooltip with individual payments
+      let tooltipText = `${monthData.month}: ${formatCurrency(monthData.amountPaid)} of ${formatCurrency(REQUIRED_AMOUNT_PER_MONTH)}`;
+      if (monthData.paymentsCount > 0) {
+        tooltipText += `\n${monthData.paymentsCount} payment${monthData.paymentsCount > 1 ? 's' : ''}`;
+        monthData.payments.forEach(payment => {
+          const date = payment.timestamp?.toDate ? payment.timestamp.toDate() : new Date(payment.timestamp || 0);
+          tooltipText += `\n• ${formatCurrency(payment.amount)} on ${date.toLocaleDateString()}`;
+        });
+      }
+      
       row += `
-        <td class="px-3 py-2">
-          <div class="progress-bar-bg mb-1" title="${formatCurrency(monthData.amountPaid)} of ${formatCurrency(REQUIRED_AMOUNT_PER_MONTH)}">
+        <td class="px-4 py-3">
+          <div class="progress-bar-bg mb-1" title="${tooltipText}">
             <div class="progress-bar ${barColor}" style="width:${monthData.progress}%"></div>
           </div>
           <p class="text-xs font-semibold text-center">${progressText}</p>
-          ${monthData.amountRemaining > 0 ? `<p class="text-xs text-red-600 text-center">-${formatCurrency(monthData.amountRemaining)}</p>` : ''}
+          ${monthData.amountRemaining > 0 ? `<p class="text-xs text-red-600 text-center">Need: ${formatCurrency(monthData.amountRemaining)}</p>` : ''}
+          ${monthData.progress >= 100 ? `<p class="text-xs text-green-600 text-center">✓ Complete</p>` : ''}
         </td>`;
     });
 
-    row += `<td class="px-3 py-2 text-sm text-right">
+    // Show member's total with breakdown
+    const completionRate = (completedMonths / MONTHS.length * 100).toFixed(0);
+    row += `<td class="px-4 py-3 text-sm text-right">
       <div class="font-semibold">${formatCurrency(memberTotalPaid)}</div>
-      <div class="text-gray-500 text-xs">of ${formatCurrency(REQUIRED_AMOUNT_PER_MONTH * MONTHS.length)}</div>
+      <div class="text-gray-500 text-xs">${completedMonths}/${MONTHS.length} months (${completionRate}%)</div>
     </td></tr>`;
     tbody.innerHTML += row;
   });
 
-  updateSummary(totalCollected, totalRequired);
+  updateSummary(totalCollected, totalRequired, totalPaidMonths, totalPossibleMonths);
 }
 
-// Enhanced summary with better calculations
-function updateSummary(totalCollected, totalRequired) {
+// Enhanced summary with month completion tracking
+function updateSummary(totalCollected, totalRequired, totalPaidMonths, totalPossibleMonths) {
   const totalOutstanding = Math.max(0, totalRequired - totalCollected);
   
   document.getElementById("total-collected").textContent = formatCurrency(totalCollected);
@@ -276,20 +293,29 @@ function updateSummary(totalCollected, totalRequired) {
   // Update chart
   updateChart(totalCollected, totalOutstanding);
   
-  // Add collection percentage
+  // Add enhanced collection statistics
   const collectionRate = totalRequired > 0 ? (totalCollected / totalRequired * 100) : 0;
+  const monthCompletionRate = totalPossibleMonths > 0 ? (totalPaidMonths / totalPossibleMonths * 100) : 0;
+  
   const summaryContainer = document.querySelector('#total-collected').parentNode.parentNode;
   
   // Remove existing rate if it exists
   const existingRate = summaryContainer.querySelector('.collection-rate');
   if (existingRate) existingRate.remove();
   
-  // Add collection rate
+  // Add enhanced collection rate with month completion
   const rateDiv = document.createElement('div');
-  rateDiv.className = 'collection-rate col-span-2 text-center mt-2';
+  rateDiv.className = 'collection-rate col-span-2 mt-4 space-y-3';
   rateDiv.innerHTML = `
-    <p class="text-sm text-zinc-500">Collection Rate</p>
-    <p class="text-lg font-bold ${collectionRate >= 80 ? 'text-green-600' : collectionRate >= 50 ? 'text-orange-500' : 'text-red-600'}">${collectionRate.toFixed(1)}%</p>
+    <div class="text-center">
+      <p class="text-sm text-zinc-500">Collection Rate</p>
+      <p class="text-lg font-bold ${collectionRate >= 80 ? 'text-green-600' : collectionRate >= 50 ? 'text-orange-500' : 'text-red-600'}">${collectionRate.toFixed(1)}%</p>
+    </div>
+    <div class="text-center">
+      <p class="text-sm text-zinc-500">Months Completed</p>
+      <p class="text-lg font-bold ${monthCompletionRate >= 80 ? 'text-green-600' : monthCompletionRate >= 50 ? 'text-orange-500' : 'text-red-600'}">${totalPaidMonths}/${totalPossibleMonths}</p>
+      <p class="text-xs text-gray-500">(${monthCompletionRate.toFixed(1)}%)</p>
+    </div>
   `;
   summaryContainer.appendChild(rateDiv);
 }
