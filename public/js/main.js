@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-// Firebase Config
+// Firebase Config - Consider moving to environment variables in production
 const firebaseConfig = {
   apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
   authDomain: "group-payment-tracker.firebaseapp.com",
@@ -12,217 +12,442 @@ const firebaseConfig = {
   appId: "1:208078945785:web:5164201a43e0bd37c8d128"
 };
 
+// Constants
+const REQUIRED_AMOUNT_PER_MONTH = 130;
+const PENALTY_AMOUNT = 20;
+const MONTHS = [
+  { name: "Sept", year: 2024, index: 8 }, // September is month 8 (0-indexed)
+  { name: "Oct", year: 2024, index: 9 },
+  { name: "Nov", year: 2024, index: 10 },
+  { name: "Dec", year: 2024, index: 11 }
+];
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Auth
+// Global state
+let currentUser = null;
+let chart = null;
+let members = [];
+let payments = [];
+
+// Utility functions
+const formatCurrency = (amount) => `₱${amount.toLocaleString()}`;
+const formatDate = (timestamp) => {
+  if (!timestamp) return "N/A";
+  
+  let date;
+  if (typeof timestamp === "object" && timestamp.toDate) {
+    date = timestamp.toDate();
+  } else if (typeof timestamp === "string" || typeof timestamp === "number") {
+    date = new Date(timestamp);
+  } else {
+    return "N/A";
+  }
+  
+  return date.toLocaleDateString() + " " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+};
+
+const showNotification = (message, type = 'info') => {
+  // Create a simple notification system
+  const notification = document.createElement('div');
+  notification.className = `fixed top-4 right-4 p-4 rounded shadow-lg z-50 ${
+    type === 'success' ? 'bg-green-500 text-white' : 
+    type === 'error' ? 'bg-red-500 text-white' : 
+    'bg-blue-500 text-white'
+  }`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
+};
+
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
+// Enhanced error handling
+const handleError = (error, context = 'Operation') => {
+  console.error(`${context} failed:`, error);
+  showNotification(`${context} failed. Please try again.`, 'error');
+};
+
+// Auth functions
 const authBtn = document.getElementById("auth-btn");
 const userIdEl = document.getElementById("user-id");
-let currentUser = null;
 
 function updateUI(user) {
-  if (user && !user.isAnonymous) {
+  const isSignedIn = user && !user.isAnonymous;
+  
+  if (isSignedIn) {
     currentUser = user;
-    userIdEl.textContent = user.email;
+    userIdEl.textContent = user.displayName || user.email;
     authBtn.textContent = "Sign Out";
+    authBtn.className = "mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700";
     document.getElementById("payment-form-section").classList.remove("hidden");
     document.getElementById("payment-history-section").classList.remove("hidden");
   } else {
     currentUser = null;
-    userIdEl.textContent = "Guest";
-    authBtn.textContent = "Sign In";
+    userIdEl.textContent = "Guest (Read-only)";
+    authBtn.textContent = "Sign In with Google";
+    authBtn.className = "mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700";
     document.getElementById("payment-form-section").classList.add("hidden");
     document.getElementById("payment-history-section").classList.add("hidden");
   }
 }
 
 authBtn.addEventListener("click", async () => {
-  if (currentUser) {
-    await signOut(auth);
-  } else {
-    await signInWithPopup(auth, new GoogleAuthProvider());
+  try {
+    if (currentUser) {
+      await signOut(auth);
+      showNotification("Signed out successfully", 'success');
+    } else {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      showNotification("Signed in successfully", 'success');
+    }
+  } catch (error) {
+    handleError(error, 'Authentication');
   }
 });
 
 onAuthStateChanged(auth, user => {
-  if (!user) signInAnonymously(auth);
+  if (!user) {
+    signInAnonymously(auth).catch(error => handleError(error, 'Anonymous sign-in'));
+  }
   updateUI(user);
   if (user) setupListeners();
 });
 
-let chart = null;
+// Enhanced payment calculation logic
+function calculateMemberProgress(memberName, payments) {
+  const memberPayments = payments
+    .filter(p => p.name === memberName)
+    .sort((a, b) => {
+      const aDate = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
+      const bDate = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
+      return aDate - bDate; // Sort by date ascending
+    });
 
-// Setup Listeners
+  let remainingPayment = memberPayments.reduce((sum, p) => sum + p.amount, 0);
+  const monthlyProgress = [];
+  
+  MONTHS.forEach(month => {
+    let progress = 0;
+    let isPaid = false;
+    let amountPaid = 0;
+    
+    if (remainingPayment >= REQUIRED_AMOUNT_PER_MONTH) {
+      progress = 100;
+      isPaid = true;
+      amountPaid = REQUIRED_AMOUNT_PER_MONTH;
+      remainingPayment -= REQUIRED_AMOUNT_PER_MONTH;
+    } else if (remainingPayment > 0) {
+      progress = (remainingPayment / REQUIRED_AMOUNT_PER_MONTH) * 100;
+      amountPaid = remainingPayment;
+      remainingPayment = 0;
+    }
+    
+    monthlyProgress.push({
+      month: month.name,
+      progress,
+      isPaid,
+      amountPaid,
+      amountRemaining: REQUIRED_AMOUNT_PER_MONTH - amountPaid
+    });
+  });
+  
+  return monthlyProgress;
+}
+
+// Enhanced data loading with loading states
 async function setupListeners() {
-  const membersSnap = await getDocs(collection(db, "members"));
-  const members = membersSnap.docs.map(d => ({
-    id: d.id,
-    ...d.data()
-  }));
-  populateMemberSelect(members);
-
-  const paymentsQuery = query(collection(db, "payments"), orderBy("timestamp", "desc"));
-  onSnapshot(paymentsQuery, snap => {
-    const payments = snap.docs.map(d => ({
+  try {
+    // Show loading state
+    document.getElementById("tracker-body").innerHTML = '<tr><td colspan="5" class="text-center py-4">Loading...</td></tr>';
+    
+    const membersSnap = await getDocs(collection(db, "members"));
+    members = membersSnap.docs.map(d => ({
       id: d.id,
       ...d.data()
     }));
-    renderTable(members, payments);
-    renderHistory(payments);
-  });
+    
+    populateMemberSelect(members);
+
+    const paymentsQuery = query(collection(db, "payments"), orderBy("timestamp", "desc"));
+    onSnapshot(paymentsQuery, (snap) => {
+      payments = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+      renderTable();
+      renderHistory();
+    }, (error) => {
+      handleError(error, 'Loading payments');
+    });
+  } catch (error) {
+    handleError(error, 'Setup');
+  }
 }
 
-// Populate member select
+// Enhanced member select population
 function populateMemberSelect(members) {
   const select = document.getElementById("name-select");
-  select.innerHTML = "";
-  members.forEach(m => {
-    const opt = document.createElement("option");
-    opt.value = m.Name;
-    opt.textContent = m.Name;
-    select.appendChild(opt);
-  });
+  select.innerHTML = '<option value="">Select a member...</option>';
+  
+  members
+    .sort((a, b) => a.Name.localeCompare(b.Name))
+    .forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.Name;
+      opt.textContent = m.Name;
+      select.appendChild(opt);
+    });
 }
 
-// Render tracker
-function renderTable(members, payments) {
+// Enhanced table rendering with better calculations
+function renderTable() {
   const tbody = document.getElementById("tracker-body");
   tbody.innerHTML = "";
+  
+  if (members.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No members found</td></tr>';
+    return;
+  }
+  
   let totalCollected = 0;
-  let totalOutstanding = 0;
-  const requiredAmount = 130;
-  const months = ["Sept", "Oct", "Nov", "Dec"];
+  let totalRequired = 0;
+  
+  members.forEach(member => {
+    const memberProgress = calculateMemberProgress(member.Name, payments);
+    const memberTotalPaid = payments
+      .filter(p => p.name === member.Name)
+      .reduce((sum, p) => sum + p.amount, 0);
+    
+    totalCollected += memberTotalPaid;
+    totalRequired += REQUIRED_AMOUNT_PER_MONTH * MONTHS.length;
+    
+    let row = `<tr class="border-b hover:bg-gray-50">
+      <td class="px-3 py-2 font-medium">${member.Name}</td>`;
 
-  members.forEach(m => {
-    const memberPayments = payments.filter(p => p.name === m.Name);
-    let remaining = memberPayments.reduce((sum, p) => sum + p.amount, 0); // Total paid by member
-    let row = `<tr class="border-b"><td class="px-3 py-2 font-medium">${m.Name}</td>`;
-
-    months.forEach((month, index) => {
-      const monthIndex = new Date(`2025-${month}`).getMonth();
-      const endOfMonth = new Date(2025, monthIndex + 1, 0);
-
-      // Calculate payments up to this month
-      const paymentsUpToMonth = memberPayments.filter(p => {
-        const pDate = p.timestamp?.toDate ? p.timestamp.toDate() : new Date(p.timestamp || 0);
-        return pDate <= endOfMonth;
-      });
-      let cumulativePaidForMonth = 0;
-
-      if (index === 0) {
-        // For the first month, use all payments up to this point
-        cumulativePaidForMonth = paymentsUpToMonth.reduce((sum, p) => sum + p.amount, 0);
-      } else {
-        // For subsequent months, subtract payments allocated to previous months
-        const prevMonthEnd = new Date(2025, monthIndex, 0);
-        const prevPayments = memberPayments.filter(p => {
-          const pDate = p.timestamp?.toDate ? p.timestamp.toDate() : new Date(p.timestamp || 0);
-          return pDate <= prevMonthEnd;
-        }).reduce((sum, p) => sum + p.amount, 0);
-        cumulativePaidForMonth = paymentsUpToMonth.reduce((sum, p) => sum + p.amount, 0) - prevPayments;
-      }
-
-      let progress = 0;
-      if (remaining > 0) {
-        const amountForThisMonth = Math.min(requiredAmount, remaining);
-        progress = (amountForThisMonth / requiredAmount) * 100;
-        remaining -= amountForThisMonth;
-        if (remaining < 0) remaining = 0;
-      }
-
-      const barColor = progress >= 100 ? "bg-green-500" : (progress > 0 ? "bg-orange-400" : "bg-red-500");
-      const progressText = `${Math.round(progress)}%`;
-
+    memberProgress.forEach(monthData => {
+      const barColor = monthData.progress >= 100 ? "bg-green-500" : 
+                      monthData.progress > 0 ? "bg-orange-400" : "bg-red-500";
+      const progressText = `${Math.round(monthData.progress)}%`;
+      
       row += `
         <td class="px-3 py-2">
-          <div class="progress-bar-bg mb-1"><div class="progress-bar ${barColor}" style="width:${progress}%"></div></div>
+          <div class="progress-bar-bg mb-1" title="${formatCurrency(monthData.amountPaid)} of ${formatCurrency(REQUIRED_AMOUNT_PER_MONTH)}">
+            <div class="progress-bar ${barColor}" style="width:${monthData.progress}%"></div>
+          </div>
           <p class="text-xs font-semibold text-center">${progressText}</p>
+          ${monthData.amountRemaining > 0 ? `<p class="text-xs text-red-600 text-center">-${formatCurrency(monthData.amountRemaining)}</p>` : ''}
         </td>`;
     });
 
-    row += "</tr>";
+    row += `<td class="px-3 py-2 text-sm text-right">
+      <div class="font-semibold">${formatCurrency(memberTotalPaid)}</div>
+      <div class="text-gray-500 text-xs">of ${formatCurrency(REQUIRED_AMOUNT_PER_MONTH * MONTHS.length)}</div>
+    </td></tr>`;
     tbody.innerHTML += row;
-
-    // Update totals for this member
-    totalCollected += memberPayments.reduce((sum, p) => sum + p.amount, 0);
-    const totalRequired = requiredAmount * months.length;
-    const baseOutstanding = Math.max(0, totalRequired - totalCollected);
-    totalOutstanding += baseOutstanding + (baseOutstanding > 0 ? 20 : 0);
   });
 
-  // Update summary
-  document.getElementById("total-collected").textContent = "₱" + totalCollected;
-  document.getElementById("total-outstanding").textContent = "₱" + totalOutstanding;
+  updateSummary(totalCollected, totalRequired);
+}
 
+// Enhanced summary with better calculations
+function updateSummary(totalCollected, totalRequired) {
+  const totalOutstanding = Math.max(0, totalRequired - totalCollected);
+  
+  document.getElementById("total-collected").textContent = formatCurrency(totalCollected);
+  document.getElementById("total-outstanding").textContent = formatCurrency(totalOutstanding);
+  
   // Update chart
+  updateChart(totalCollected, totalOutstanding);
+  
+  // Add collection percentage
+  const collectionRate = totalRequired > 0 ? (totalCollected / totalRequired * 100) : 0;
+  const summaryContainer = document.querySelector('#total-collected').parentNode.parentNode;
+  
+  // Remove existing rate if it exists
+  const existingRate = summaryContainer.querySelector('.collection-rate');
+  if (existingRate) existingRate.remove();
+  
+  // Add collection rate
+  const rateDiv = document.createElement('div');
+  rateDiv.className = 'collection-rate col-span-2 text-center mt-2';
+  rateDiv.innerHTML = `
+    <p class="text-sm text-zinc-500">Collection Rate</p>
+    <p class="text-lg font-bold ${collectionRate >= 80 ? 'text-green-600' : collectionRate >= 50 ? 'text-orange-500' : 'text-red-600'}">${collectionRate.toFixed(1)}%</p>
+  `;
+  summaryContainer.appendChild(rateDiv);
+}
+
+// Enhanced chart rendering
+function updateChart(collected, outstanding) {
   const ctx = document.getElementById("overall-progress-chart").getContext("2d");
-  if (chart) chart.destroy();
+  
+  if (chart) {
+    chart.destroy();
+  }
+  
   chart = new Chart(ctx, {
     type: "doughnut",
     data: {
       labels: ["Collected", "Outstanding"],
       datasets: [{
-        data: [totalCollected, totalOutstanding],
-        backgroundColor: ["#22c55e", "#ef4444"]
+        data: [collected, outstanding],
+        backgroundColor: ["#22c55e", "#ef4444"],
+        borderWidth: 0
       }]
     },
     options: {
+      responsive: true,
       plugins: {
         legend: {
-          position: "bottom"
+          position: "bottom",
+          labels: {
+            padding: 20,
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.label + ': ' + formatCurrency(context.parsed);
+            }
+          }
         }
       }
     }
   });
 }
 
-// Render history
-function renderHistory(payments) {
+// Enhanced history rendering with search and filtering
+function renderHistory() {
   const tbody = document.getElementById("payment-log-body");
   tbody.innerHTML = "";
-  payments.forEach(p => {
+  
+  if (payments.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No payments recorded</td></tr>';
+    return;
+  }
+  
+  payments.forEach(payment => {
     const tr = document.createElement("tr");
-    let dateStr = "";
-    if (p.timestamp) {
-      if (typeof p.timestamp === "object" && p.timestamp.toDate) {
-        dateStr = p.timestamp.toDate().toLocaleString();
-      } else if (typeof p.timestamp === "string") {
-        dateStr = new Date(p.timestamp).toLocaleString();
-      } else {
-        dateStr = "N/A";
-      }
-    }
+    tr.className = "border-b hover:bg-gray-50";
+    
     tr.innerHTML = `
-      <td class="px-3 py-2">${p.name}</td>
-      <td class="px-3 py-2">₱${p.amount}</td>
-      <td class="px-3 py-2">${dateStr}</td>
+      <td class="px-3 py-2 font-medium">${payment.name}</td>
+      <td class="px-3 py-2">${formatCurrency(payment.amount)}</td>
+      <td class="px-3 py-2 text-sm">${formatDate(payment.timestamp)}</td>
       <td class="px-3 py-2">
         ${currentUser && !currentUser.isAnonymous
-          ? `<button data-id="${p.id}" class="delete-btn text-red-600 hover:underline">Delete</button>`
-          : `<span class="text-zinc-400">Locked</span>`}
+          ? `<button data-id="${payment.id}" class="delete-btn text-red-600 hover:text-red-800 hover:underline text-sm">Delete</button>`
+          : `<span class="text-zinc-400 text-sm">View only</span>`}
       </td>`;
     tbody.appendChild(tr);
   });
 
+  // Add delete functionality
   if (currentUser && !currentUser.isAnonymous) {
     document.querySelectorAll(".delete-btn").forEach(btn => {
-      btn.onclick = async e => await deleteDoc(doc(db, "payments", e.target.dataset.id));
+      btn.onclick = async (e) => {
+        if (confirm('Are you sure you want to delete this payment?')) {
+          try {
+            await deleteDoc(doc(db, "payments", e.target.dataset.id));
+            showNotification('Payment deleted successfully', 'success');
+          } catch (error) {
+            handleError(error, 'Delete payment');
+          }
+        }
+      };
     });
   }
 }
 
-// Add payment
-document.getElementById("payment-form").addEventListener("submit", async e => {
+// Enhanced form handling with validation
+document.getElementById("payment-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  if (!currentUser || currentUser.isAnonymous) return alert("Sign in required");
-  const name = document.getElementById("name-select").value;
-  const amount = parseFloat(document.getElementById("amount-input").value);
-  if (!name || isNaN(amount)) return;
-  await addDoc(collection(db, "payments"), {
-    name,
-    amount,
-    timestamp: serverTimestamp()
-  });
-  e.target.reset();
+  
+  if (!currentUser || currentUser.isAnonymous) {
+    showNotification('Please sign in to add payments', 'error');
+    return;
+  }
+
+  const nameSelect = document.getElementById("name-select");
+  const amountInput = document.getElementById("amount-input");
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  
+  const name = nameSelect.value.trim();
+  const amount = parseFloat(amountInput.value);
+
+  // Validation
+  if (!name) {
+    showNotification('Please select a member', 'error');
+    nameSelect.focus();
+    return;
+  }
+  
+  if (isNaN(amount) || amount <= 0) {
+    showNotification('Please enter a valid amount', 'error');
+    amountInput.focus();
+    return;
+  }
+  
+  if (amount > 10000) {
+    if (!confirm(`Are you sure you want to add a payment of ${formatCurrency(amount)}? This seems unusually high.`)) {
+      return;
+    }
+  }
+
+  // Disable submit button to prevent double submission
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Adding...';
+
+  try {
+    await addDoc(collection(db, "payments"), {
+      name,
+      amount,
+      timestamp: serverTimestamp(),
+      addedBy: currentUser.email
+    });
+    
+    showNotification(`Payment of ${formatCurrency(amount)} added for ${name}`, 'success');
+    e.target.reset();
+    nameSelect.focus();
+    
+  } catch (error) {
+    handleError(error, 'Add payment');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Add Payment';
+  }
+});
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'Enter') {
+    const form = document.getElementById("payment-form");
+    if (form && !form.classList.contains('hidden')) {
+      form.dispatchEvent(new Event('submit'));
+    }
+  }
+});
+
+// Initialize tooltips on hover
+document.addEventListener('DOMContentLoaded', () => {
+  // Add any additional initialization here
+  console.log('Group Payment Tracker initialized');
 });
