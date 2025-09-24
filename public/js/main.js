@@ -639,14 +639,6 @@ tab.querySelector(".tab-close").addEventListener("click", async (e) => {
 });
 
 
-      if (confirm('Are you sure you want to delete this payment?')) {
-        try {
-          await deleteDoc(doc(db, "payments", e.target.dataset.id));
-          showNotification('Payment deleted successfully', 'success');
-        } catch (error) {
-          handleError(error, 'Delete payment');
-        }
-      }
                                                    
   // Dragging
   tab.addEventListener("dragstart", (e) => {
