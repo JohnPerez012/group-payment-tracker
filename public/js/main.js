@@ -620,11 +620,34 @@ function createTab(name = "New Tab") {
   });
 
   // Remove tab
-  tab.querySelector(".tab-close").addEventListener("click", (e) => {
-    e.stopPropagation();
-    tab.remove();
-  });
+tab.querySelector(".tab-close").addEventListener("click", async (e) => {
+  e.stopPropagation();
 
+  const warningMessage = `
+  ⚠️ DANGER: You are about to permanently remove this tab.
+  
+  ❗ Important data inside this tab CANNOT be retrieved once deleted.
+  
+  Do you really want to continue?`;
+
+  if (confirm(warningMessage)) {
+      showNotification("🚨 Tab and related payment deleted permanently!", "error");
+      tab.remove();
+  } else {
+    showNotification("❌ Deletion canceled", "warning");
+  }
+});
+
+
+      if (confirm('Are you sure you want to delete this payment?')) {
+        try {
+          await deleteDoc(doc(db, "payments", e.target.dataset.id));
+          showNotification('Payment deleted successfully', 'success');
+        } catch (error) {
+          handleError(error, 'Delete payment');
+        }
+      }
+                                                   
   // Dragging
   tab.addEventListener("dragstart", (e) => {
     e.dataTransfer.setData("text/plain", tab.id);
