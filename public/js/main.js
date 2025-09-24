@@ -639,6 +639,8 @@ function createTab(name = "New Tab") {
 
 // Add new tab
 addTabBtn.addEventListener("click", () => {
+  console.log('adding new tab');
+  
   const name = prompt("Enter tab name:");
   if (name) createTab(name);
 });
