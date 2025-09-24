@@ -142,3 +142,14 @@ tbody tr:hover {
     left: 6px;
   }
 }
+
+
+.update-btn {
+  color: #2563eb; /* Tailwind's blue-600 */
+  font-weight: 500;
+}
+.update-btn:hover {
+  color: #1e40af; /* Tailwind's blue-800 */
+  text-decoration: underline;
+}
+
