@@ -457,36 +457,60 @@ function renderHistory() {
   }
   
   payments.forEach(payment => {
-    const tr = document.createElement("tr");
-    tr.className = "border-b hover:bg-gray-50";
+  const tr = document.createElement("tr");
+  tr.className = "border-b hover:bg-gray-50";
+  
+  tr.innerHTML = `
+    <td class="px-3 py-2 font-medium">${payment.name}</td>
+    <td class="px-3 py-2">${formatCurrency(payment.amount)}</td>
+    <td class="px-3 py-2 text-sm">${formatDate(payment.timestamp)}</td>
+    <td class="px-3 py-2 flex gap-2">
+      ${currentUser && !currentUser.isAnonymous
+        ? `
+          <button data-id="${payment.id}" class="update-btn text-blue-600 hover:text-blue-800 hover:underline text-sm">Update</button>
+          <button data-id="${payment.id}" class="delete-btn text-red-600 hover:text-red-800 hover:underline text-sm">Delete</button>
+        `
+        : `<span class="text-zinc-400 text-sm">View only</span>`}
+    </td>`;
     
-    tr.innerHTML = `
-      <td class="px-3 py-2 font-medium">${payment.name}</td>
-      <td class="px-3 py-2">${formatCurrency(payment.amount)}</td>
-      <td class="px-3 py-2 text-sm">${formatDate(payment.timestamp)}</td>
-      <td class="px-3 py-2">
-        ${currentUser && !currentUser.isAnonymous
-          ? `<button data-id="${payment.id}" class="delete-btn text-red-600 hover:text-red-800 hover:underline text-sm">Delete</button>`
-          : `<span class="text-zinc-400 text-sm">View only</span>`}
-      </td>`;
-    tbody.appendChild(tr);
-  });
+  tbody.appendChild(tr);
+});
 
   // Add delete functionality
-  if (currentUser && !currentUser.isAnonymous) {
-    document.querySelectorAll(".delete-btn").forEach(btn => {
-      btn.onclick = async (e) => {
-        if (confirm('Are you sure you want to delete this payment?')) {
-          try {
-            await deleteDoc(doc(db, "payments", e.target.dataset.id));
-            showNotification('Payment deleted successfully', 'success');
-          } catch (error) {
-            handleError(error, 'Delete payment');
-          }
+ if (currentUser && !currentUser.isAnonymous) {
+  // Delete functionality
+  document.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.onclick = async (e) => {
+      if (confirm('Are you sure you want to delete this payment?')) {
+        try {
+          await deleteDoc(doc(db, "payments", e.target.dataset.id));
+          showNotification('Payment deleted successfully', 'success');
+        } catch (error) {
+          handleError(error, 'Delete payment');
         }
-      };
-    });
-  }
+      }
+    };
+  });
+
+  // Update functionality
+  document.querySelectorAll(".update-btn").forEach(btn => {
+    btn.onclick = async (e) => {
+      const newAmount = prompt("Enter new payment amount:");
+      if (newAmount === null || newAmount.trim() === "") return; // cancel pressed or empty input
+
+      try {
+        await updateDoc(doc(db, "payments", e.target.dataset.id), {
+          amount: parseFloat(newAmount),
+          timestamp: new Date() // optional: update timestamp to now
+        });
+        showNotification('Payment updated successfully', 'success');
+      } catch (error) {
+        handleError(error, 'Update payment');
+      }
+    };
+  });
+}
+
 }
 
 // Enhanced form handling with validation
