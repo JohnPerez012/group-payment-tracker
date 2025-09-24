@@ -587,3 +587,77 @@ document.addEventListener('DOMContentLoaded', () => {
   // Add any additional initialization here
   console.log('Group Payment Tracker initialized');
 });
+
+
+
+
+
+
+
+
+
+/* ------------------------------
+   Customizable Tabs (HCI Feature)
+
+   Adding without removing START
+--------------------------------- */
+const tabsContainer = document.getElementById("tabs");
+const addTabBtn = document.getElementById("add-tab-btn");
+
+function createTab(name = "New Tab") {
+  const tab = document.createElement("div");
+  tab.className = "tab flex items-center";
+  tab.draggable = true;
+  tab.innerHTML = `
+    <span>${name}</span>
+    <span class="tab-close ml-2">&times;</span>
+  `;
+
+  // Activate on click
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+  });
+
+  // Remove tab
+  tab.querySelector(".tab-close").addEventListener("click", (e) => {
+    e.stopPropagation();
+    tab.remove();
+  });
+
+  // Dragging
+  tab.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/plain", tab.id);
+    tab.classList.add("opacity-50");
+  });
+  tab.addEventListener("dragend", () => {
+    tab.classList.remove("opacity-50");
+  });
+
+  tabsContainer.insertBefore(tab, addTabBtn);
+}
+
+// Add new tab
+addTabBtn.addEventListener("click", () => {
+  const name = prompt("Enter tab name:");
+  if (name) createTab(name);
+});
+
+// Drag & Drop reordering
+tabsContainer.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  const dragging = document.querySelector(".tab.opacity-50");
+  const afterElement = [...tabsContainer.querySelectorAll(".tab:not(.opacity-50)")].find(tab => {
+    const rect = tab.getBoundingClientRect();
+    return e.clientX < rect.left + rect.width / 2;
+  });
+  if (afterElement) {
+    tabsContainer.insertBefore(dragging, afterElement);
+  } else {
+    tabsContainer.insertBefore(dragging, addTabBtn);
+  }
+});
+
+// Initialize with one default tab
+createTab("Overview");
+//Adding without removing END
