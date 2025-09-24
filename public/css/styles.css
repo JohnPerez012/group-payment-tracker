@@ -110,6 +110,47 @@ tbody tr:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+
+
+/* adding without deleting START*/
+.tab {
+  background: #f9fafb;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.tab:active {
+  cursor: grabbing;
+}
+
+.tab:hover {
+  background: #e5e7eb;
+}
+
+.tab.active {
+  background: #f59e0b; /* amber-500 */
+  color: white;
+}
+
+.tab-close {
+  margin-left: 8px;
+  font-weight: bold;  
+  cursor: pointer;
+  color: #9ca3af; /* gray-400 */
+}
+
+.tab-close:hover {
+  color: #dc2626; /* red-600 */
+}
+
+/* adding without deleting END*/
+
+
+
+
 /* Responsive design */
 @media (max-width: 768px) {
   .progress-bar-bg {
