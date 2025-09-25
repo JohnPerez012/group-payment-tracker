@@ -15,19 +15,19 @@ const firebaseConfig = {
 };
 
 // Constants - Updated to 2025
-const REQUIRED_AMOUNT_PER_MONTH = 400;
+const REQUIRED_TOTAL_AMOUNT = 400;
 // const PENALTY_AMOUNT = 20;
-const MONTHS = [
-  { name: "Sept", year: 2025, index: 8 }, // September 2025
-  { name: "Oct", year: 2025, index: 9 },
-  { name: "Nov", year: 2025, index: 10 },
-  { name: "Dec", year: 2025, index: 11 }
-];
+// const MONTHS = [
+//   { name: "Sept", year: 2025, index: 8 }, // September 2025
+//   { name: "Oct", year: 2025, index: 9 },
+//   { name: "Nov", year: 2025, index: 10 },
+//   { name: "Dec", year: 2025, index: 11 }
+// ];
 
 // Helper function to get month end date
-const getMonthEndDate = (year, monthIndex) => {
-  return new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
-};
+// const getMonthEndDate = (year, monthIndex) => {
+//   return new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
+// };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -270,7 +270,7 @@ async function setupListeners() {
         id: d.id,
         ...d.data()
       }));
-      renderTable();
+      renderTableV2();
       renderHistory();
     }, (error) => {
       handleError(error, 'Loading payments');
