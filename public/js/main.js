@@ -15,8 +15,8 @@ const firebaseConfig = {
 };
 
 // Constants - Updated to 2025
-const REQUIRED_AMOUNT_PER_MONTH = 130;
-const PENALTY_AMOUNT = 20;
+const REQUIRED_AMOUNT_PER_MONTH = 400;
+// const PENALTY_AMOUNT = 20;
 const MONTHS = [
   { name: "Sept", year: 2025, index: 8 }, // September 2025
   { name: "Oct", year: 2025, index: 9 },
@@ -138,6 +138,7 @@ onAuthStateChanged(auth, user => {
 });
 
 // Simplified and debugged payment calculation logic
+/*
 function calculateMemberProgress(memberName, payments) {
   console.log(`Calculating progress for ${memberName}`, payments); // Debug log
   
@@ -228,6 +229,26 @@ function calculateMemberProgress(memberName, payments) {
   
   return monthlyProgress;
 }
+*/
+
+function calculateMemberProgressV2(memberName, payments) {
+  const memberPayments = payments.filter(p => p.name === memberName);
+  const totalPaid = memberPayments.reduce((sum, p) => sum + p.amount, 0);
+
+  const progress = Math.min((totalPaid / REQUIRED_TOTAL_AMOUNT) * 100, 100);
+  const isPaid = totalPaid >= REQUIRED_TOTAL_AMOUNT;
+  const amountRemaining = Math.max(0, REQUIRED_TOTAL_AMOUNT - totalPaid);
+
+  return {
+    progress,
+    isPaid,
+    totalPaid,
+    amountRemaining,
+    requiredAmount: REQUIRED_TOTAL_AMOUNT
+  };
+}
+
+
 
 // Enhanced data loading with loading states
 async function setupListeners() {
@@ -274,6 +295,7 @@ function populateMemberSelect(members) {
     });
 }
 
+/*
 // Enhanced table rendering with better debugging
 function renderTable() {
   const tbody = document.getElementById("tracker-body");
@@ -368,7 +390,61 @@ function renderTable() {
 
   updateSummary(totalCollected, totalRequired, totalPaidMonths, totalPossibleMonths);
 }
+*/
 
+
+function renderTableV2() {
+  const tbody = document.getElementById("tracker-body");
+  tbody.innerHTML = "";
+
+  if (members.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">No members found</td></tr>';
+    return;
+  }
+
+  let totalCollected = 0;
+  let totalRequired = REQUIRED_TOTAL_AMOUNT * members.length;
+
+  members.forEach(member => {
+    const progressData = calculateMemberProgressV2(member.Name, payments);
+    totalCollected += progressData.totalPaid;
+
+    let barColor = "bg-red-500";
+    if (progressData.isPaid) {
+      barColor = "bg-green-500";
+    } else if (progressData.progress > 0) {
+      barColor = "bg-orange-400";
+    }
+
+    let statusIndicator = '';
+    if (progressData.isPaid) {
+      statusIndicator = '<p class="text-xs text-center font-bold text-green-600">✓ Fully Paid</p>';
+    } else if (progressData.amountRemaining > 0) {
+      statusIndicator = `<p class="text-xs text-center text-red-600">Need: ₱${progressData.amountRemaining}</p>`;
+    }
+
+    let row = `
+      <tr class="border-b hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium">${member.Name}</td>
+        <td class="px-4 py-3">
+          <div class="progress-bar-bg mb-2">
+            <div class="progress-bar ${barColor}" style="width:${progressData.progress}%">
+              ${progressData.progress > 0 ? `<span class="progress-percentage">${Math.round(progressData.progress)}%</span>` : ''}
+            </div>
+          </div>
+          ${statusIndicator}
+        </td>
+        <td class="px-4 py-3 text-right">${formatCurrency(progressData.totalPaid)} / ${formatCurrency(REQUIRED_TOTAL_AMOUNT)}</td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+
+  updateSummary(totalCollected, totalRequired);
+}
+
+
+/*
 // Enhanced summary with month completion tracking
 function updateSummary(totalCollected, totalRequired, totalPaidMonths, totalPossibleMonths) {
   const totalOutstanding = Math.max(0, totalRequired - totalCollected);
@@ -404,6 +480,16 @@ function updateSummary(totalCollected, totalRequired, totalPaidMonths, totalPoss
     </div>
   `;
   summaryContainer.appendChild(rateDiv);
+}
+*/
+
+function updateSummary(totalCollected, totalRequired) {
+  const totalOutstanding = Math.max(0, totalRequired - totalCollected);
+
+  document.getElementById("total-collected").textContent = formatCurrency(totalCollected);
+  document.getElementById("total-outstanding").textContent = formatCurrency(totalOutstanding);
+
+  updateChart(totalCollected, totalOutstanding);
 }
 
 // Enhanced chart rendering
