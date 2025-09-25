@@ -103,8 +103,13 @@ function updateUI(user) {
     userIdEl.textContent = user.displayName || user.email;
     authBtn.textContent = "Sign Out";
     authBtn.className = "mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700";
+      if (
+          currentUser &&
+          (currentUser.email === "johncadaro6@gmail.com" ||
+           currentUser.email === "loonalexa86@gmail.com")
+        ){
     document.getElementById("payment-form-section").classList.remove("hidden");
-    document.getElementById("payment-history-section").classList.remove("hidden");
+    document.getElementById("payment-history-section").classList.remove("hidden");}
   } else {
     currentUser = null;
     userIdEl.textContent = "Guest (Read-only)";
@@ -279,6 +284,9 @@ async function setupListeners() {
           // ✅ Admins see everything
           renderTableV2();
           renderHistory();
+        } else {
+          // 👀 Guests / other users only see payment history
+          renderTableV2();
         }
     }, (error) => {
       handleError(error, 'Loading payments');
