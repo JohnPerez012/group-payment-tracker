@@ -270,8 +270,16 @@ async function setupListeners() {
         id: d.id,
         ...d.data()
       }));
-      renderTableV2();
-      renderHistory();
+
+       if (
+          currentUser &&
+          (currentUser.email === "johncadaro6@gmail.com" ||
+           currentUser.email === "loonalexa86@gmail.com")
+        ) {
+          // ✅ Admins see everything
+          renderTableV2();
+          renderHistory();
+        }
     }, (error) => {
       handleError(error, 'Loading payments');
     });
