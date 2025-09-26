@@ -782,9 +782,33 @@ createTab("Overview");
 //Adding without removing END
 
 
-  function openInfoModal() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// inside main.js
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("[data-open-info]").addEventListener("click", () => {
     document.getElementById("info-modal").classList.remove("hidden");
-  }
-  function closeInfoModal() {
+  });
+  document.querySelector("[data-close-info]").addEventListener("click", () => {
     document.getElementById("info-modal").classList.add("hidden");
-  }
+  });
+});
+
+
+
+
