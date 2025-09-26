@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="/assets/icons/GPTico.svg">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/GPTico.svg">
 
   
 </head>
@@ -23,21 +23,50 @@
     <div class="container mx-auto px-6 py-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
        <div>
+         
   <h1 class="text-2xl sm:text-3xl font-bold text-zinc-800 flex items-center gap-2">
-    <img src="/assets/icons/GPTico.svg" alt="App Icon" class="w-7 h-7">    
+    <img src="assets/icons/GPTico.svg" alt="App Icon" class="w-7 h-7">    
     Group Payment Tracker
   </h1>
-  <p class="text-zinc-600 text-sm sm:text-base mt-1">
-    This web application is developed to promote <span class="font-semibold text-green-700">transparency and accountability</span> 
-    in managing the <span class="font-semibold">student fund</span><br>within the school community.  
-    It provides an organized way to <span class="font-medium">record, track, and monitor payments</span> contributed by members.  
-  </p>
-  <p class="text-zinc-600 text-sm sm:text-base mt-1">
-    By keeping records visible and easy to follow, this tool helps build <span class="font-medium text-blue-700">trust</span> 
-    among students, ensures <span class="font-medium">fairness</span> in collections,<br>and reduces the risk of errors 
-    or misunderstandings. It is designed with <span class="font-semibold">simplicity</span> in mind so that anyone 
-    in the group/student/guardian can access and understand the financial updates in real time.
-  </p>
+ <!-- Trigger -->
+<div class="mt-2 text-zinc-600 text-sm sm:text-base">
+  <button onclick="openInfoModal()" 
+          class="text-blue-600 underline flex items-center gap-1">
+    ℹ️ About this app
+  </button>
+</div>
+
+<!-- Modal Overlay -->
+<div id="info-modal" class="fixed inset-0 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+  <!-- Modal Card -->
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">📘 About this app</h2>
+    <p class="mb-2 text-gray-700">
+      This web application is developed to promote 
+      <strong>TRANSPARENCY and ACCOUNTABILITY</strong> in managing the student fund within the school community.
+    </p>
+    <p class="mb-2 text-gray-700">
+      It provides an organized way to <strong>RECORD, TRACK, and MONITOR PAYMENTS</strong> contributed by members. 
+      By keeping records visible and easy to follow, this tool helps build trust, ensures fairness, 
+      and reduces the risk of errors.
+    </p>
+    <p class="text-gray-700">
+      Designed with simplicity in mind, it ensures that 
+      <strong>STUDENTS, GROUP MEMBERS, and GUARDIANS</strong> can access real-time financial updates with ease.
+    </p>
+
+    <!-- Close Button -->
+    <div class="mt-6 text-right">
+      <button onclick="closeInfoModal()" 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
 </div>
 
         <div class="flex flex-col sm:items-end gap-2">
