@@ -36,35 +36,44 @@
 </div>
 
 <!-- Modal Overlay -->
+<!-- Modal Overlay -->
 <div id="info-modal" class="fixed inset-0 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
   <!-- Modal Card -->
   <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">📘 About this app</h2>
-    <p class="mb-2 text-gray-700">
+    
+    <!-- Title Center -->
+    <h2 class="text-xl font-bold mb-6 flex items-center justify-center gap-2">
+      📘 About this app
+    </h2>
+
+    <!-- Text Justified -->
+    <p class="mb-4 text-gray-700 text-justify">
       This web application is developed to promote 
       <strong>TRANSPARENCY and ACCOUNTABILITY</strong> in managing the student fund within the school community.
     </p>
-    <p class="mb-2 text-gray-700">
+    <hr class="my-4">
+    <p class="mb-4 text-gray-700 text-justify">
       It provides an organized way to <strong>RECORD, TRACK, and MONITOR PAYMENTS</strong> contributed by members. 
       By keeping records visible and easy to follow, this tool helps build trust, ensures fairness, 
       and reduces the risk of errors.
     </p>
-    <p class="text-gray-700">
+    <hr class="my-4">
+    <p class="text-gray-700 text-justify">
       Designed with simplicity in mind, it ensures that 
       <strong>STUDENTS, GROUP MEMBERS, and GUARDIANS</strong> can access real-time financial updates with ease.
     </p>
 
-    <!-- Close Button -->
+    <!-- Close Button Center -->
+    <div class="mt-6 flex justify-center">
+      <button data-close-info
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        Close
+      </button>
+    </div>
 
-
-<button data-close-info
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-  Close
-</button>
-
-    
   </div>
 </div>
+
 
 
 
