@@ -13,18 +13,33 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/GPTico.svg">
+
+  
 </head>
 <body class="bg-gray-50 min-h-screen">
   <!-- Header -->
   <header class="bg-white shadow-sm border-b mb-6">
     <div class="container mx-auto px-6 py-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-zinc-800 flex items-center gap-2">
-            📊 Group Payment Tracker
-          </h1>
-          <p class="text-zinc-600 text-sm sm:text-base">Track member payments, penalties, and monthly progress in real-time.</p>
-        </div>
+       <div>
+  <h1 class="text-2xl sm:text-3xl font-bold text-zinc-800 flex items-center gap-2">
+    <img src="./assets/icons/GPTico.svg" alt="App Icon" class="w-7 h-7">
+    Group Payment Tracker
+  </h1>
+  <p class="text-zinc-600 text-sm sm:text-base mt-1">
+    This web application is developed to promote <span class="font-semibold text-green-700">transparency and accountability</span> 
+    in managing the <span class="font-semibold">student fund</span> within the school community.  
+    It provides an organized way to <span class="font-medium">record, track, and monitor payments</span> contributed by members.  
+  </p>
+  <p class="text-zinc-600 text-sm sm:text-base mt-1">
+    By keeping records visible and easy to follow, this tool helps build <span class="font-medium text-blue-700">trust</span> 
+    among students, ensures <span class="font-medium">fairness</span> in collections, and reduces the risk of errors 
+    or misunderstandings. It is designed with <span class="font-semibold">simplicity</span> in mind so that anyone 
+    in the group/student/guardian can access and understand the financial updates in real time.
+  </p>
+</div>
+
         <div class="flex flex-col sm:items-end gap-2">
           <div class="text-sm">
             <span class="text-zinc-500">User:</span> 
@@ -209,13 +224,26 @@
 
   <!-- Footer -->
   <footer class="bg-white border-t mt-12">
-    <div class="container mx-auto px-6 py-4">
-      <div class="text-center text-sm text-gray-500">
-        <p>Group Payment Tracker • Built with Firebase & Chart.js</p>
-        <p class="mt-1">💡 <strong>Features:</strong> Real-time updates, Google authentication, Progress tracking</p>
-      </div>
+  <div class="container mx-auto px-6 py-4">
+    <div class="text-center text-sm text-gray-500">
+      <p>
+        <strong>Group Payment Tracker</strong> • Prototype project of 
+        <em>Group 5</em> for the course 
+        <span class="font-medium">Systems Integration and Architecture 1</span> (CTU, Course Code: PC 316).
+      </p>
+      <p class="mt-1">
+        Led by 
+        <a href="https://facebook.com" target="_blank" class="text-blue-600 hover:underline font-medium">
+          John Cadaro
+        </a>, with contributions from all group members.
+      </p>
+      <p class="mt-2">
+        ⚙️ <strong>Tech Stack:</strong> Firebase, Chart.js, Tailwind CSS
+      </p>
     </div>
-  </footer>
+  </div>
+</footer>
+
 
   <script type="module" src="js/main.js"></script>
 </body>
