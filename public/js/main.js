@@ -780,3 +780,11 @@ tabsContainer.addEventListener("dragover", (e) => {
 // Initialize with one default tab
 createTab("Overview");
 //Adding without removing END
+
+
+  function openInfoModal() {
+    document.getElementById("info-modal").classList.remove("hidden");
+  }
+  function closeInfoModal() {
+    document.getElementById("info-modal").classList.add("hidden");
+  }
