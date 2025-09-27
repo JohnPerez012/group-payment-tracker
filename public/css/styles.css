@@ -148,9 +148,10 @@ tbody tr:hover {
 
 /* adding without deleting END*/
 
-#add-tab-btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* Stretch tabs equally */
+.tabs-stretch .tab {
+  flex: 1 1 0; /* all tabs share equal width */
+  justify-content: center; /* center text inside */
 }
 
 
