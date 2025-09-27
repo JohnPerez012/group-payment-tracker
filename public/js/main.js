@@ -830,15 +830,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-const tabsContainer = document.getElementById("tabs-container");
+const contTab = document.getElementById("tabs-container");
 
 window.addEventListener("scroll", () => {
-  const rect = tabsContainer.getBoundingClientRect();
+  const rect = contTab.getBoundingClientRect();
   
   if (rect.top === 0) {
-    tabsContainer.classList.add("sticky-active");
+    contTab.classList.add("sticky-active");
   } else {
-    tabsContainer.classList.remove("sticky-active");
+    contTab.classList.remove("sticky-active");
   }
 });
 
