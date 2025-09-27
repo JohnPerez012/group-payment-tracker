@@ -708,27 +708,18 @@ const tabsContainer = document.getElementById("tabs");
 const addTabBtn = document.getElementById("add-tab-btn");
 
 
-
 // Function to check current tab count
 function checkTabLimit() {
-  const tabContainer = document.getElementById("tabs-container"); // adjust to your tab container ID
-  const tabs = tabContainer.querySelectorAll(".tabs"); // adjust selector to match your tab elements
+  const tabs = tabsContainer.querySelectorAll(".tab"); // ✅ correct class selector
 
   if (tabs.length >= MAX_TABS) {
-    // Hide/disable add button
-    if (addTabBtn) {
-      addTabBtn.style.display = "none"; 
-    }
+    if (addTabBtn) addTabBtn.style.display = "none"; 
     return false; // block adding
   } else {
-    if (addTabBtn) {
-      addTabBtn.style.display = "inline-flex"; // restore button
-    }
+    if (addTabBtn) addTabBtn.style.display = "inline-flex"; 
     return true; // allow adding
   }
 }
-
-
 // Run once at startup
 document.addEventListener("DOMContentLoaded", checkTabLimit);
 
@@ -764,6 +755,7 @@ tab.querySelector(".tab-close").addEventListener("click", async (e) => {
   if (confirm(warningMessage)) {
       showNotification("🚨 Tab and related payment deleted permanently!", "error");
       tab.remove();
+    checkTabLimit();
   } else {
     showNotification("❌ Deletion canceled", "warning");
   }
@@ -779,18 +771,15 @@ tab.querySelector(".tab-close").addEventListener("click", async (e) => {
   });
 
   tabsContainer.insertBefore(tab, addTabBtn);
+  checkTabLimit(); 
 }
 
 // Add new tab
 addTabBtn.addEventListener("click", () => {
-  
     if (!checkTabLimit()) {
     alert(`⚠️ You can only have up to ${MAX_TABS} tabs.`);
     return;
-  }
-  
-  console.log('adding new tab'); //////////////////////////////////////////////////////////////////////////////////////
-  
+  }   //////////////////////////////////////////////////////////////////////////////////////
   const name = prompt("Enter tab name:");
   if (name) createTab(name);
 });
