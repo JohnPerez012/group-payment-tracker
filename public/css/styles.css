@@ -108,17 +108,18 @@ tbody tr:hover {
 .bg-white {
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    z-index: 100; /* Ensures it appears above other content */
+  
 }
 
 
 #tabs-container{
    position: sticky;
+      box-shadow:2px 1px 7px rgb(251, 146, 60);
   top: 1;
-    z-index: 100; /* Ensures it appears above other content */
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15);
+    z-index: 99; /* Ensures it appears above other content */
 
 }
-
   
 
 /* adding without deleting START*/
@@ -165,9 +166,6 @@ tbody tr:hover {
 }
 
 /* Make floating tab look nice */
-#floating-tab .tab {
-  min-width: 120px;
-}
 
 
 /* Responsive design */
