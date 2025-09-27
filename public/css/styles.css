@@ -139,11 +139,10 @@ tbody tr:hover {
   margin-left: 8px;
   font-weight: bold;  
   cursor: pointer;
-  color: #9ca3af; /* gray-400 */
 }
 
 .tab-close:hover {
-  color: #dc2626; /* red-600 */
+  color: #fc5203; /* red-600 */
 }
 
 /* adding without deleting END*/
@@ -151,7 +150,7 @@ tbody tr:hover {
 /* Stretch tabs equally */
 .tabs-stretch .tab {
   flex: 1 1 0; /* all tabs share equal width */
-  justify-content: center; /* center text inside */
+  justify-content: space-between; /* center text inside */
 }
 
 
