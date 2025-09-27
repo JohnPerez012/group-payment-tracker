@@ -831,4 +831,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+const floatingTabContainer = document.getElementById("floating-tab");
+
+window.addEventListener("scroll", () => {
+  const activeTab = document.querySelector(".tab.active");
+
+
+  if (!activeTab) return;
+
+  // Trigger floating only if user scrolled down past tabs container
+  const tabsContainer = document.getElementById("tabs-container");
+  const containerBottom = tabsContainer.getBoundingClientRect().bottom;
+
+  if (containerBottom < 0) {
+    // Show floating tab
+    floatingTabContainer.innerHTML = "";
+    const clone = activeTab.cloneNode(true);
+    clone.classList.add("shadow-lg", "bg-white");
+    floatingTabContainer.appendChild(clone);
+    floatingTabContainer.classList.remove("hidden");
+  } else {
+    // Hide floating tab
+    floatingTabContainer.classList.add("hidden");
+  }
+});
+
 
