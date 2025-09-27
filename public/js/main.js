@@ -823,6 +823,8 @@ const floatingTabContainer = document.getElementById("floating-tab");
 
 window.addEventListener("scroll", () => {
   const activeTab = document.querySelector(".tab.active");
+console.log("Active tab:", document.querySelector(".tab.active"));
+console.log("Floating container:", floatingTabContainer);
 
   if (!activeTab) return;
 
