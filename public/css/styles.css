@@ -110,7 +110,12 @@ tbody tr:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+#tabs-container {
+  position: sticky;
+  top: 0;
+    z-index: 100; /* Ensures it appears above other content */
 
+}
 
 /* adding without deleting START*/
 .tab {
@@ -119,7 +124,6 @@ tbody tr:hover {
   border-radius: 0.5rem;
   cursor: grab;
   user-select: none;
-  position: sticky;
   transition: background 0.2s ease;
 }
 
@@ -154,7 +158,6 @@ tbody tr:hover {
 .tabs-stretch .tab {
   flex: 1 1 0; /* all tabs share equal width */
   justify-content: space-between; /* center text inside */
-  position: sticky;
 }
 
 /* Make floating tab look nice */
