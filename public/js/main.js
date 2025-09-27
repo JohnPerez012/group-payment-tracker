@@ -830,29 +830,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
-const floatingTabContainer = document.getElementById("floating-tab");
+const tabsContainer = document.getElementById("tabs-container");
 
 window.addEventListener("scroll", () => {
-  const activeTab = document.querySelector(".tab.active");
-
-
-  if (!activeTab) return;
-
-  // Trigger floating only if user scrolled down past tabs container
-  const tabsContainer = document.getElementById("tabs-container");
-  const containerBottom = tabsContainer.getBoundingClientRect().bottom;
-
-  if (containerBottom < 0) {
-    // Show floating tab
-    floatingTabContainer.innerHTML = "";
-    const clone = activeTab.cloneNode(true);
-    clone.classList.add("shadow-lg", "bg-white");
-    floatingTabContainer.appendChild(clone);
-    floatingTabContainer.classList.remove("hidden");
+  const rect = tabsContainer.getBoundingClientRect();
+  
+  if (rect.top === 0) {
+    tabsContainer.classList.add("sticky-active");
   } else {
-    // Hide floating tab
-    floatingTabContainer.classList.add("hidden");
+    tabsContainer.classList.remove("sticky-active");
   }
 });
 
