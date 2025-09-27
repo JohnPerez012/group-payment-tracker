@@ -155,6 +155,10 @@ tbody tr:hover {
   justify-content: space-between; /* center text inside */
 }
 
+/* Make floating tab look nice */
+#floating-tab .tab {
+  min-width: 120px;
+}
 
 
 /* Responsive design */
