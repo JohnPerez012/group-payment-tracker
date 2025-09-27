@@ -16,6 +16,7 @@ const firebaseConfig = {
 
 // Constants - Updated to 2025
 const REQUIRED_TOTAL_AMOUNT = 400;
+const MAX_TABS = 5;
 // const PENALTY_AMOUNT = 20;
 // const MONTHS = [
 //   { name: "Sept", year: 2025, index: 8 }, // September 2025
@@ -707,6 +708,13 @@ const tabsContainer = document.getElementById("tabs");
 const addTabBtn = document.getElementById("add-tab-btn");
 
 function createTab(name = "New Tab") {
+
+    if (!checkTabLimit()) {
+    alert(`⚠️ You can only have up to ${MAX_TABS} tabs.`);
+    return;
+  }
+
+  
   const tab = document.createElement("div");
   tab.className = "tab flex items-center";
   tab.draggable = true;
@@ -775,26 +783,13 @@ tabsContainer.addEventListener("dragover", (e) => {
   } else {
     tabsContainer.insertBefore(dragging, addTabBtn);
   }
+    checkTabLimit();
+
 });
 
 // Initialize with one default tab
 createTab("Overview");
 //Adding without removing END
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -810,5 +805,31 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+
+
+
+// Function to check current tab count
+function checkTabLimit() {
+  const tabContainer = document.getElementById("tab-container"); // adjust to your tab container ID
+  const tabs = tabContainer.querySelectorAll(".tab"); // adjust selector to match your tab elements
+  const addTabBtn = document.getElementById("add-tab-btn"); // your plus/add icon button
+
+  if (tabs.length >= MAX_TABS) {
+    // Hide/disable add button
+    if (addTabBtn) {
+      addTabBtn.style.display = "none"; 
+    }
+    return false; // block adding
+  } else {
+    if (addTabBtn) {
+      addTabBtn.style.display = "inline-flex"; // restore button
+    }
+    return true; // allow adding
+  }
+}
+
+
+// Run once at startup
+document.addEventListener("DOMContentLoaded", checkTabLimit);
 
 
