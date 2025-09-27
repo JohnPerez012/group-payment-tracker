@@ -712,6 +712,14 @@ const addTabBtn = document.getElementById("add-tab-btn");
 function checkTabLimit() {
   const tabs = tabsContainer.querySelectorAll(".tab"); // ✅ correct class selector
 
+
+    // Toggle stretch mode when exactly 5 tabs
+  if (tabs.length === 5) {
+    tabsContainer.classList.add("tabs-stretch"); // custom CSS class
+  } else {
+    tabsContainer.classList.remove("tabs-stretch");
+  }
+  
   if (tabs.length >= MAX_TABS) {
     if (addTabBtn) addTabBtn.style.display = "none"; 
     return false; // block adding
