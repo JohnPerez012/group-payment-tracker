@@ -128,6 +128,8 @@ tbody tr:hover {
 
 .tab:hover {
   background: #e5e7eb;
+  border-radius: 1.5rem;
+  
 }
 
 .tab.active {
