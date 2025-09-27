@@ -740,8 +740,10 @@ function createTab(name = "New Tab") {
   tab.draggable = true;
   tab.innerHTML = `
     <span>${name}</span>
-    <span class="tab-close ml-2">&times;</span>
+    <button class="tab-close text-red-600 font-bold ml-4">&times;</button>
+
   `;
+    // <span class="tab-close ml-2">&times;</span>
 
   // Activate on click
   tab.addEventListener("click", () => {
