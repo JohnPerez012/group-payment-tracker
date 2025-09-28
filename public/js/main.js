@@ -843,3 +843,37 @@ window.addEventListener("scroll", () => {
 });
 
 
+
+
+
+
+
+
+const loadingScreen = document.getElementById("loading-screen");
+
+function hideLoadingScreen() {
+  loadingScreen.classList.add("hidden");
+}
+
+// Example: when app starts
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // simulate fetch delay (you can remove this timeout later)
+    // await new Promise(r => setTimeout(r, 2000));
+
+    // fetch members
+    const membersSnap = await getDocs(collection(db, "members"));
+    // fetch payments
+    const paymentsSnap = await getDocs(collection(db, "payments"));
+
+    // ✅ once both are loaded, hide loading screen
+    hideLoadingScreen();
+  } catch (error) {
+    console.error("Error loading data:", error);
+    hideLoadingScreen(); // hide anyway (maybe show an error modal instead)
+  }
+});
+
+
+
+
