@@ -117,14 +117,6 @@ tbody tr:hover {
 }
 
 
-/* #tabs-container{
-   position: sticky;
-  top: 1;
-    z-index: 99; 
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-
-} */
-  
 
 
 #tabs-container {
@@ -132,7 +124,7 @@ tbody tr:hover {
   top: 0;
   z-index: 99;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease; /* smooth shadow transition */
+    transition: box-shadow 0.7s ease; /* smooth shadow transition */
 
 }
 
@@ -185,6 +177,18 @@ tbody tr:hover {
 }
 
 /* Make floating tab look nice */
+
+
+
+#loading-screen {
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
 
 
 /* Responsive design */
