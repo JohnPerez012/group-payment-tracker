@@ -1,5 +1,5 @@
 // WORKING SCRIPT 2.0
-  let landingpage = false;
+  let landingpage = true;
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -119,7 +119,7 @@ function updateUI(user) {
   } else {
     if(landingpage){
     // window.location.href = "../LandingPage/Landing.html";
-    window.location.href = "LandingPage/Landing.html";
+    window.location.href = "LandingPage.html";
     return; // stop here
     }
     currentUser = null;
@@ -153,7 +153,7 @@ onAuthStateChanged(auth, user => {
   if (!user) {
     // signInAnonymously(auth).catch(error => handleError(error, 'Anonymous sign-in'));
     // window.location.href = "../LandingPage/Landing.html";
-    window.location.href = "LandingPage/Landing.html";
+    window.location.href = "LandingPage.html";
 
     return; // stop here
   }

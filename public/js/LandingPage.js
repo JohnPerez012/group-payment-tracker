@@ -82,7 +82,7 @@ document.querySelectorAll('header nav a[href^="#"]').forEach((anchor) => {
 // Dashboard Access Control
 // =============================
 document.addEventListener("DOMContentLoaded", () => {
-  const dashboardLink = document.querySelector('a[href="../index.html"]');
+  const dashboardLink = document.querySelector('a[href="index.html"]');
   const modal = document.getElementById("signin-modal");
   const closeModalBtn = document.getElementById("close-modal-btn");
 
@@ -93,8 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const isUserSignedIn = !!user && !user.isAnonymous;
 
     // ✅ Auto-redirect if user is logged in and on Landing page
-    if (isUserSignedIn && window.location.pathname.includes("Landing.html")) {
-      window.location.href = "../index.html";
+    if (isUserSignedIn && window.location.pathname.includes("LandingPage.html")) {
+      window.location.href = "index.html";
       return;
     }
 
