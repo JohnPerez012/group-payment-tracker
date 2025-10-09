@@ -1,5 +1,5 @@
 // WORKING SCRIPT 2.0
-  let landingpage = true;
+  let landingpage = false;
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -95,19 +95,13 @@ const handleError = (error, context = 'Operation') => {
 };
 
 // Auth functions
-const authBtn = document.getElementById("auth-btn");
-const userIdEl = document.getElementById("user-id");
+// const authBtn = document.getElementById("auth-btn");
+// const userIdEl = document.getElementById("user-id");
 
 function updateUI(user) {
   const isSignedIn = user && !user.isAnonymous;
   if (isSignedIn) {
     currentUser = user;
-    userIdEl.textContent = user.displayName || user.email;
-    // authBtn.textContent = "Sign Out";
-    // authBtn.className = "mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700";
-        authBtn.querySelector(".gsi-material-button-contents").textContent = "Sign Out";
-
-    // authBtn.className = "mt-2 px-4 py-2 bg-[#1d4ed8] text-white rounded hover:bg-[#2563eb]";
 
       if (
           currentUser &&
@@ -118,36 +112,16 @@ function updateUI(user) {
     document.getElementById("payment-history-section").classList.remove("hidden");}
   } else {
     if(landingpage){
-    // window.location.href = "../LandingPage/Landing.html";
     window.location.href = "LandingPage.html";
     return; // stop here
     }
     currentUser = null;
-    userIdEl.textContent = "Guest (Read-only)";
-    // authBtn.textContent = "Sign In with Google";
-    // authBtn.className = "mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700";
-        authBtn.querySelector(".gsi-material-button-contents").textContent = "Sign in with Google";
-
-    // authBtn.className = "mt-2 px-4 py-2 bg-[#1d4ed8] text-white rounded hover:bg-[#2563eb]";
-
+    // userIdEl.textContent = "DEMO";
     document.getElementById("payment-form-section").classList.add("hidden");
     document.getElementById("payment-history-section").classList.add("hidden");
   }
 }
 
-authBtn.addEventListener("click", async () => {
-  try {
-    if (currentUser) {
-      await signOut(auth);
-      showNotification("Signed out successfully", 'success');
-    } else {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      showNotification("Signed in successfully", 'success');
-    }
-  } catch (error) {
-    handleError(error, 'Authentication');
-  }
-});
 
 onAuthStateChanged(auth, user => {
   if (!user) {

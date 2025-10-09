@@ -75,14 +75,19 @@
 
   </nav>
 
-        <div class="flex flex-col sm:items-end gap-2">
+        <!-- <div class="flex flex-col sm:items-end gap-2">
           <div class="text-sm">
             <span class="text-zinc-500">User:</span> 
             <span id="user-id" class="font-mono font-medium">Loading...</span>
-        </div>
+        </div> -->
+        <div class="user-auth">
+          <div class="user-info">
+            <span class="text-gray">User:</span>
+            <span id="user-id" class="user-id">Loading...</span>
+          </div>
        
 
-          <button id="auth-btn" class="gsi-material-button">
+          <button id="auth-btn-header" class="gsi-material-button">
           <!-- <button id="auth-btn" class="gsi-material-button blue"> -->
 
   <div class="gsi-material-button-state"></div>
@@ -393,7 +398,7 @@
 </footer>
 
 
-
+    <script type="module" src="js/googleAuth.js"></script>
   <script type="module" src="js/main.js"></script>
   <script type="module" src="js/RPTUId.js"></script>
 
