@@ -5,17 +5,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Group Payment Tracker</title>
   <meta name="description" content="Track group payments, monthly progress, and member contributions with real-time updates">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="css/styles.css">
+  <title>GPTracker</title>
+
+  <!-- GOOGLE FONTS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- STYLESHEET GLOBAL -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Alan+Sans:wght@300..900&family=Fredericka+the+Great&display=swap" rel="stylesheet">
+
+<!-- STYLESHEET LOCAL -->
+  <link rel="stylesheet" href="css/googleSignInButtonStandardStyle.css">  
+  <link rel="stylesheet" href="css/styles.css">
+
+<!-- ICONS  -->
   <link rel="icon" type="image/svg+xml" href="assets/icons/GPTico.svg">
 
-  
+<!-- SCRIPTS GLOBAL -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
 </head>
 <body class="bg-gray-50 min-h-screen">
 
@@ -32,24 +46,66 @@
 
   
   <!-- Header -->
-  <header class="bg-white shadow-sm border-b mb-6">
-    <div class="container mx-auto px-6 py-4">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-       <div>
-         
-  <h1 class="text-2xl sm:text-3xl font-bold text-zinc-800 flex items-center gap-2">
-<img src="assets/icons/GPTico.svg" alt="App Icon" class="w-7 h-7">
-    Group Payment Tracker
-  </h1>
- <!-- Trigger -->
-<div class="mt-2 text-zinc-600 text-sm sm:text-base">
-    <button data-open-info class="text-blue-600 underline flex items-center gap-1">
-  ℹ️ About this app
-</button>
-</div>
+  <!-- <header class="bg-white shadow-sm border-b mb-6"> -->
+    <header class="main-header">
 
-<!-- Modal Overlay -->
-<!-- Modal Overlay -->
+    <!-- <div class="container mx-auto px-6 py-4"> -->
+        <div class="header-container">
+
+      <!-- <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"> -->
+         <div class="logo-area">
+<img src="assets/icons/GPTico.svg" alt="App Icon" class="w-7 h-7"> 
+
+  <h1 class="text-2xl sm:text-3xl font-bold text-[#1d4ed8] flex items-center gap-2">
+    GPTracker
+  </h1>
+         </div>
+  
+  <nav class="flex items-center space-x-6 text-sm sm:text-base">
+    <a href="../LandingPage/Landing.html" class="nav-link">Home</a>
+    <!-- <a href="#members" class="nav-link">Members</a>
+    <a href="#payments" class="nav-link">Payments</a> -->
+    <a href="#openAboutModal" class="nav-link" data-open-info>About</a>
+
+  </nav>
+
+        <div class="flex flex-col sm:items-end gap-2">
+          <div class="text-sm">
+            <span class="text-zinc-500">User:</span> 
+            <span id="user-id" class="font-mono font-medium">Loading...</span>
+        </div>
+       
+
+          <button id="auth-btn" class="gsi-material-button">
+          <!-- <button id="auth-btn" class="gsi-material-button blue"> -->
+
+  <div class="gsi-material-button-state"></div>
+  <div class="gsi-material-button-content-wrapper">
+    <div class="gsi-material-button-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0C14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3c-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+      </svg>
+    </div>
+    <span class="gsi-material-button-contents">Sign in with Google</span>
+  </div>
+</button>
+
+
+        </div>
+      </div>
+  </header>
+
+
+
+
+
+
+
+  
+  <!-- Modal Overlay -->
 <div id="info-modal" class="fixed inset-0 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
   <!-- Modal Card -->
   <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
@@ -94,27 +150,13 @@
 
 </div>
 
-        <div class="flex flex-col sm:items-end gap-2">
-          <div class="text-sm">
-            <span class="text-zinc-500">User:</span> 
-            <span id="user-id" class="font-mono font-medium">Loading...</span>
-          </div>
-          <button id="auth-btn" class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium">
-            Sign In
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-
   <!-- Floating Tabs Section -->
 <!-- Floating Tabs Section -->
-<div id="tabs-container" class="bg-white shadow-sm rounded-lg px-4 py-3 mb-6">
+<div id="tabs-container" class="tabs-container">
   <div id="tabs" class="flex items-center gap-2 overflow-x-auto">
     <!-- Tabs will be dynamically inserted here -->
     <button id="add-tab-btn" 
-            class="flex items-center justify-center w-8 h-8 rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors">
+            class="flex items-center justify-center w-8 h-8 rounded-full bg-[#1d4ed8] text-white hover:bg-[#1d4ed8] transition-colors">
       +
     </button>
   </div>
@@ -134,6 +176,18 @@
             <h2 class="text-xl font-semibold text-gray-900">Monthly Progress Overview</h2>
             <p class="text-sm text-gray-600 mt-1">Track each member's payment progress across months</p>
           </div>
+
+          <div class="payment-uid-section">
+  <h3>Track This Payment Progress By Searching UID</h3>
+  <div class="uid-box">
+    <span id="payment-uid">GPK-AX92QJH83S4L9Z1X2T8R</span>
+    <button id="copy-uid-btn" title="Copy UID">
+            <img src="assets/icons/copyico.svg" alt="Copy UID" class="copy-icon" />
+    </button>
+  </div>
+</div>
+
+
           <div class="overflow-x-auto">
             <table class="w-full text-sm text-zinc-700">
               <thead class="bg-gray-50 text-xs uppercase tracking-wide">
@@ -217,7 +271,7 @@
                   Select Member *
                 </label>
                 <select id="name-select" 
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors" 
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] transition-colors" 
                         required>
                   <option value="">Choose a member...</option>
                 </select>
@@ -232,7 +286,7 @@
                          type="number" 
                          min="0" 
                          step="0.01"
-                         class="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors" 
+                         class="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] transition-colors" 
                          placeholder="130.00" 
                          required>
                 </div>
@@ -240,8 +294,10 @@
             </div>
             <div class="flex justify-end">
               <button type="submit" 
-                      class="px-6 py-2 bg-amber-600 text-white font-medium rounded-lg hover:bg-amber-700 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors">
-                Add Payment
+                  class="px-6 py-2 bg-[#1d4ed8] text-white font-medium rounded-lg hover:bg-[#2563eb] focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 transition-colors">
+                          Continue
+              </button>
+                  Add Payment
               </button>
             </div>
             <div class="text-xs text-gray-500">
@@ -332,5 +388,7 @@
 
 
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/RPTUId.js"></script>
+
 </body>
 </html>

@@ -1,4 +1,5 @@
 // WORKING SCRIPT 2.0
+  let landingpage = true;
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -99,12 +100,15 @@ const userIdEl = document.getElementById("user-id");
 
 function updateUI(user) {
   const isSignedIn = user && !user.isAnonymous;
-  
   if (isSignedIn) {
     currentUser = user;
     userIdEl.textContent = user.displayName || user.email;
-    authBtn.textContent = "Sign Out";
-    authBtn.className = "mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700";
+    // authBtn.textContent = "Sign Out";
+    // authBtn.className = "mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700";
+        authBtn.querySelector(".gsi-material-button-contents").textContent = "Sign Out";
+
+    // authBtn.className = "mt-2 px-4 py-2 bg-[#1d4ed8] text-white rounded hover:bg-[#2563eb]";
+
       if (
           currentUser &&
           (currentUser.email === "johncadaro6@gmail.com" ||
@@ -113,10 +117,18 @@ function updateUI(user) {
     document.getElementById("payment-form-section").classList.remove("hidden");
     document.getElementById("payment-history-section").classList.remove("hidden");}
   } else {
+    if(landingpage){
+    window.location.href = "../LandingPage/Landing.html";
+    return; // stop here
+    }
     currentUser = null;
     userIdEl.textContent = "Guest (Read-only)";
-    authBtn.textContent = "Sign In with Google";
-    authBtn.className = "mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700";
+    // authBtn.textContent = "Sign In with Google";
+    // authBtn.className = "mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700";
+        authBtn.querySelector(".gsi-material-button-contents").textContent = "Sign in with Google";
+
+    // authBtn.className = "mt-2 px-4 py-2 bg-[#1d4ed8] text-white rounded hover:bg-[#2563eb]";
+
     document.getElementById("payment-form-section").classList.add("hidden");
     document.getElementById("payment-history-section").classList.add("hidden");
   }
@@ -138,7 +150,9 @@ authBtn.addEventListener("click", async () => {
 
 onAuthStateChanged(auth, user => {
   if (!user) {
-    signInAnonymously(auth).catch(error => handleError(error, 'Anonymous sign-in'));
+    // signInAnonymously(auth).catch(error => handleError(error, 'Anonymous sign-in'));
+    window.location.href = "../LandingPage/Landing.html";
+    return; // stop here
   }
   updateUI(user);
   if (user) setupListeners();
