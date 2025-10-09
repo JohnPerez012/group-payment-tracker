@@ -1,3 +1,6 @@
+import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+
 // =============================
 // Initialize AOS animations
 // =============================
@@ -13,7 +16,7 @@ const searchForm = document.querySelector(".search-form");
 if (searchForm) {
   searchForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    alert("Searching for Student ID... (demo only)");
+    alert("Future Feature... (demo only)");
   });
 }
 
@@ -74,6 +77,7 @@ document.querySelectorAll('header nav a[href^="#"]').forEach((anchor) => {
 
 
 
+
 // =============================
 // Dashboard Access Control
 // =============================
@@ -82,22 +86,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("signin-modal");
   const closeModalBtn = document.getElementById("close-modal-btn");
 
-  // Example: change this check to match your real login state
-  const isUserSignedIn = localStorage.getItem("user") !== null;
+  const auth = getAuth();
 
-  if (dashboardLink) {
-    dashboardLink.addEventListener("click", (e) => {
-      if (!isUserSignedIn) {
-        e.preventDefault(); // stop redirect
-        if (modal) modal.classList.remove("hidden");
-      }
-    });
-  }
+  // ✅ Track Firebase Auth state
+  onAuthStateChanged(auth, (user) => {
+    const isUserSignedIn = !!user && !user.isAnonymous;
 
+    // ✅ Auto-redirect if user is logged in and on Landing page
+    if (isUserSignedIn && window.location.pathname.includes("Landing.html")) {
+      window.location.href = "../index.html";
+      return;
+    }
+
+    // ✅ Handle click on Dashboard if NOT logged in
+    if (dashboardLink) {
+      dashboardLink.addEventListener("click", (e) => {
+        if (!isUserSignedIn) {
+          e.preventDefault();
+          if (modal) modal.classList.remove("hidden");
+        }
+      });
+    }
+  });
+
+  // ✅ Close modal button
   if (closeModalBtn) {
     closeModalBtn.addEventListener("click", () => {
       if (modal) modal.classList.add("hidden");
     });
   }
 });
-
