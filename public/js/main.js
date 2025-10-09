@@ -1,5 +1,5 @@
 // WORKING SCRIPT 2.0
-  let landingpage = true;
+  let landingpage = false;
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -118,7 +118,8 @@ function updateUI(user) {
     document.getElementById("payment-history-section").classList.remove("hidden");}
   } else {
     if(landingpage){
-    window.location.href = "../LandingPage/Landing.html";
+    // window.location.href = "../LandingPage/Landing.html";
+    window.location.href = "LandingPage/Landing.html";
     return; // stop here
     }
     currentUser = null;
@@ -151,7 +152,9 @@ authBtn.addEventListener("click", async () => {
 onAuthStateChanged(auth, user => {
   if (!user) {
     // signInAnonymously(auth).catch(error => handleError(error, 'Anonymous sign-in'));
-    window.location.href = "../LandingPage/Landing.html";
+    // window.location.href = "../LandingPage/Landing.html";
+    window.location.href = "LandingPage/Landing.html";
+
     return; // stop here
   }
   updateUI(user);

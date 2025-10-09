@@ -78,7 +78,7 @@ document.querySelectorAll('header nav a[href^="#"]').forEach((anchor) => {
 // Dashboard Access Control
 // =============================
 document.addEventListener("DOMContentLoaded", () => {
-  const dashboardLink = document.querySelector('a[href="../public/index.html"]');
+  const dashboardLink = document.querySelector('a[href="../index.html"]');
   const modal = document.getElementById("signin-modal");
   const closeModalBtn = document.getElementById("close-modal-btn");
 
