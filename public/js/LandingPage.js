@@ -1,4 +1,5 @@
-import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+// import { onAuthStateChanged, getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 
 // =============================
@@ -87,27 +88,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModalBtn = document.getElementById("close-modal-btn");
 
   const auth = getAuth();
+  let isUserSignedIn = false;
 
   // ✅ Track Firebase Auth state
   onAuthStateChanged(auth, (user) => {
-    const isUserSignedIn = !!user && !user.isAnonymous;
-
-    // ✅ Auto-redirect if user is logged in and on Landing page
-    if (isUserSignedIn && window.location.pathname.includes("LandingPage.html")) {
-      window.location.href = "index.html";
-      return;
-    }
-
-    // ✅ Handle click on Dashboard if NOT logged in
-    if (dashboardLink) {
-      dashboardLink.addEventListener("click", (e) => {
-        if (!isUserSignedIn) {
-          e.preventDefault();
-          if (modal) modal.classList.remove("hidden");
-        }
-      });
-    }
+    isUserSignedIn = !!user && !user.isAnonymous;
   });
+
+  // ✅ Handle click on Dashboard
+  if (dashboardLink) {
+    dashboardLink.addEventListener("click", (e) => {
+      e.preventDefault(); // stop normal link behavior first
+
+      if (!isUserSignedIn) {
+        // ❌ Not logged in → show modal
+        if (modal) modal.classList.remove("hidden");
+      } else {
+        // ✅ Logged in → go directly to Dashboard
+        window.location.href = "index.html";
+      }
+    });
+  }
 
   // ✅ Close modal button
   if (closeModalBtn) {
