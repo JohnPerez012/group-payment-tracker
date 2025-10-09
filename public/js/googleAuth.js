@@ -8,7 +8,9 @@ import {
   signInAnonymously
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-// ✅ Firebase config
+// ===============================
+// ✅ Firebase Config
+// ===============================
 const firebaseConfig = {
   apiKey: "AIzaSyClZuFFFxtiwJar_YLrC8-G4ZSC5kSJJdU",
   authDomain: "group-payment-tracker.firebaseapp.com",
@@ -18,85 +20,96 @@ const firebaseConfig = {
   appId: "1:208078945785:web:5164201a43e0bd37c8d128"
 };
 
-// ✅ Initialize
+// ===============================
+// ✅ Initialize Firebase
+// ===============================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 
+// ===============================
 // ✅ Elements
-const authBtn = document.getElementById("auth-btn");
+// ===============================
+const authButtons = document.querySelectorAll("#auth-btn-header, #auth-btn-modal");
 const userIdEl = document.getElementById("user-id");
 
+// ===============================
 // ✅ Utility: show notification
+// ===============================
 function showNotification(msg, type = "info") {
   const n = document.createElement("div");
-  n.className = `fixed top-4 right-4 p-3 rounded text-white ${
-    type === "success" ? "bg-green-500" :
-    type === "error" ? "bg-red-500" :
-    "bg-blue-500"
+  n.className = `fixed top-4 right-4 p-3 rounded text-white z-50 ${
+    type === "success"
+      ? "bg-green-500"
+      : type === "error"
+      ? "bg-red-500"
+      : "bg-blue-500"
   }`;
   n.textContent = msg;
   document.body.appendChild(n);
   setTimeout(() => n.remove(), 3000);
 }
 
-// ✅ Update UI
-// function updateUI(user) {
-//   const isSignedIn = !!user && !user.isAnonymous;
-//   if (isSignedIn) {
-//     currentUser = user;
-//     userIdEl.textContent = user.displayName || user.email;
-//     authBtn.textContent = "Sign Out";
-//     authBtn.className = "bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700";
-//   } else {
-//     currentUser = null;
-//     userIdEl.textContent = "Guest";
-//     authBtn.textContent = "Sign In with Google";
-//     authBtn.className = "bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700";
-//   }
-// }
-
+// ===============================
+// ✅ Update UI based on user state
+// ===============================
 function updateUI(user) {
   const isSignedIn = !!user && !user.isAnonymous;
-  if (isSignedIn) {
-    currentUser = user;
-    userIdEl.textContent = user.displayName || user.email;
-    authBtn.querySelector(".gsi-material-button-contents").textContent = "Sign Out";
-    authBtn.classList.remove("blue");
-    authBtn.classList.add("red");
-  } else {
-    currentUser = null;
-    userIdEl.textContent = "Guest";
-    authBtn.querySelector(".gsi-material-button-contents").textContent = "Sign in with Google";
-    authBtn.classList.remove("red");
-    authBtn.classList.add("blue");
+  currentUser = isSignedIn ? user : null;
+
+  if (userIdEl) {
+    userIdEl.textContent = isSignedIn
+      ? user.displayName || user.email
+      : "Guest";
   }
+
+  authButtons.forEach((btn) => {
+    const textEl = btn.querySelector(".gsi-material-button-contents");
+    if (!textEl) return;
+
+    if (isSignedIn) {
+      textEl.textContent = "Sign Out";
+      btn.classList.remove("blue");
+      btn.classList.add("red");
+    } else {
+      textEl.textContent = "Sign in with Google";
+      btn.classList.remove("red");
+      btn.classList.add("blue");
+    }
+  });
 }
 
-
+// ===============================
 // ✅ Sign in/out logic
-authBtn.addEventListener("click", async () => {
-  try {
-    if (currentUser) {
-      await signOut(auth);
-      showNotification("Signed out successfully", "success");
-    } else {
-      await signInWithPopup(auth, provider);
-      showNotification("Signed in successfully", "success");
+// ===============================
+authButtons.forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    try {
+      if (currentUser) {
+        await signOut(auth);
+        showNotification("Signed out successfully", "success");
+      } else {
+        await signInWithPopup(auth, provider);
+        showNotification("Signed in successfully", "success");
+      }
+    } catch (error) {
+      console.error("Authentication error:", error);
+      showNotification("Sign-in failed.", "error");
     }
-  } catch (error) {
-    console.error("Authentication error:", error);
-    showNotification("Sign-in failed.", "error");
-  }
+  });
 });
 
-// ✅ Track user state
+// ===============================
+// ✅ Track Auth State
+// ===============================
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    // Optional: fallback to anonymous sign-in
-    signInAnonymously(auth).catch((e) => console.error("Anonymous failed:", e));
+    // Optional: fallback to anonymous
+    signInAnonymously(auth).catch((e) =>
+      console.error("Anonymous failed:", e)
+    );
   }
   updateUI(user);
 });

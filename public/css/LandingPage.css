@@ -32,20 +32,52 @@ html {
 
 .modal-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px);
-  z-index: 3000;
-  opacity: 1;
-  transition: opacity 0.3s ease;
+  z-index: 2000;
+}
+.hidden {
+  display: none;
+}/* The modal box itself */
+.modal-content {
+  position: relative; /* ✅ makes the close button stay INSIDE */
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
 }
 
-.modal-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
+
+/* The close button */
+.close-modal-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background-color: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  /* font-weight: bold; */
+  font-size: 10px;
+  color: #444;
+  transition: all 0.25s ease;
+}
+
+.close-modal-btn:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: #1d4ed8; /* blue hover */
+  transform: scale(1.05);
 }
 
 /* .modal-content {
@@ -60,16 +92,73 @@ html {
 } */
 
 .modal-content {
-  background: #fff;
+  background: white;
   padding: 2rem;
   border-radius: 1rem;
-  text-align: center;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  max-width: 400px;
   width: 90%;
-  animation: popIn 0.3s ease forwards;
-  position: relative;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
+/* 
+.close-modal-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background-color: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  color: #444;
+}
+
+.close-modal-btn:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: #1d4ed8; /* your main blue color */
+  /* transform: scale(1.05);
+} */
+
+/* .close-modal-btn svg {
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+ */ 
+
+/* Close Button */
+/* .close-modal-btn {
+  background: #ff5757;
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  cursor: pointer;
+} */
+
+/* Fix overflowing on small screens */
+@media (max-width: 480px) {
+  .modal-content {
+    width: 90%;
+    padding: 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .gsi-material-button {
+    transform: scale(0.95);
+    width: 100%;
+  }
+}
+
+
+
 
 @keyframes popIn {
   from { transform: scale(0.8); opacity: 0; }
@@ -439,7 +528,7 @@ html {
 /* --------------------
    CLOSE MODAL BUTTON
 -------------------- */
-.close-modal-btn {
+/* .close-modal-btn {
     display: flex;
   align-items: center;
   justify-content: center;
@@ -454,9 +543,9 @@ html {
   cursor: pointer;
   transition: all 0.25s ease;
   color: #444;
-}
+} */
 
-.close-modal-btn:hover {
+/* .close-modal-btn:hover {
   background-color: rgba(0, 0, 0, 0.08);
   color: #1d4ed8;
   transform: scale(1.05);
@@ -466,7 +555,7 @@ html {
   width: 20px;
   height: 20px;
   pointer-events: none;
-}
+} */
 
 /* --------------------
    FOOTER
