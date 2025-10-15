@@ -785,6 +785,10 @@ footer {
     opacity: 1;
   }
 }
+/* ====================
+   TITLE HOVER EFFECT
+==================== */
+
 
 /* ====================
    RESPONSIVE
@@ -896,3 +900,4 @@ footer {
   opacity: 1;
   transform: translateY(0);
 }
+

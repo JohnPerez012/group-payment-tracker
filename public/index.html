@@ -167,7 +167,7 @@
   <div id="tabs" class="flex items-center gap-2 overflow-x-auto">
     <!-- Tabs will be dynamically inserted here -->
     <button id="add-tab-btn" 
-            class="flex items-center justify-center w-8 h-8 rounded-full bg-[#1d4ed8] text-white hover:bg-[#1d4ed8] transition-colors">
+            class="flex items-center justify-center w-8 h-8 rounded-full bg-[#1d4ed8] text-white hover:bg-[#2563eb] transition-colors">
       +
     </button>
   </div>
@@ -178,14 +178,47 @@
 
   
   <div class="container mx-auto px-6">
-    <!-- Main Content Grid -->
+    <!-- Main Content Gri d -->
     <main class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
       <!-- Monthly Progress Table -->
       <section class="xl:col-span-2">
         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Monthly Progress Overview</h2>
-            <p class="text-sm text-gray-600 mt-1">Track each member's payment progress across months</p>
+
+          <div class="section-header">
+            <div class="left">
+            <h2 class="section-title">Monthly Progress Overview</h2>
+             <p class="section-title-disc">Track each member's payment progress across months</p>
+  
+            </div>
+
+             <!-- //////////////////// -->
+
+
+             <div class="right">
+  <button id="settings-btn" class="settings-btn" title="Options">
+    <span class="material-symbols-outlined">settings</span>
+  </button>
+</div>
+   <!-- Dropdown Menu -->
+  <div id="settings-menu" class="settings-menu hidden">
+    <button class="menu-item create">
+      <span class="material-symbols-outlined">add_circle</span>
+      Create
+    </button>
+    <button class="menu-item update">
+      <span class="material-symbols-outlined">edit</span>
+      Update
+    </button>
+    <button class="menu-item delete">
+      <span class="material-symbols-outlined">delete</span>
+      Delete
+    </button>
+  </div>
+
+
+
+  <!-- //////////////////// -->
+           
           </div>
 
           <div class="payment-uid-section">
@@ -304,14 +337,18 @@
                 </div>
               </div>
             </div>
-            <div class="flex justify-end">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <button type="add-member" 
+                  class="px-6 py-2 bg-[#1d4ed8] text-white font-medium rounded-lg hover:bg-[#2563eb] focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 transition-colors">
+                          Add Member
+              </button>
               <button type="submit" 
                   class="px-6 py-2 bg-[#1d4ed8] text-white font-medium rounded-lg hover:bg-[#2563eb] focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 transition-colors">
-                          Continue
-              </button>
-                  Add Payment
+                          Add Payment
               </button>
             </div>
+
             <div class="text-xs text-gray-500">
               <p>💡 <strong>Tip:</strong> Use Ctrl+Enter to quickly submit the form</p>
             </div>

@@ -1,11 +1,8 @@
-
 body {
-      font-family: "Alan Sans", sans-serif;
-
+  font-family: "Alan Sans", sans-serif;
   background: #fafafa;
   min-height: 100vh;
-    background: linear-gradient(to bottom, #e0f2fe, #06a9c6, #ffffff);
-
+  background: linear-gradient(to bottom, #e0f2fe, #06a9c6, #ffffff);
 }
 
 .container {
@@ -38,8 +35,6 @@ body {
   }
 }
 
-
-/* === Responsive === */
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
@@ -57,7 +52,6 @@ body {
   }
 }
 
-
 .progress-bar-bg {
   background: #e5e7eb;
   border-radius: 25px;
@@ -74,7 +68,6 @@ body {
   transition: width 0.3s ease;
 }
 
-/* Progress bar colors - simple solid colors */
 .progress-bar.bg-green-500 {
   background: #10b981;
 }
@@ -129,7 +122,6 @@ tbody tr:hover {
   background-color: rgba(249, 250, 251, 0.8);
 }
 
-/* Status indicators */
 .status-complete {
   color: #059669;
   font-weight: 600;
@@ -145,89 +137,78 @@ tbody tr:hover {
   font-weight: 600;
 }
 
-/* Card styling */
 .bg-white {
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-  
-}
-#info-modal{
-    z-index: 100; /* Ensures it appears above other content */
-  
 }
 
+#info-modal {
+  z-index: 100;
+}
 
 .tabs-container {
   position: sticky;
   top: 0;
   z-index: 99;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.7s ease; /* smooth shadow transition */
-
-  background: rgba(255, 255, 255, 1); /* semi-transparent for blur visibility */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.7s ease;
+  background: rgba(255, 255, 255, 1);
   backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px); /* for Safari support */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem; /* same as rounded-lg */
-  padding: 0.75rem 1rem; /* same as px-4 py-3 */
-  margin-bottom: 1.5rem; /* same as mb-6 */
+  -webkit-backdrop-filter: blur(0px);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
 }
-
-
 
 #tabs-container.sticky-active {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.8);
-  background: rgba(255, 255, 255, 0.7); /* semi-transparent for blur visibility */
-
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); /* for Safari support */
-
+  -webkit-backdrop-filter: blur(10px);
 }
 
-
-/* adding without deleting START*/
 .tab {
-  background: #f9fafb;
-  padding: 0.5rem 1rem;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  background-color: #ffffff;
   border-radius: 0.5rem;
   cursor: grab;
   user-select: none;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.tab:hover {
+  background: #e5e7eb;
+  border-radius: 1.5rem;
 }
 
 .tab:active {
   cursor: grabbing;
 }
 
-.tab:hover {
-  background: #e5e7eb;
-  border-radius: 1.5rem;
-  
-}
-
 .tab.active {
-  background: #1d4ed8; /* amber-500 */
+  background: #1d4ed8;
   color: white;
+  font-weight: 600;
 }
 
 .tab-close {
   margin-left: 8px;
-  font-weight: bold;  
+  font-weight: bold;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .tab-close:hover {
-  color: #fc5203; /* red-600 */
+  color: #fc5203;
 }
+
 .tabs-stretch .tab {
-  flex: 1 1 0; /* all tabs share equal width */
-  justify-content: space-between; /* center text inside */
+  flex: 1 1 0;
+  justify-content: center;
 }
-
-/* Make floating tab look nice */
-
-
 
 #loading-screen {
   transition: opacity 0.5s ease, visibility 0.5s ease;
@@ -238,9 +219,6 @@ tbody tr:hover {
   visibility: hidden;
 }
 
-
-
-/* Responsive design */
 @media (max-width: 768px) {
   .progress-bar-bg {
     height: 20px;
@@ -304,7 +282,6 @@ tbody tr:hover {
   width: 100%;
 }
 
-/* Responsive */
 @media (max-width: 640px) {
   nav {
     margin-top: 0.5rem;
@@ -316,9 +293,6 @@ tbody tr:hover {
   }
 }
 
-
-
-/* Header Container */
 .main-header {
   width: 100%;
   background: #ffffffcc;
@@ -328,7 +302,6 @@ tbody tr:hover {
   margin-bottom: 25px;
 }
 
-/* Flex layout for all header elements */
 .header-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -339,7 +312,6 @@ tbody tr:hover {
   gap: 1rem;
 }
 
-/* Logo Section */
 .logo-area {
   display: flex;
   align-items: center;
@@ -359,43 +331,6 @@ tbody tr:hover {
   letter-spacing: 0.5px;
 }
 
-/* Navigation Links */
-.nav-link {
-  display: flex;
-  justify-content: center;
-  flex: 1;
-  gap: 1.5rem;
-}
-
-.nav-link {
-  text-decoration: none;
-  color: #222;
-  font-weight: 500;
-  position: relative;
-  transition: color 0.3s ease;
-}
-
-.nav-link:hover {
-  color: #1d4ed8;
-}
-
-.nav-link::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -3px;
-  width: 0;
-  height: 2px;
-  background: #1d4ed8;
-  transition: width 0.3s ease, left 0.3s ease;
-  transform: translateX(-50%);
-}
-
-.nav-link:hover::after {
-  width: 100%;
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
   .header-container {
     flex-wrap: wrap;
@@ -417,8 +352,6 @@ tbody tr:hover {
     margin-top: 0.8rem;
   }
 }
-
-
 
 .payment-uid-section {
   background: rgba(255, 255, 255, 0.8);
@@ -462,4 +395,123 @@ tbody tr:hover {
 
 #copy-uid-btn:hover {
   transform: scale(1.2);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  padding-right: 10px;
+  margin: 0 20px 0 20px;
+}
+
+.section-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  letter-spacing: 0.5px;
+}
+
+.section-title-disc {
+  font-size: .85rem;
+  font-weight: 700;
+  color: #494b52;
+  letter-spacing: 0.5px;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.settings-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+}
+
+.settings-btn:hover {
+  color: #1d4ed8;
+  transform: rotate(25deg);
+}
+
+.settings-menu {
+  position: absolute;
+  top: 75%;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 10000;
+  min-width: 170px;
+  animation: fadeDown 0.25s ease;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.25s ease;
+}
+
+.menu-item:hover {
+  background-color: #f3f4f6;
+}
+
+.menu-item.create {
+  color: #16a34a;
+}
+
+.menu-item.update {
+  color: #f59e0b;
+}
+
+.menu-item.delete {
+  color: #dc2626;
+}
+
+.menu-item span {
+  font-size: 20px;
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

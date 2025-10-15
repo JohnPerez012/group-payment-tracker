@@ -5,7 +5,7 @@ to push
 -- file location
     -- command --
     -- git add .
-    -- git commit -m "discription here"
+    -- git commit -m "3rd wave -- list of v1.1"
     -- git push -u origin main
 
 
@@ -34,6 +34,8 @@ to push
   --------- V2
  - payment modal implementation | Sep 16, 7:30 PM GMT+8
  - dropdown members in payment modal | Sep 16, 9:34 PM GMT+8
+ - Deployment of loading screen animation | Sep 16, 11:11 PM GMT+8
+
 
 initial 2nd wave ~~ V0
  - upload local file to Github | Sep 16, 10:53 PM GMT+8
@@ -52,10 +54,12 @@ initial 2nd wave ~~ V0
   - Google authenthecation service integration | Sep 20, 5:05 PM GMT+8
   - System Role Separation | Sep 22, 10:12 PM GMT+8
 
+
 2nd wave ~~ V2.0
  - Deplyoment of logo GPTicoCosmic Orange | Sep 25, 12:00 AM GMT+8
  - Responsive bar implementation and adjustments | Sep 25, 4:10 PM GMT+8
  - Cleaning UI/UX responsiveness | Sep 25, 6:54 PM GMT+8
+ - implement CRUD functionalities in System | Sep 25, 9:54 PM GMT+8
  - Add tabs Container | Sep 25, 10:10 PM GMT+8
  - Tabs adjustment Flexibility | Sep 25, 11:48 PM GMT+8
  - Deplyoment of logo Reptile-Green.png | Sep 25, 12:00 AM GMT+8
@@ -64,6 +68,7 @@ initial 2nd wave ~~ V0
  - Enhancing Header Foother designs | Sep 25, 1:45 AM GMT+8
   --------- V2.1
  - logo elements adjustments | Sep 26, 9:12 PM GMT+8
+
 
 initial 3rd wave ~~ V0
  - PUSH Connection, Implementaion of Ladning page by: Llawliet-code (Allan De Jesus) | Sep 28, 5:46 PM GMT+8
@@ -79,6 +84,7 @@ initial 3rd wave ~~ V0
  - Redesining file structure | Oct 9, 3:53 PM GMT+8
  - Structural file enhancement testing ++STATUS -- RUN++ | Oct 9, 4:35 PM GMT+8
 
+
 3rd wave ~~ V1.0
  - Adjustments in LandPage | Oct 10, 1:02 PM GMT+8
  - Adjustments in Dashboard page (MAIN PAGE) | Oct 10, 2:46 PM GMT+8
@@ -88,5 +94,8 @@ initial 3rd wave ~~ V0
 - Main Page tested working | Oct 10, 10:35 PM GMT+8
 - fixing bugs, consider features |  Oct 10, 11:59 PM GMT+8
 - Integrated code full Force push | Oct 10, 12:50 AM GMT+8
+
+  --------- V1.2
+- Tab Updation thru User Integration and Role Mnamagement | Oct 16, 1:16 AM GMT+8
 
 
