@@ -96,6 +96,7 @@ initial 3rd wave ~~ V0
 - Integrated code full Force push | Oct 10, 12:50 AM GMT+8
 
   --------- V1.2
-- Tab Updation thru User Integration and Role Mnamagement | Oct 16, 1:16 AM GMT+8
+- Tab Updation thru User Integration and Role Management | Oct 16, 1:16 AM GMT+8 & FAILED
+- Recovergin V1.1
 
 
