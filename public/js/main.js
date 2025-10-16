@@ -1,6 +1,6 @@
 // WORKING SCRIPT 2.0
-let landingpage = true;
-let testing = false;
+let landingpage = false;
+let testing = true;
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -112,7 +112,8 @@ function updateUI(user) {
       if (
         currentUser &&
         (currentUser.email === "johncadaro6@gmail.com" ||
-         currentUser.email === "loonalexa86@gmail.com")
+         currentUser.email === "loonalexa86@gmail.com" || 
+         currentUser.email === "lightgami18@gmail.com")
       ) {
         document.getElementById("payment-form-section").classList.remove("hidden");
         document.getElementById("payment-history-section").classList.remove("hidden");
@@ -277,7 +278,8 @@ async function setupListeners() {
        if (
           currentUser &&
           (currentUser.email === "johncadaro6@gmail.com" ||
-           currentUser.email === "loonalexa86@gmail.com")
+           currentUser.email === "loonalexa86@gmail.com" || 
+           currentUser.email === "lightgami18@gmail.com")
         ) {
           // ✅ Admins see everything
           renderTableV2();
