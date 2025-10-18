@@ -1,6 +1,6 @@
 // WORKING SCRIPT 2.0
-let landingpage = false;
-let testing = true;
+let landingpage = true;
+let testing = false;
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
