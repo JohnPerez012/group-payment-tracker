@@ -1,12 +1,10 @@
-// WORKING SCRIPT 2.0
-let landingpage = true;
-let testing = false;
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-// comment
+// WORKING SCRIPT 2.0
+let landingpage = true;
+let testing = false;
 
 // Firebase Config - Consider moving to environment variables in production
 const firebaseConfig = {
@@ -38,6 +36,7 @@ const MAX_TABS = 5;
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const tabsCollection = collection(db, "tabsCollection"); // Updated to match your Firestore collection name
 
 // Global state
 let currentUser = null;
@@ -128,18 +127,16 @@ function updateUI(user) {
       document.getElementById("payment-history-section").classList.add("hidden");
     }}}
 
-
 onAuthStateChanged(auth, user => {
   if (!user) {
-    // signInAnonymously(auth).catch(error => handleError(error, 'Anonymous sign-in'));
-    // window.location.href = "../LandingPage/Landing.html";
     window.location.href = "LandingPage.html";
-
-    return; // stop here
+    return;
   }
+  currentUser = user;
   updateUI(user);
   if (user) setupListeners();
 });
+
 
 // Simplified and debugged payment calculation logic
 /*
@@ -275,22 +272,35 @@ async function setupListeners() {
         ...d.data()
       }));
 
-       if (
-          currentUser &&
-          (currentUser.email === "johncadaro6@gmail.com" ||
-           currentUser.email === "loonalexa86@gmail.com" || 
-           currentUser.email === "lightgami18@gmail.com")
-        ) {
-          // ✅ Admins see everything
-          renderTableV2();
-          renderHistory();
-        } else {
-          // 👀 Guests / other users only see payment history
-          renderTableV2();
-        }
+      if (
+        currentUser &&
+        (currentUser.email === "johncadaro6@gmail.com" ||
+         currentUser.email === "loonalexa86@gmail.com" || 
+         currentUser.email === "lightgami18@gmail.com")
+      ) {
+        renderTableV2();
+        renderHistory();
+      } else {
+        renderTableV2();
+      }
     }, (error) => {
       handleError(error, 'Loading payments');
     });
+
+    // Check if tabs collection is empty and create default if needed
+    const tabsSnap = await getDocs(tabsCollection);
+    if (tabsSnap.empty) {
+      await addDoc(tabsCollection, {
+        tabName: "Overview",
+        tabsArrangement: 1,
+        tabsBy: currentUser ? currentUser.email : 'system'
+      });
+      showNotification('Default tab created', 'success');
+    }
+
+    // Load tabs
+    loadTabs();
+
   } catch (error) {
     handleError(error, 'Setup');
   }
@@ -696,46 +706,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
    Adding without removing START
 --------------------------------- */
+// Tabs UI elements
 const tabsContainer = document.getElementById("tabs");
 const addTabBtn = document.getElementById("add-tab-btn");
 
 
+
 // Function to check current tab count
 function checkTabLimit() {
-  const tabs = tabsContainer.querySelectorAll(".tab"); // ✅ correct class selector
-
-
-    // Toggle stretch mode when exactly 5 tabs
+  const tabs = tabsContainer.querySelectorAll(".tab");
   if (tabs.length === 5) {
-    tabsContainer.classList.add("tabs-stretch"); // custom CSS class
+    tabsContainer.classList.add("tabs-stretch");
   } else {
     tabsContainer.classList.remove("tabs-stretch");
   }
   
   if (tabs.length >= MAX_TABS) {
-    if (addTabBtn) addTabBtn.style.display = "none"; 
-    return false; // block adding
+    if (addTabBtn) addTabBtn.style.display = "none";
+    return false;
   } else {
-    if (addTabBtn) addTabBtn.style.display = "inline-flex"; 
-    return true; // allow adding
+    if (addTabBtn) addTabBtn.style.display = "inline-flex";
+    return true;
   }
 }
+
 // Run once at startup
 document.addEventListener("DOMContentLoaded", checkTabLimit);
 
-
-
-
-function createTab(name = "New Tab") {
+function createTab(name = "New Tab", docId) {
   const tab = document.createElement("div");
   tab.className = "tab flex items-center";
   tab.draggable = true;
+  tab.dataset.docId = docId;
   tab.innerHTML = `
     <span>${name}</span>
     <button class="tab-close text-red-600 font-bold ml-4">&times;</button>
-
   `;
-    // <span class="tab-close ml-2">&times;</span>
 
   // Activate on click
   tab.addEventListener("click", () => {
@@ -744,46 +750,109 @@ function createTab(name = "New Tab") {
   });
 
   // Remove tab
-tab.querySelector(".tab-close").addEventListener("click", async (e) => {
-  e.stopPropagation();
+tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+  });
 
-  const warningMessage = `
-  ⚠️ DANGER: You are about to permanently remove this tab.
-  
-  ❗ Important data inside this tab CANNOT be retrieved once deleted.
-  
-  Do you really want to continue?`;
+  // Remove tab (single event listener)
+  tab.querySelector(".tab-close").addEventListener("click", async (e) => {
+    e.stopPropagation();
+    const warningMessage = `
+      ⚠️ DANGER: You are about to permanently remove this tab.
+      ❗ Important data inside this tab CANNOT be retrieved once deleted.
+      Do you really want to continue?`;
+    if (confirm(warningMessage)) {
+      try {
+        // Delete the tab
+        await deleteDoc(doc(db, "tabsCollection", tab.dataset.docId));
+        showNotification("Tab deleted successfully", "success");
+        // Reorder remaining tabs to ensure sequential tabsArrangement
+        await reorderTabs();
+      } catch (error) {
+        handleError(error, 'Delete tab');
+      }
+    } else {
+      showNotification("Deletion canceled", "warning");
+    }
+  });
 
-  if (confirm(warningMessage)) {
-      showNotification("🚨 Tab and related payment deleted permanently!", "error");
-      tab.remove();
-    checkTabLimit();
-  } else {
-    showNotification("❌ Deletion canceled", "warning");
-  }
-});
-                                                   
   // Dragging
   tab.addEventListener("dragstart", (e) => {
-    e.dataTransfer.setData("text/plain", tab.id);
+    tab.className = "tab flex items-center";
     tab.classList.add("opacity-50");
   });
   tab.addEventListener("dragend", () => {
     tab.classList.remove("opacity-50");
+    updateTabOrders();
   });
 
   tabsContainer.insertBefore(tab, addTabBtn);
-  checkTabLimit(); 
+  checkTabLimit();
 }
 
+async function reorderTabs() {
+  try {
+    const tabsSnap = await getDocs(query(tabsCollection, orderBy("tabsArrangement", "asc")));
+    const tabs = tabsSnap.docs.map((doc, index) => ({
+      id: doc.id,
+      tabsArrangement: index + 1
+    }));
+
+    // Update each tab's tabsArrangement in Firestore
+    for (const tab of tabs) {
+      await updateDoc(doc(db, "tabsCollection", tab.id), {
+        tabsArrangement: tab.tabsArrangement
+      });
+    }
+  } catch (error) {
+    handleError(error, 'Reorder tabs');
+  }
+}
+
+// Function to update tab orders in Firestore after reorder
+const updateTabOrders = debounce(async () => {
+  const tabs = tabsContainer.querySelectorAll(".tab");
+  for (let index = 0; index < tabs.length; index++) {
+    const tab = tabs[index];
+    try {
+      await updateDoc(doc(db, "tabsCollection", tab.dataset.docId), {
+        tabsArrangement: index + 1
+      });
+    } catch (error) {
+      handleError(error, 'Update tab order');
+    }
+  }
+}, 500);
+
 // Add new tab
-addTabBtn.addEventListener("click", () => {
-    if (!checkTabLimit()) {
+addTabBtn.addEventListener("click", async () => {
+  if (!checkTabLimit()) {
     alert(`⚠️ You can only have up to ${MAX_TABS} tabs.`);
     return;
-  }   //////////////////////////////////////////////////////////////////////////////////////
+  }
+
+  if (!testing) {
+    if (!currentUser || currentUser.isAnonymous) {
+      showNotification('Please sign in to add tabs', 'error');
+      return;
+    }
+  }
+
   const name = prompt("Enter tab name:");
-  if (name) createTab(name);
+  if (name) {
+    try {
+      const currentTabs = tabsContainer.querySelectorAll('.tab');
+      await addDoc(tabsCollection, {
+        tabName: name,
+        tabsArrangement: currentTabs.length + 1,
+        tabsBy: currentUser ? currentUser.email : 'system'
+      });
+      showNotification(`Tab ${name} added successfully`, 'success');
+    } catch (error) {
+      handleError(error, 'Add tab');
+    }
+  }
 });
 
 // Drag & Drop reordering
@@ -799,10 +868,31 @@ tabsContainer.addEventListener("dragover", (e) => {
   } else {
     tabsContainer.insertBefore(dragging, addTabBtn);
   }
-    checkTabLimit();
-
+  checkTabLimit();
 });
 
+
+
+function loadTabs() {
+  const q = query(tabsCollection, orderBy("tabsArrangement", "asc"));
+  onSnapshot(q, (snap) => {
+    tabsContainer.querySelectorAll(".tab").forEach(t => t.remove());
+    snap.docs.forEach(d => {
+      const tabData = d.data();
+  if (tabData.tabsBy === currentUser.email) {
+    createTab(tabData.tabName, d.id);
+  }
+    });
+    checkTabLimit();
+  }, (error) => {
+    console.error('Load tabs error:', error);
+    handleError(error, 'Loading tabs');
+  });
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 // Initialize with one default tab
 // createTab("Overview");
 //Adding without removing END
@@ -832,6 +922,23 @@ window.addEventListener("scroll", () => {
     contTab.classList.remove("sticky-active");
   }
 });
+
+
+
+
+ const settingsBtn = document.getElementById("settings-btn");
+  const settingsMenu = document.getElementById("settings-menu");
+
+  settingsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    settingsMenu.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) {
+      settingsMenu.classList.add("hidden");
+    }
+  });
 
 
 
