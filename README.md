@@ -100,3 +100,23 @@ initial 3rd wave ~~ V0
 - Recovergin V1.1
 
 
+  --------- V1.3
+- Tab Updation thru User Integration and Role Management | Oct 19, 5:50 PM GMT+8 FAILED LOGIC
+- Tab stored to DB | Oct 19, 6:01 PM GMT+8 FAILED DATAMANAGEMENT
+
+
+initial 4th wave ~~ V0
+- Tab management thru firestone DB | Oct 19, 10:02 PM GMT+8
+- Tab management fixed code/fixed database | Oct 20, 1:04 AM GMT+8
+- Tab Management JSON Integration | Oct 21, 6:33 AM GMT+8
+- Tab Management JSON Integration fixed flow | Oct 21, 7:47 AM GMT+8
+- Tab Management JSON Integration Member adoptation | Oct 21, 10:02 AM GMT+8
+- Tab Management JSON Integration Rendering to table "member" column | Oct 21, 3:11 AM GMT+8
+- Data management from JSON to firestone DB | Oct 21, 5:23 AM GMT+8
+- Data integration -- JSON x Firestone | Oct 21, 10:23 AM GMT+8
+- TAB user centered | Oct 21, 11:22 AM GMT+8
+
+
+  --------- V1
+  -UI x UX Personilization Implementation in Dashboard | Oct 21, 12:04 AM GMT+8
+  

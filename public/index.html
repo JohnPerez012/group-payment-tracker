@@ -1,79 +1,89 @@
+
+
 <!-- WORKING CODE 2.0 -->
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Track group payments, monthly progress, and member contributions with real-time updates">
-  <title>GPTracker</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Track group payments, monthly progress, and member contributions with real-time updates"
+    />
+    <title>GPTracker</title>
 
-  <!-- GOOGLE FONTS -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- GOOGLE FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <!-- GOOGLE ICONS -->
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-/>
+    <!-- GOOGLE ICONS -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
 
-<!-- STYLESHEET GLOBAL -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Alan+Sans:wght@300..900&family=Fredericka+the+Great&display=swap" rel="stylesheet">
+    <!-- STYLESHEET GLOBAL -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Alan+Sans:wght@300..900&family=Fredericka+the+Great&display=swap"
+      rel="stylesheet"
+    />
 
-<!-- STYLESHEET LOCAL -->
-  <link rel="stylesheet" href="css/googleSignInButtonStandardStyle.css">  
-  <link rel="stylesheet" href="css/styles.css">
+    <!-- STYLESHEET LOCAL -->
+    <link rel="stylesheet" href="css/googleSignInButtonStandardStyle.css" />
+    <link rel="stylesheet" href="css/styles.css" />
 
-<!-- ICONS  -->
-  <link rel="icon" type="image/svg+xml" href="assets/icons/GPTico.svg">
+    <!-- ICONS  -->
+    <link rel="icon" type="image/svg+xml" href="assets/icons/GPTico.svg" />
 
-<!-- SCRIPTS GLOBAL -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SCRIPTS GLOBAL -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
-</head>
-<body class="bg-gray-50 min-h-screen">
-
-
-
-   <div id="loading-screen" class="fixed inset-0 flex items-center justify-center bg-white z-[9999]">
-    <div class="flex flex-col items-center gap-4">
-      <img src="assets/icons/GPTico.svg" alt="App Logo" class="w-16 h-16 animate-bounce">
-      <p class="text-gray-600 font-medium">Loading, please wait...</p>
+    <!-- Loading Screen Scripts -->
+    <link rel="stylesheet" href="css/loadingScreen.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+  
+    <div id="loading-screen">
+      <h1 id="title">
+        <span class="word g">G</span>
+        <span class="word group">ROUP</span>
+        <span class="word p"> P</span>
+        <span class="word payment">AYMENT</span>
+        <span class="word tracker"> Tracker</span>
+      </h1>
     </div>
-  </div>
 
-
-
-  
-  <!-- Header -->
-  <!-- <header class="bg-white shadow-sm border-b mb-6"> -->
+    <!-- Header -->
+    <!-- <header class="bg-white shadow-sm border-b mb-6"> -->
     <header class="main-header">
+      <!-- <div class="container mx-auto px-6 py-4"> -->
+      <div class="header-container">
+        <!-- <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"> -->
+        <div class="logo-area">
+          <img src="assets/icons/GPTico.svg" alt="App Icon" class="w-7 h-7" />
 
-    <!-- <div class="container mx-auto px-6 py-4"> -->
-        <div class="header-container">
+          <h1
+            class="text-2xl sm:text-3xl font-bold text-[#1d4ed8] flex items-center gap-2"
+          >
+            GPTracker
+          </h1>
+        </div>
 
-      <!-- <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"> -->
-         <div class="logo-area">  
-<img src="assets/icons/GPTico.svg" alt="App Icon" class="w-7 h-7"> 
-
-  <h1 class="text-2xl sm:text-3xl font-bold text-[#1d4ed8] flex items-center gap-2">
-    GPTracker
-  </h1>
-         </div>
-  
-  <nav class="flex items-center space-x-6 text-sm sm:text-base">
-    <a href="LandingPage.html" class="nav-link">Home</a>
-    <!-- <a href="#members" class="nav-link">Members</a>
+        <nav class="flex items-center space-x-6 text-sm sm:text-base">
+          <a href="LandingPage.html" class="nav-link">Home</a>
+          <!-- <a href="#members" class="nav-link">Members</a>
     <a href="#payments" class="nav-link">Payments</a> -->
-    <a href="#openAboutModal" class="nav-link" data-open-info>About</a>
-
-  </nav>
+          <a href="#openAboutModal" class="nav-link" data-open-info>About</a>
+        </nav>
 
         <!-- <div class="flex flex-col sm:items-end gap-2">
           <div class="text-sm">
@@ -85,359 +95,410 @@
             <span class="text-gray">User:</span>
             <span id="user-id" class="user-id">Loading...</span>
           </div>
-       
 
           <button id="auth-btn-header" class="gsi-material-button">
-          <!-- <button id="auth-btn" class="gsi-material-button blue"> -->
+            <!-- <button id="auth-btn" class="gsi-material-button blue"> -->
 
-  <div class="gsi-material-button-state"></div>
-  <div class="gsi-material-button-content-wrapper">
-    <div class="gsi-material-button-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0C14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3c-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-      </svg>
-    </div>
-    <span class="gsi-material-button-contents">Sign in with Google</span>
-  </div>
-</button>
-
-
+            <div class="gsi-material-button-state"></div>
+            <div class="gsi-material-button-content-wrapper">
+              <div class="gsi-material-button-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                  <path
+                    fill="#EA4335"
+                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0C14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                  ></path>
+                  <path
+                    fill="#4285F4"
+                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                  ></path>
+                  <path
+                    fill="#FBBC05"
+                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                  ></path>
+                  <path
+                    fill="#34A853"
+                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3c-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                  ></path>
+                </svg>
+              </div>
+              <span class="gsi-material-button-contents"
+                >Sign in with Google</span
+              >
+            </div>
+          </button>
         </div>
       </div>
-  </header>
+    </header>
 
+    <!-- Modal Overlay -->
+    <div
+      id="info-modal"
+      class="fixed inset-0 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+    >
+      <!-- Modal Card -->
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+        <!-- Title Center -->
+        <h2
+          class="text-xl font-bold mb-6 flex items-center justify-center gap-2"
+        >
+          📘 About this app
+        </h2>
 
+        <!-- Text Justified -->
+        <p class="mb-4 text-gray-700 text-justify">
+          This web application is developed to promote
+          <strong>TRANSPARENCY and ACCOUNTABILITY</strong> in managing the
+          student fund within the school community.
+        </p>
+        <hr style="border: none; border-top: 3px solid black" />
+        <br />
+        <p class="mb-4 text-gray-700 text-justify">
+          It provides an organized way to
+          <strong>RECORD, TRACK, and MONITOR PAYMENTS</strong> contributed by
+          members. By keeping records visible and easy to follow, this tool
+          helps build trust, ensures fairness, and reduces the risk of errors.
+        </p>
+        <hr style="border: none; border-top: 3px solid black" />
+        <br />
+        <p class="text-gray-700 text-justify">
+          Designed with simplicity in mind, it ensures that
+          <strong>STUDENTS, GROUP MEMBERS, and GUARDIANS</strong> can access
+          real-time financial updates with ease.
+        </p>
 
-
-
-
-
-  
-  <!-- Modal Overlay -->
-<div id="info-modal" class="fixed inset-0 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-  <!-- Modal Card -->
-  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-    
-    <!-- Title Center -->
-    <h2 class="text-xl font-bold mb-6 flex items-center justify-center gap-2">
-      📘 About this app
-    </h2>
-
-    <!-- Text Justified -->
-    <p class="mb-4 text-gray-700 text-justify">
-      This web application is developed to promote 
-      <strong>TRANSPARENCY and ACCOUNTABILITY</strong> in managing the student fund within the school community.
-    </p>
-    <hr style="border: none; border-top: 3px solid black;">
-    <br>
-    <p class="mb-4 text-gray-700 text-justify">
-      It provides an organized way to <strong>RECORD, TRACK, and MONITOR PAYMENTS</strong> contributed by members. 
-      By keeping records visible and easy to follow, this tool helps build trust, ensures fairness, 
-      and reduces the risk of errors.
-    </p>
-    <hr style="border: none; border-top: 3px solid black;">
-      <br>
-    <p class="text-gray-700 text-justify">
-      Designed with simplicity in mind, it ensures that 
-      <strong>STUDENTS, GROUP MEMBERS, and GUARDIANS</strong> can access real-time financial updates with ease.
-    </p>
-
-    <!-- Close Button Center -->
-    <div class="mt-6 flex justify-center">
-      <button data-close-info
-              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-        Close
-      </button>
+        <!-- Close Button Center -->
+        <div class="mt-6 flex justify-center">
+          <button
+            data-close-info
+            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Close
+          </button>
+        </div>
+      </div>
     </div>
 
-  </div>
-</div>
+    <!-- Floating Tabs Section -->
+    <div id="tabs-container" class="tabs-container">
+      <div id="tabs" class="flex items-center gap-2 overflow-x-auto">
+        <!-- Tabs will be dynamically inserted here -->
+        <button
+          id="add-tab-btn"
+          class="flex items-center justify-center w-8 h-8 rounded-full bg-[#1d4ed8] text-white hover:bg-[#2563eb] transition-colors"
+        >
+          +
+        </button>
+      </div>
+    </div>
 
+    <div
+      id="floating-tab"
+      class="hidden fixed top-0 left-0 right-0 z-50 flex justify-center mt-2"
+    ></div>
 
+    <div class="container mx-auto px-6">
+      <!-- Main Content Gri d -->
+      <main class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+        <!-- Monthly Progress Table -->
+        <!-- <section class="xl:col-span-2"> -->
 
+        <section id="monthly-overview-section" class="xl:col-span-2 hidden">
+          <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+            <div class="section-header">
+              <div class="left">
+                <h2 class="section-title">Monthly Progress Overview</h2>
+                <p class="section-title-disc">
+                  Track each member's payment progress across months
+                </p>
+              </div>
 
-</div>
+              <!-- //////////////////// -->
 
-  <!-- Floating Tabs Section -->
-<!-- Floating Tabs Section -->
-<div id="tabs-container" class="tabs-container">
-  <div id="tabs" class="flex items-center gap-2 overflow-x-auto">
-    <!-- Tabs will be dynamically inserted here -->
-    <button id="add-tab-btn" 
-            class="flex items-center justify-center w-8 h-8 rounded-full bg-[#1d4ed8] text-white hover:bg-[#2563eb] transition-colors">
-      +
-    </button>
-  </div>
-</div>
-
-
-<div id="floating-tab" class="hidden fixed top-0 left-0 right-0 z-50 flex justify-center mt-2"></div>
-
-  
-  <div class="container mx-auto px-6">
-    <!-- Main Content Gri d -->
-    <main class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-      <!-- Monthly Progress Table -->
-      <section class="xl:col-span-2">
-        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-
-          <div class="section-header">
-            <div class="left">
-            <h2 class="section-title">Monthly Progress Overview</h2>
-             <p class="section-title-disc">Track each member's payment progress across months</p>
-  
+              <!-- //////////////////// -->
             </div>
 
-             <!-- //////////////////// -->
+            <div class="payment-uid-section">
+              <h3>Track This Payment Progress By Searching UID</h3>
+              <div class="uid-box">
+                <span id="payment-uid">Loading...</span>
+                <button id="copy-uid-btn" title="Copy UID">
+                  <span class="material-symbols-outlined">content_copy</span>
+                </button>
+              </div>
+            </div>
 
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-zinc-700">
+                <thead class="bg-gray-50 text-xs uppercase tracking-wide">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-semibold">Member</th>
+                    <th class="px-4 py-3 text-center font-semibold">
+                      AS A WHOLE
+                    </th>
+                    <th class="px-4 py-3 text-right font-semibold">
+                      Total Paid
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="tracker-body">
+                  <!-- Dynamic content will be inserted here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
-             <div class="right">
-  <button id="settings-btn" class="settings-btn" title="Options">
-    <span class="material-symbols-outlined">settings</span>
-  </button>
-</div>
-   <!-- Dropdown Menu -->
-  <div id="settings-menu" class="settings-menu hidden">
-    <button class="menu-item create">
-      <span class="material-symbols-outlined">add_circle</span>
-      Create
-    </button>
-    <button class="menu-item update">
-      <span class="material-symbols-outlined">edit</span>
-      Update
-    </button>
-    <button class="menu-item delete">
-      <span class="material-symbols-outlined">delete</span>
-      Delete
-    </button>
-  </div>
-
-
-
-  <!-- //////////////////// -->
-           
+        <!-- Summary and Chart -->
+        <!-- <section> -->
+        <section id="payment-summary-section" class="hidden">
+          <div class="bg-white shadow-sm rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-xl font-semibold text-gray-900">
+                Payment Summary
+              </h2>
+              <p class="text-sm text-gray-600 mt-1">
+                Overall collection status
+              </p>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="text-center">
+                  <p class="text-sm text-zinc-500 mb-1">Total Collected</p>
+                  <p
+                    id="total-collected"
+                    class="text-2xl font-bold text-green-600"
+                  >
+                    ₱0
+                  </p>
+                </div>
+                <div class="text-center">
+                  <p class="text-sm text-zinc-500 mb-1">Outstanding</p>
+                  <p
+                    id="total-outstanding"
+                    class="text-2xl font-bold text-red-600"
+                  >
+                    ₱0
+                  </p>
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <canvas
+                  id="overall-progress-chart"
+                  class="max-w-xs max-h-64"
+                ></canvas>
+              </div>
+            </div>
           </div>
 
-          <div class="payment-uid-section">
-  <h3>Track This Payment Progress By Searching UID</h3>
-  <div class="uid-box">
-    <span id="payment-uid">GPK-AX92QJH83S4L9Z1X2T8R</span>
-<button id="copy-uid-btn" title="Copy UID">
-  <span class="material-symbols-outlined">content_copy</span>
-</button>
+          <!-- Quick Stats -->
+          <div
+            id="quick-info-section"
+            class="bg-white shadow-sm rounded-lg mt-6 hidden"
+          >
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h3 class="font-semibold text-gray-900">Quick Info</h3>
+            </div>
+            <div class="p-6 space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600"
+                  >Required Payment Before 2nd Week of October</span
+                >
+                <span class="font-medium">₱400</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total week/s:</span>
+                <span class="font-medium">1 Week</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Penalty per Month:</span>
+                <span class="font-medium text-red-600">N/A</span>
+              </div>
+              <div class="flex justify-between border-t pt-3">
+                <span class="text-gray-600">Expected per member:</span>
+                <span class="font-semibold">₱400</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
-  </div>
-</div>
+      <!-- Payment Form Section -->
+      <!--<section id="payment-form-section" class="hidden mb-6"> -->
+      <section id="payment-form-section" class="mb-6 hidden">
+        <div class="bg-white shadow-sm rounded-lg">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Add Payment</h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Record a new payment for a group member
+            </p>
+          </div>
+          <div class="p-6">
+            <form id="payment-form" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    for="name-select"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Select Member *
+                  </label>
+                  <select
+                    id="name-select"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] transition-colors"
+                    required
+                  >
+                    <option value="">Choose a member...</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    for="amount-input"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Payment Amount *
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-2 text-gray-500">₱</span>
+                    <input
+                      id="amount-input"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      class="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] transition-colors"
+                      placeholder="130.00"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
 
+              <div
+                class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+              >
+                <button
+                  type="add-member"
+                  class="px-6 py-2 bg-[#1d4ed8] text-white font-medium rounded-lg hover:bg-[#2563eb] focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 transition-colors"
+                >
+                  Add Member
+                </button>
+                <button
+                  type="submit"
+                  class="px-6 py-2 bg-[#1d4ed8] text-white font-medium rounded-lg hover:bg-[#2563eb] focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 transition-colors"
+                >
+                  Add Payment
+                </button>
+              </div>
 
+              <div class="text-xs text-gray-500">
+                <p>💡 <strong>Tip:</strong> dili matulog para himsog</p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Payment History Section -->
+      <!-- <section id="payment-history-section" class="hidden mb-6"> -->
+      <section id="payment-history-section" class="mb-6 hidden">
+        <div class="bg-white shadow-sm rounded-lg">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Payment History</h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Complete record of all payments made
+            </p>
+          </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-sm text-zinc-700">
+            <table class="w-full text-sm">
               <thead class="bg-gray-50 text-xs uppercase tracking-wide">
                 <tr>
                   <th class="px-4 py-3 text-left font-semibold">Member</th>
-                  <th class="px-4 py-3 text-center font-semibold">AS A WHOLE</th>
-                  <th class="px-4 py-3 text-right font-semibold">Total Paid</th>
+                  <th class="px-4 py-3 text-right font-semibold">Amount</th>
+                  <th class="px-4 py-3 text-left font-semibold">Date & Time</th>
+                  <th class="px-4 py-3 text-center font-semibold">Action</th>
                 </tr>
               </thead>
-              <tbody id="tracker-body">
+              <tbody id="payment-log-body">
                 <!-- Dynamic content will be inserted here -->
               </tbody>
             </table>
           </div>
         </div>
       </section>
-
-      <!-- Summary and Chart -->
-      <section>
-        <div class="bg-white shadow-sm rounded-lg">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Payment Summary</h2>
-            <p class="text-sm text-gray-600 mt-1">Overall collection status</p>
-          </div>
-          <div class="p-6">
-            <div class="grid grid-cols-2 gap-4 mb-6">
-              <div class="text-center">
-                <p class="text-sm text-zinc-500 mb-1">Total Collected</p>
-                <p id="total-collected" class="text-2xl font-bold text-green-600">₱0</p>
-              </div>
-              <div class="text-center">
-                <p class="text-sm text-zinc-500 mb-1">Outstanding</p>
-                <p id="total-outstanding" class="text-2xl font-bold text-red-600">₱0</p>
-              </div>
-            </div>
-            <div class="flex justify-center">
-              <canvas id="overall-progress-chart" class="max-w-xs max-h-64"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="bg-white shadow-sm rounded-lg mt-6">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="font-semibold text-gray-900">Quick Info</h3>
-          </div>
-          <div class="p-6 space-y-3 text-sm">
-            <div class="flex justify-between">
-              <span class="text-gray-600">Required Payment Before 2nd Week of October</span>
-              <span class="font-medium">₱400</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-600">Total week/s:</span>
-              <span class="font-medium">1 Week</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-600">Penalty per Month:</span>
-              <span class="font-medium text-red-600">N/A</span>
-            </div>
-            <div class="flex justify-between border-t pt-3">
-              <span class="text-gray-600">Expected per member:</span>
-              <span class="font-semibold">₱400</span>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Payment Form Section -->
-    <section id="payment-form-section" class="hidden mb-6">
-      <div class="bg-white shadow-sm rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h2 class="text-xl font-semibold text-gray-900">Add Payment</h2>
-          <p class="text-sm text-gray-600 mt-1">Record a new payment for a group member</p>
-        </div>
-        <div class="p-6">
-          <form id="payment-form" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="name-select" class="block text-sm font-medium text-gray-700 mb-2">
-                  Select Member *
-                </label>
-                <select id="name-select" 
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] transition-colors" 
-                        required>
-                  <option value="">Choose a member...</option>
-                </select>
-              </div>
-              <div>
-                <label for="amount-input" class="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Amount *
-                </label>
-                <div class="relative">
-                  <span class="absolute left-3 top-2 text-gray-500">₱</span>
-                  <input id="amount-input" 
-                         type="number" 
-                         min="0" 
-                         step="0.01"
-                         class="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] transition-colors" 
-                         placeholder="130.00" 
-                         required>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <button type="add-member" 
-                  class="px-6 py-2 bg-[#1d4ed8] text-white font-medium rounded-lg hover:bg-[#2563eb] focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 transition-colors">
-                          Add Member
-              </button>
-              <button type="submit" 
-                  class="px-6 py-2 bg-[#1d4ed8] text-white font-medium rounded-lg hover:bg-[#2563eb] focus:ring-2 focus:ring-[#1d4ed8] focus:ring-offset-2 transition-colors">
-                          Add Payment
-              </button>
-            </div>
-
-            <div class="text-xs text-gray-500">
-              <p>💡 <strong>Tip:</strong> dili matulog para himsog</p>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <!-- Payment History Section -->
-    <section id="payment-history-section" class="hidden mb-6">
-      <div class="bg-white shadow-sm rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h2 class="text-xl font-semibold text-gray-900">Payment History</h2>
-          <p class="text-sm text-gray-600 mt-1">Complete record of all payments made</p>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-xs uppercase tracking-wide">
-              <tr>
-                <th class="px-4 py-3 text-left font-semibold">Member</th>
-                <th class="px-4 py-3 text-right font-semibold">Amount</th>
-                <th class="px-4 py-3 text-left font-semibold">Date & Time</th>
-                <th class="px-4 py-3 text-center font-semibold">Action</th>
-              </tr>
-            </thead>
-            <tbody id="payment-log-body">
-              <!-- Dynamic content will be inserted here -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  
-  <!-- Footer -->
-  <footer class="bg-white border-t mt-12">
-  <div class="container mx-auto px-6 py-4">
-    <div class="text-center text-sm text-gray-500">
-      <p>
-        <strong>Group Payment Tracker</strong> • Prototype project of 
-        <em>Group 5</em> for the course 
-        <span class="font-medium">Systems Integration and Architecture 1</span> (CTU, Course Code: PC 316).
-      </p>
-
-      <!-- Lead -->
-      <p class="mt-1">
-        Led by 
-        <a href="https://www.facebook.com/johncadaro.p975" target="_blank" class="text-blue-600 hover:underline font-medium">
-          John Cadaro
-        </a>
-      </p>
-
-      <!-- Collapsible group members -->
-      <details class="mt-2">
-        <summary class="cursor-pointer text-blue-600 hover:underline">
-          View Other Group Members
-        </summary>
-        <ul class="mt-2 space-y-1">
-          <li>
-            <a href="https://www.facebook.com/laurencezambas.pepito" target="_blank" class="text-gray-700 hover:text-blue-600">
-              Lourence Arcilla Zambas
-            </a>
-          </li>
-          <li>
-            <a href="https://www.facebook.com/ereyes.gyu" target="_blank" class="text-gray-700 hover:text-blue-600">
-              Allan De Jesus
-            </a>
-          </li>
-          <li>
-            <a href="https://www.facebook.com/beatradio.dejito1" target="_blank" class="text-gray-700 hover:text-blue-600">
-              Bea Dejito
-            </a>
-          </li>
-        </ul>
-      </details>
-
-      <!-- Tech stack -->
-      <p class="mt-3">
-        ⚙️ <strong>Tech Stack:</strong> Firebase, Chart.js, Tailwind CSS
-      </p>
     </div>
-  </div>
-</footer>
 
+    <!-- Footer -->
+    <footer id="footer" class="bg-white border-t mt-12">
+      <div class="container mx-auto px-6 py-4">
+        <div class="text-center text-sm text-gray-500">
+          <p>
+            <strong>Group Payment Tracker</strong> • Prototype project of
+            <em>Group 5</em> for the course
+            <span class="font-medium"
+              >Systems Integration and Architecture 1</span
+            >
+            (CTU, Course Code: PC 316).
+          </p>
 
+          <!-- Lead -->
+          <p class="mt-1">
+            Led by
+            <a
+              href="https://www.facebook.com/johncadaro.p975"
+              target="_blank"
+              class="text-blue-600 hover:underline font-medium"
+            >
+              John Cadaro
+            </a>
+          </p>
+
+          <!-- Collapsible group members -->
+          <details class="mt-2">
+            <summary class="cursor-pointer text-blue-600 hover:underline">
+              View Other Group Members
+            </summary>
+            <ul class="mt-2 space-y-1">
+              <li>
+                <a
+                  href="https://www.facebook.com/laurencezambas.pepito"
+                  target="_blank"
+                  class="text-gray-700 hover:text-blue-600"
+                >
+                  Lourence Arcilla Zambas
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com/ereyes.gyu"
+                  target="_blank"
+                  class="text-gray-700 hover:text-blue-600"
+                >
+                  Allan De Jesus
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com/beatradio.dejito1"
+                  target="_blank"
+                  class="text-gray-700 hover:text-blue-600"
+                >
+                  Bea Dejito
+                </a>
+              </li>
+            </ul>
+          </details>
+
+          <!-- Tech stack -->
+          <p class="mt-3">
+            ⚙️ <strong>Tech Stack:</strong> Firebase, Chart.js, Tailwind CSS
+          </p>
+        </div>
+      </div>
+    </footer>
+    <script src="js/loadingScreen.js"></script>
+    <!-- <script type="module" src="js/UIFunctionalities.js"></script> -->
+
+    <!-- <script type="module" src="js/notification.js"></script> -->
     <script type="module" src="js/googleAuth.js"></script>
-  <script type="module" src="js/main.js"></script>
-  <script type="module" src="js/RPTUId.js"></script>
-
-</body>
+    <script type="module" src="js/main.js"></script>
+  </body>
 </html>

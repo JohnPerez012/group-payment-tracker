@@ -1,0 +1,72 @@
+/* -------------------------------------------------
+   LOADING SCREEN – full-screen animated text
+   ------------------------------------------------- */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;               /* fallback – will be overwritten by JS */
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Rotating gradient background */
+#loading-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(var(--angle), #005dff, #4da3ff, #cce0ff);
+  background-size: 400% 400%;
+  animation: rotateGradient 8s linear infinite;
+  z-index: -1;
+}
+@keyframes rotateGradient {
+  0%   { --angle: 0deg; }
+  100% { --angle: 360deg; }
+}
+
+/* Text container – flex wrap + responsive gap */
+#loading-screen h1 {
+  font-family: "Alan Sans", sans-serif;
+  font-weight: 600;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  color: #fff;
+  letter-spacing: .08em;
+  text-shadow: 0 0 10px rgba(255,255,255,.4);
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  line-height: 1.2;
+}
+#loading-screen .p {
+  margin-left: 1em;
+}
+#loading-screen .tracker {
+  margin-left: 1em;
+}
+
+/* Individual words – start hidden */
+#loading-screen .word {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(0.8) rotateX(90deg);
+  transform-origin: bottom;
+}
+
+@media (max-width: 626px) {
+  #loading-screen .g { margin-right: 0.1em; }
+  #loading-screen .p { margin-right: 0.2em; }
+}
+
+@media (max-width: 351px) {
+  #loading-screen .g { margin-right: 0.1em; }
+  #loading-screen .p { margin-right: 0.2em; }
+}
+
+#loading-screen {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+}
