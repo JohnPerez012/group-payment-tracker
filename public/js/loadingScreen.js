@@ -60,4 +60,4 @@ document.addEventListener('DOMContentLoaded', () => {
       delay: anime.stagger(-80)
     })
     .add({ duration: 300 });  // Smoother pause
-});Z
+});

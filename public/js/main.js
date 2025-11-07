@@ -1,10 +1,7 @@
-
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { encodeData, decodeData } from "./codec.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, deleteDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 
 
@@ -16,6 +13,7 @@ const sectionToToggle = [
   "payment-history-section"
 ];
 
+let quickInfoData = []; // Store quick info items
 
 function UIState() {
   console.log("UIState");
@@ -38,7 +36,7 @@ function UIState() {
     else footer.classList.add('fixfooter');
   }
 
-    checkHiddenSections();
+  checkHiddenSections();
 }
 
 
@@ -57,7 +55,10 @@ function checkHiddenSections() {
     "Delete tabs you don't need anymore!",
     "Click on a tab to view!",
     "View Web Developers' profiles; they're so cringeworthy! 💀",
-    "At least 5 tabs are allowed"
+    "At least 5 tabs are allowed",
+    "Manage your group payments here",
+    "Click the name of the member to edit it",
+    "Start your tracking now!"
   ];
 
   const gifId = "empty-state-gif";
@@ -258,10 +259,7 @@ const showNotification = (msg, type = 'info') => {
   document.body.appendChild(n);
   setTimeout(() => n.remove(), 1000);
 };
-const debounce = (func, wait) => {
-  let timeout;
-  return (...args) => { clearTimeout(timeout); timeout = setTimeout(() => func(...args), wait); };
-};
+
 const handleError = (err, ctx = 'Operation') => { console.error(`${ctx} failed:`, err); showNotification(`${ctx} failed. Please try again.`, 'error'); };
 
 async function saveData() {
@@ -276,94 +274,24 @@ async function saveData() {
       return;
     }
 
-    const encodedBlob = encodeData({ members, payments, tabs });
-
-    // IMPORTANT: use activeTabId (the tab document id) — do NOT re-generate a new id
-    await setDoc(doc(db, "members", activeTabId), {
-      blob_data: encodedBlob
-    }, { merge: true }); // merge true to avoid overwriting other fields if desired
-
-    showNotification("Data saved to Firestore", "success");
-  } catch (error) {
-    handleError(error, "Save data (Firestore)");
-  }
-
-  console.log("Saving data for tab:", activeTabId, members.length, "members,", payments.length, "payments");
-}
-
-async function loadData() {
-  console.log("loadData");
-  if (!currentUser) return;
-
-  try {
-    const tabsRef = collection(db, "members");
-    const snapshot = await getDocs(tabsRef);
-
-    tabs = []; // reset tabs
-    members = []; // reset global arrays
-    payments = [];
-    let count = 0;
-
-    snapshot.forEach((docSnap) => {
-      // parse doc id to find owner and tabName
-      const { ownerEmail, tabName } = extractTabName(docSnap.id);
-
-      // Only include documents owned by the current user
-      if (ownerEmail === currentUser.email) {
-        if (count >= MAX_TABS) return; // Stop once MAX_TABS are found
-
-        const data = docSnap.data();
-        // if blob_data is missing, decodeData should handle gracefully
-        const decoded = decodeData(data.blob_data || "{}") || {};
-
-        // Build a tab object (keep decoded content inside tab for reference if you want)
-        const tabObj = {
-          id: docSnap.id,
-          tabName: tabName || (data.tabName || "Untitled Tab"),
-          uid: data.uid || null,
-          user: data.user || ownerEmail,
-          ...decoded // can contain members/payments/tabs if you encode them into blob
-        };
-
-        tabs.push(tabObj);
-
-        // Ensure decoded.members/payments are added to the global arrays with tabId set
-        if (decoded && Array.isArray(decoded.members)) {
-          decoded.members.forEach(m => {
-            // ensure each member has tabId
-            members.push({
-              ...m,
-              tabId: m.tabId || docSnap.id
-            });
-          });
-        }
-
-        if (decoded && Array.isArray(decoded.payments)) {
-          decoded.payments.forEach(p => {
-            payments.push({
-              ...p,
-              // add a reference so we can filter by tab if needed in future
-              tabId: p.tabId || docSnap.id
-            });
-          });
-        }
-
-        count++;
-      }
+    // Include quickInfoData in the encoded blob
+    const encodedBlob = encodeData({
+      members: members.filter(m => m.tabId === activeTabId),
+      payments: payments.filter(p => p.tabId === activeTabId),
+      tabs: tabs,
+      quickInfo: quickInfoData.filter(qi => qi.tabId === activeTabId)
     });
 
-    console.log("Loaded tabs for user:", currentUser.email, tabs, "members:", members.length, "payments:", payments.length);
+    await setDoc(doc(db, "members", activeTabId), {
+      blob_data: encodedBlob
+    }, { merge: true });
 
-    activeTabId = null;
-
-    renderTabsToUI();
-
-
-  } catch (err) {
-    console.error("Failed to load tabs:", err);
-    handleError(err, "Load data (Firestore)");
+    showNotification("Data saved successfully", "success");
+  } catch (error) {
+    handleError(error, "Save data");
   }
 }
+
 
 function calculateMemberProgressV2(memberName, payments) {
   console.log("calculateMemberProgressV2 for", memberName);
@@ -407,7 +335,7 @@ function renderTableV2() {
     // 🧹 Clear summary + chart when tab has no members
     updateSummary(0, 0);
 
-    
+
     return;
   }
 
@@ -416,7 +344,7 @@ function renderTableV2() {
   filteredMembers.forEach(member => {
     const prog = calculateMemberProgressV2(member.Name, filteredPayments);
     totalCollected += prog.totalPaid;
-    let barColor = prog.isPaid ? "bg-green-500" : prog.progress > 0 ? "bg-red-500" : "bg-orange-400" ;
+    let barColor = prog.isPaid ? "bg-green-500" : prog.progress > 0 ? "bg-red-500" : "bg-orange-400";
     // let statusIndicator = prog.isPaid ? '<p class="text-xs text-center font-bold text-green-600">✓ Fully Paid</p>' : `<p class="text-xs text-center text-red-600">Need: ₱${prog.amountRemaining}</p>`;
     tbody.innerHTML += `
 <tr class="border-b hover:bg-gray-50">
@@ -430,10 +358,10 @@ function renderTableV2() {
         ${prog.progress > 0 ? `<span class="progress-percentage">${Math.round(prog.progress)}%</span>` : ''}
       </div>
     </div>
-    ${prog.isPaid 
-      ? '<p class="text-xs text-center font-bold text-green-600">✓ Fully Paid</p>' 
-      : `<p class="text-xs text-center text-red-600">Need: ₱${prog.amountRemaining}</p>`
-    }
+    ${prog.isPaid
+        ? '<p class="text-xs text-center font-bold text-green-600">✓ Fully Paid</p>'
+        : `<p class="text-xs text-center text-red-600">Need: ₱${prog.amountRemaining}</p>`
+      }
   </td>
   <td class="px-4 py-3 text-right">${formatCurrency(prog.totalPaid)} / ${formatCurrency(REQUIRED_TOTAL_AMOUNT)}</td>
 </tr>`;
@@ -441,19 +369,47 @@ function renderTableV2() {
 
   updateSummary(totalCollected, totalRequired);
 
- 
+
 }
+////////////////////////////////////////
+
 
 document.getElementById("tracker-body").addEventListener("click", async (e) => {
   const nameSpan = e.target.closest(".member-name");
   if (!nameSpan) return;
 
+  // Double-click detection
+  if (e.detail === 2) {
+    // Double-click - Delete confirmation
+    await handleMemberDelete(nameSpan);
+  } else {
+    // Single-click - Rename
+    setTimeout(() => {
+      // Only proceed if it wasn't a double-click (check if another click happened within the timeout)
+      if (!nameSpan.dataset.doubleClick) {
+        handleMemberRename(nameSpan);
+      }
+      delete nameSpan.dataset.doubleClick;
+    }, 300); // Wait to see if this becomes a double-click
+  }
+});
+
+// Set double-click flag
+document.getElementById("tracker-body").addEventListener("dblclick", (e) => {
+  const nameSpan = e.target.closest(".member-name");
+  if (nameSpan) {
+    nameSpan.dataset.doubleClick = "true";
+  }
+});
+
+// Rename function (extracted from original code)
+async function handleMemberRename(nameSpan) {
   const oldName = nameSpan.textContent.trim();
-  
+
   // Find the member in the current tab
   const filteredMembers = members.filter(m => m.tabId === activeTabId);
   const member = filteredMembers.find(m => m.Name === oldName);
-  
+
   if (!member) {
     showNotification("Member not found", "error");
     return;
@@ -461,13 +417,13 @@ document.getElementById("tracker-body").addEventListener("click", async (e) => {
 
   // Show input dialog for new name
   const newName = prompt(`Change name for "${oldName}":`, oldName);
-  
+
   if (!newName || newName.trim() === "" || newName === oldName) {
     return; // User cancelled or entered same name
   }
 
   const trimmedNewName = newName.trim();
-  
+
   // Validate name length
   if (trimmedNewName.length < 2) {
     showNotification("Member name must be at least 2 characters", "error");
@@ -475,10 +431,10 @@ document.getElementById("tracker-body").addEventListener("click", async (e) => {
   }
 
   // Check if name already exists in current tab
-  const nameExists = filteredMembers.some(m => 
+  const nameExists = filteredMembers.some(m =>
     m.Name === trimmedNewName && m.id !== member.id
   );
-  
+
   if (nameExists) {
     showNotification(`Member "${trimmedNewName}" already exists in this tab`, "error");
     return;
@@ -487,7 +443,7 @@ document.getElementById("tracker-body").addEventListener("click", async (e) => {
   try {
     // Update member name in the database
     member.Name = trimmedNewName;
-    
+
     // Also update all payments associated with this member
     payments.forEach(payment => {
       if (payment.name === oldName && payment.tabId === activeTabId) {
@@ -497,14 +453,14 @@ document.getElementById("tracker-body").addEventListener("click", async (e) => {
 
     // Save to Firestore
     await saveData();
-    
+
     // Re-render UI to reflect changes
     renderTableV2();
     renderHistory();
     populateMemberSelect(members.filter(m => m.tabId === activeTabId));
-    
+
     showNotification(`Name changed from "${oldName}" to "${trimmedNewName}"`, "success");
-    
+
   } catch (error) {
     handleError(error, "Update member name");
     // Revert changes on error
@@ -515,7 +471,58 @@ document.getElementById("tracker-body").addEventListener("click", async (e) => {
       }
     });
   }
-});
+}
+
+// Delete confirmation function
+async function handleMemberDelete(nameSpan) {
+  const memberName = nameSpan.textContent.trim();
+
+  // Find the member in the current tab
+  const filteredMembers = members.filter(m => m.tabId === activeTabId);
+  const member = filteredMembers.find(m => m.Name === memberName);
+
+  if (!member) {
+    showNotification("Member not found", "error");
+    return;
+  }
+
+  // Check if member has any payments
+  const memberPayments = payments.filter(p => p.name === memberName && p.tabId === activeTabId);
+  const hasPayments = memberPayments.length > 0;
+
+  let confirmationMessage = `Are you sure you want to delete member "${memberName}"?`;
+  if (hasPayments) {
+    confirmationMessage += `\n\n⚠️ This will also delete ${memberPayments.length} associated payment(s) totaling ₱${memberPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}.`;
+  }
+
+  if (!confirm(confirmationMessage)) {
+    return;
+  }
+
+  try {
+    // Delete member
+    members = members.filter(m => !(m.Name === memberName && m.tabId === activeTabId));
+
+    // Delete associated payments
+    payments = payments.filter(p => !(p.name === memberName && p.tabId === activeTabId));
+
+    // Save to Firestore
+    await saveData();
+
+    // Re-render UI
+    renderTableV2();
+    renderHistory();
+    populateMemberSelect(members.filter(m => m.tabId === activeTabId));
+
+    showNotification(`Member "${memberName}" and ${hasPayments ? 'their payments ' : ''}deleted successfully`, 'success');
+
+  } catch (error) {
+    handleError(error, "Delete member");
+  }
+}
+
+
+///////////////////////////////////////
 
 function updateSummary(totalCollected, totalRequired) {
   console.log("updateSummary");
@@ -623,15 +630,14 @@ document.addEventListener("DOMContentLoaded", () => {
     updateUI(user);
 
 
-    // *** CHANGED: actually load Firestore docs for the signed-in user ***
     await loadData();
-
-    // renderTabsToUI will already be called by loadData, but call again to be safe
     renderTabsToUI();
-
-    // After loading, if no tabs exist -> hide main sections & show empty state
     checkHiddenSections();
 
+    if (activeTabId) {
+      const filteredQuickInfo = quickInfoData.filter(qi => qi.tabId === activeTabId);
+      renderQuickInfo(filteredQuickInfo);
+    }
 
 
     // rest of your UI hookups
@@ -871,7 +877,7 @@ async function createTab(name = "New Tab", docId = null) {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     activeTabId = docId;
-populateMemberSelect(members.filter(m => m.tabId === activeTabId));
+    populateMemberSelect(members.filter(m => m.tabId === activeTabId));
     renderTableV2();
     renderHistory();
 
@@ -922,7 +928,7 @@ populateMemberSelect(members.filter(m => m.tabId === activeTabId));
   tabsContainer.insertBefore(tab, addTabBtn);
   if (docId === activeTabId) tab.classList.add("active");
 
-    tab.addEventListener("dragstart", (e) => {
+  tab.addEventListener("dragstart", (e) => {
     e.dataTransfer.setData("text/plain", tab.id);
     tab.classList.add("opacity-50");
   });
@@ -976,7 +982,7 @@ function maskUID(uid) {
   return uid.slice(0, 3) + " - UID IS MASKED TO PREVENT UNAUTHORIZED ACCESS - " + uid.slice(-6);
 }
 
-document.getElementById("total-collected").textContent = "₱0";  
+document.getElementById("total-collected").textContent = "₱0";
 document.getElementById("total-outstanding").textContent = "₱0";
 updateChart(0, 0);
 
@@ -999,32 +1005,38 @@ function renderTabsToUI() {
         <button class="tab-close text-red-600 font-bold ml-4">&times;</button>
       `;
 
+
+    // In your tab click handler, add this:
     tabEl.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
       tabEl.classList.add("active");
       activeTabId = tab.id;
 
-
-  const foundTab = tabs.find(t => t.id === activeTabId);
-  
-  const span = document.getElementById("payment-uid");
-
-  if (foundTab && foundTab.uid) {
-      reyalAydi = foundTab.uid;
+      // Show UID for this tab
+      const foundTab = tabs.find(t => t.id === activeTabId);
+      const span = document.getElementById("payment-uid");
+      if (foundTab && foundTab.uid) {
+        reyalAydi = foundTab.uid;
         span.textContent = maskUID(foundTab.uid);
-  } else {
-    alert("No UID found for this tab.");
-  }
+      }
 
-
-
-      UIState();
+      // Filter data for current tab
       const filteredMembers = members.filter(m => m.tabId === activeTabId);
       const filteredPayments = payments.filter(p => p.tabId === activeTabId);
+      const filteredQuickInfo = quickInfoData.filter(qi => qi.tabId === activeTabId);
+
+      // Update UI with filtered data
       populateMemberSelect(filteredMembers);
-      renderTableV2(); // this will trigger updateSummary/updateChart()
+      renderTableV2();
       renderHistory();
+      renderQuickInfo(filteredQuickInfo);
+      UIState(); // Ensure UI state is updated
     });
+
+
+
+    // New function to render quick info for current tab
+
 
     tabEl.querySelector(".tab-close").addEventListener("click", async (e) => {
       e.stopPropagation();
@@ -1056,17 +1068,363 @@ function renderTabsToUI() {
 
   checkTabLimit();
 
-  if (tabs.length === 0) { 
+  if (tabs.length === 0) {
     // No tabs exist
     activeTabId = null;
     UIState();
-    return; 
+    return;
   }
 
-  activeTabId = tabs[0].id;  
+  activeTabId = tabs[0].id;
   // ✅ select first tab
   populateMemberSelect(members.filter(m => m.tabId === activeTabId));
   renderTableV2();
   renderHistory();
 
 }
+
+// Move this outside renderTabsToUI
+// Update the renderQuickInfo function to include IDs
+function renderQuickInfo(quickInfoItems) {
+  const infoContent = document.getElementById("info-content");
+  if (!infoContent) return;
+
+  infoContent.innerHTML = '';
+
+  if (quickInfoItems && quickInfoItems.length > 0) {
+    quickInfoItems.forEach(item => {
+      addQuickInfoRowToUI(item.label, item.value, item.id);
+    });
+  }
+}
+
+
+
+
+
+
+
+// Quick Info Modal Improvements
+const plusButton = document.getElementById("QI-plusButton");
+const modal = document.getElementById("inputModal");
+const addBtn = document.getElementById("addBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+const closeBtn = document.getElementById("modal-close");
+const leftInput = document.getElementById("leftInput");
+const rightInput = document.getElementById("rightInput");
+const infoContent = document.getElementById("info-content");
+const modalForm = document.getElementById("modal-form");
+
+// Show modal with animation
+plusButton.addEventListener("click", () => {
+  modal.style.display = "flex";
+  setTimeout(() => modal.classList.add("show"), 10);  // Trigger animation
+});
+
+// Hide modal function
+const hideModal = () => {
+  modal.classList.remove("show");
+  setTimeout(() => {
+    modal.style.display = "none";
+    leftInput.value = "";
+    rightInput.value = "";
+  }, 300);  // Match CSS transition duration
+};
+
+cancelBtn.addEventListener("click", hideModal);
+closeBtn.addEventListener("click", hideModal);
+
+
+async function loadData() {
+  console.log("loadData");
+  if (!currentUser) return;
+
+  try {
+    const tabsRef = collection(db, "members");
+    const snapshot = await getDocs(tabsRef);
+
+    tabs = []; // reset tabs
+    members = []; // reset global arrays
+    payments = [];
+    quickInfoData = []; // reset quick info
+    let count = 0;
+
+    snapshot.forEach((docSnap) => {
+      const { ownerEmail, tabName } = extractTabName(docSnap.id);
+
+      if (ownerEmail === currentUser.email) {
+        if (count >= MAX_TABS) return;
+
+        const data = docSnap.data();
+        const decoded = decodeData(data.blob_data || "{}") || {};
+
+        // Load all data types from blob
+        if (decoded.members) {
+          decoded.members.forEach(m => {
+            members.push({
+              ...m,
+              tabId: m.tabId || docSnap.id
+            });
+          });
+        }
+
+        if (decoded.payments) {
+          decoded.payments.forEach(p => {
+            payments.push({
+              ...p,
+              tabId: p.tabId || docSnap.id
+            });
+          });
+        }
+
+        // Load quick info from blob
+        if (decoded.quickInfo) {
+          decoded.quickInfo.forEach(qi => {
+            quickInfoData.push({
+              ...qi,
+              tabId: qi.tabId || docSnap.id
+            });
+          });
+        }
+
+        const tabObj = {
+          id: docSnap.id,
+          tabName: tabName || (data.tabName || "Untitled Tab"),
+          uid: data.uid || null,
+          user: data.user || ownerEmail,
+          ...decoded
+        };
+
+        tabs.push(tabObj);
+        count++;
+      }
+    });
+
+    console.log("Loaded:", tabs.length, "tabs,", members.length, "members,", payments.length, "payments,", quickInfoData.length, "quick info items");
+
+    activeTabId = null;
+    renderTabsToUI();
+
+  } catch (err) {
+    console.error("Failed to load tabs:", err);
+    handleError(err, "Load data (Firestore)");
+  }
+}
+
+// Add new info on form submit (with validation)
+modalForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const leftText = leftInput.value.trim();
+  const rightText = rightInput.value.trim();
+
+  if (modalForm.checkValidity() && leftText && rightText) {
+    // Disable button during save
+    const addBtn = document.getElementById("addBtn");
+    addBtn.disabled = true;
+    addBtn.textContent = "Adding...";
+
+    try {
+      const success = await addQuickInfo(leftText, rightText);
+      if (success) {
+        hideModal();
+      }
+    } catch (error) {
+      handleError(error, "Add quick info");
+    } finally {
+      addBtn.disabled = false;
+      addBtn.textContent = "Add";
+    }
+  } else {
+    alert("Please fill in both fields (label min 3 chars, value min 1 char).");
+  }
+});
+
+
+
+
+
+
+// Load quick info from decoded blob
+function loadQuickInfo() {
+  const infoContent = document.getElementById("info-content");
+  if (!infoContent) return;
+
+  infoContent.innerHTML = '';
+
+  if (quickInfoData && quickInfoData.length > 0) {
+    quickInfoData.forEach(item => {
+      addQuickInfoRowToUI(item.label, item.value);
+    });
+  }
+}
+
+// Add quick info row to UI only
+async function addQuickInfo(label, value) {
+  if (!activeTabId) {
+    showNotification("Please select a tab first", "error");
+    return false;
+  }
+
+  const qiId = `qi_${Date.now()}`;
+  
+  // Add to global quickInfoData
+  quickInfoData.push({
+    label: label.trim(),
+    value: value.trim(),
+    id: qiId,
+    tabId: activeTabId
+  });
+
+  // Save to Firestore blob
+  await saveData();
+  
+  // Update UI
+  addQuickInfoRowToUI(label, value, qiId);
+
+  showNotification("Quick info added successfully", "success");
+  return true;
+}
+
+
+function addQuickInfoRowToUI(label, value, id = `qi_${Date.now()}`) {
+  const infoContent = document.getElementById("info-content");
+  const newRow = document.createElement("div");
+  newRow.className = "info-row group relative";
+  newRow.dataset.qiId = id;
+  newRow.innerHTML = `
+    <div class="flex-1">
+      <span class="info-label qi-editable" data-type="label">${label}</span>
+    </div>
+    <div class="flex-1 text-right">
+      <span class="info-value qi-editable" data-type="value">${value}</span>
+    </div>
+  `;
+  
+  infoContent.appendChild(newRow);
+  
+  // Add event listeners for the editable elements
+  addQuickInfoEditListeners(newRow, id, label, value);
+}
+
+
+// Add new quick info (triggers save to blob)
+// Add edit/delete functionality to Quick Info rows
+function addQuickInfoEditListeners(row, id, currentLabel, currentValue) {
+  const labelElement = row.querySelector('.info-label.qi-editable');
+  const valueElement = row.querySelector('.info-value.qi-editable');
+  
+  // Single-click for rename
+  labelElement.addEventListener('click', (e) => {
+    if (e.detail === 1) {
+      setTimeout(() => {
+        if (!labelElement.dataset.doubleClick) {
+          handleQuickInfoRename(labelElement, 'label', id, currentLabel, currentValue);
+        }
+        delete labelElement.dataset.doubleClick;
+      }, 300);
+    }
+  });
+  
+  valueElement.addEventListener('click', (e) => {
+    if (e.detail === 1) {
+      setTimeout(() => {
+        if (!valueElement.dataset.doubleClick) {
+          handleQuickInfoRename(valueElement, 'value', id, currentLabel, currentValue);
+        }
+        delete valueElement.dataset.doubleClick;
+      }, 300);
+    }
+  });
+  
+  // Double-click for delete
+  labelElement.addEventListener('dblclick', (e) => {
+    labelElement.dataset.doubleClick = "true";
+    handleQuickInfoDelete(id, currentLabel, currentValue);
+  });
+  
+  valueElement.addEventListener('dblclick', (e) => {
+    valueElement.dataset.doubleClick = "true";
+    handleQuickInfoDelete(id, currentLabel, currentValue);
+  });
+}
+
+
+// Handle Quick Info rename
+async function handleQuickInfoRename(element, type, id, currentLabel, currentValue) {
+  const currentText = element.textContent.trim();
+  const fieldName = type === 'label' ? 'Label' : 'Value';
+  
+  const newText = prompt(`Enter new ${fieldName.toLowerCase()} for "${currentText}":`, currentText);
+  
+  if (!newText || newText.trim() === "" || newText === currentText) {
+    return;
+  }
+  
+  const trimmedNewText = newText.trim();
+  
+  // Validate input
+  if (trimmedNewText.length < (type === 'label' ? 3 : 1)) {
+    showNotification(`${fieldName} must be at least ${type === 'label' ? 3 : 1} characters`, 'error');
+    return;
+  }
+  
+  try {
+    // Find and update the Quick Info item
+    const quickInfoItem = quickInfoData.find(qi => qi.id === id && qi.tabId === activeTabId);
+    
+    if (!quickInfoItem) {
+      showNotification("Quick Info item not found", "error");
+      return;
+    }
+    
+    // Update the appropriate field
+    if (type === 'label') {
+      quickInfoItem.label = trimmedNewText;
+    } else {
+      quickInfoItem.value = trimmedNewText;
+    }
+    
+    // Update the UI
+    element.textContent = trimmedNewText;
+    
+    // Save to Firestore
+    await saveData();
+    
+    showNotification(`${fieldName} updated successfully`, "success");
+    
+  } catch (error) {
+    handleError(error, `Update ${fieldName.toLowerCase()}`);
+    // Revert on error
+    element.textContent = type === 'label' ? currentLabel : currentValue;
+  }
+}
+
+// Handle Quick Info delete
+async function handleQuickInfoDelete(id, label, value) {
+  if (!confirm(`Are you sure you want to delete "${label}: ${value}"?`)) {
+    return;
+  }
+  
+  try {
+    // Remove from data array
+    quickInfoData = quickInfoData.filter(qi => !(qi.id === id && qi.tabId === activeTabId));
+    
+    // Remove from UI
+    const row = document.querySelector(`[data-qi-id="${id}"]`);
+    if (row) {
+      row.remove();
+    }
+    
+    // Save to Firestore
+    await saveData();
+    
+    showNotification(`"${label}: ${value}" deleted successfully`, "success");
+    
+  } catch (error) {
+    handleError(error, "Delete Quick Info");
+  }
+}
+
+
+// Load on page init (add to your DOMContentLoaded)
+document.addEventListener("DOMContentLoaded", loadQuickInfo);

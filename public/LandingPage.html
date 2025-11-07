@@ -3,38 +3,60 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="GPTracker – a digital solution for transparent and secure group payment tracking for students and parents." />
-    <meta name="keywords" content="payment tracking, group payments, student payments, transparent tracking, secure payments" />
+    <meta
+      name="description"
+      content="GPTracker – a digital solution for transparent and secure group payment tracking for students and parents."
+    />
+    <meta
+      name="keywords"
+      content="payment tracking, group payments, student payments, transparent tracking, secure payments"
+    />
     <meta name="author" content="GPTracker" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="GPTracker - Transparent Group Payment Tracking" />
-    <meta property="og:description" content="A digital solution for transparent and secure group payment tracking for students and parents." />
-    
+    <meta
+      property="og:title"
+      content="GPTracker - Transparent Group Payment Tracking"
+    />
+    <meta
+      property="og:description"
+      content="A digital solution for transparent and secure group payment tracking for students and parents."
+    />
+
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="GPTracker - Transparent Group Payment Tracking" />
-    <meta name="twitter:description" content="A digital solution for transparent and secure group payment tracking for students and parents." />
+    <meta
+      name="twitter:title"
+      content="GPTracker - Transparent Group Payment Tracking"
+    />
+    <meta
+      name="twitter:description"
+      content="A digital solution for transparent and secure group payment tracking for students and parents."
+    />
 
     <title>GPTracker - Transparent Group Payment Tracking</title>
-    
+
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/LandingPage.css" />
     <link rel="stylesheet" href="css/googleSignInButtonStandardStyle.css" />
-
+    <link rel="stylesheet" href="css/searchModal.css" />
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-      <link
+    <link
       href="https://fonts.googleapis.com/css2?family=Alan+Sans:wght@300..900&family=Fredericka+the+Great&display=swap"
       rel="stylesheet"
     />
-
+  </head>
   <body>
+  <!-- Wf = workfile | i = index | PV = projectVersion | W = wave | ! = not initial-->
+    <span class="versionStatus"
+      >Wf{lp}, PV:5W~~V0!</span
+    >
     <!-- Header -->
     <header class="main-header">
       <div class="header-container">
@@ -42,10 +64,10 @@
         <div class="logo-area">
           <div class="logo-icon">
             <img
-            src="assets/icons/GPTico.svg"
-            alt="App Icon"
-            class="logo-img"
-          />
+              src="assets/icons/GPTico.svg"
+              alt="App Icon"
+              class="logo-img"
+            />
           </div>
           <h1 class="logo-text">GPTracker</h1>
         </div>
@@ -62,7 +84,7 @@
         <div class="user-auth">
           <div class="user-info">
             <span class="text-gray">User:</span>
-            <span id="user-id" class="user-id">Not signed in</span>
+            <span id="user-id" class="user-id">Loading...</span>
           </div>
 
           <button id="auth-btn-header" class="gsi-material-button">
@@ -88,13 +110,19 @@
                   ></path>
                 </svg>
               </div>
-              <span class="gsi-material-button-contents">Sign in with Google</span>
+              <span class="gsi-material-button-contents"
+                >Sign in with Google</span
+              >
             </div>
           </button>
         </div>
 
         <!-- Mobile Menu Toggle -->
-        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+        <button
+          class="mobile-menu-toggle"
+          id="mobile-menu-toggle"
+          aria-label="Toggle menu"
+        >
           <span></span>
           <span></span>
           <span></span>
@@ -109,12 +137,21 @@
       <div class="blob blob3"></div>
 
       <div class="hero-content">
-        <h1 class="web-title" data-aos="fade-up" data-aos-duration="800">GROUP PAYMENT TRACKER</h1>
+        <h1 class="web-title" data-aos="fade-up" data-aos-duration="800">
+          GROUP PAYMENT TRACKER
+        </h1>
         <p data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
-          A digital solution for transparent and secure group payment tracking.<br />
+          A digital solution for transparent and secure group payment
+          tracking.<br />
           Bringing peace of mind to parents and accountability to students.
         </p>
-        <a data-aos="zoom-in" data-aos-delay="400" data-aos-duration="600" href="#search" class="cta-btn">
+        <a
+          data-aos="zoom-in"
+          data-aos-delay="400"
+          data-aos-duration="600"
+          href="#search"
+          class="cta-btn"
+        >
           Track Payments
         </a>
       </div>
@@ -131,44 +168,59 @@
       <p class="features-subtitle" data-aos="fade-up" data-aos-delay="100">
         Powerful features designed for transparency, security, and ease of use
       </p>
-      
+
       <div class="features-grid">
         <div data-aos="fade-up" data-aos-delay="0" class="feature-card">
           <div class="icon">🔍</div>
           <h3>Transparent Records</h3>
           <p>
-            Parents can search student IDs and instantly verify contributions with complete transparency.
+            Parents can search student IDs and instantly verify contributions
+            with complete transparency.
           </p>
         </div>
 
         <div data-aos="fade-up" data-aos-delay="100" class="feature-card">
           <div class="icon">📊</div>
           <h3>Real-Time Updates</h3>
-          <p>Every contribution is logged instantly for accuracy, trust, and peace of mind.</p>
+          <p>
+            Every contribution is logged instantly for accuracy, trust, and
+            peace of mind.
+          </p>
         </div>
 
         <div data-aos="fade-up" data-aos-delay="200" class="feature-card">
           <div class="icon">🔒</div>
           <h3>Secure & Reliable</h3>
-          <p>Built with bank-level security to protect data and ensure transparent record-keeping.</p>
+          <p>
+            Built with bank-level security to protect data and ensure
+            transparent record-keeping.
+          </p>
         </div>
 
         <div data-aos="fade-up" data-aos-delay="0" class="feature-card">
           <div class="icon">💳</div>
           <h3>Easy Payment Tracking</h3>
-          <p>Monitor all group payments in one centralized dashboard with intuitive controls.</p>
+          <p>
+            Monitor all group payments in one centralized dashboard with
+            intuitive controls.
+          </p>
         </div>
 
         <div data-aos="fade-up" data-aos-delay="100" class="feature-card">
           <div class="icon">📱</div>
           <h3>Mobile Friendly</h3>
-          <p>Access your payment information anywhere, anytime, on any device.</p>
+          <p>
+            Access your payment information anywhere, anytime, on any device.
+          </p>
         </div>
 
         <div data-aos="fade-up" data-aos-delay="200" class="feature-card">
           <div class="icon">📈</div>
           <h3>Detailed Analytics</h3>
-          <p>Generate comprehensive reports and visualize payment trends with ease.</p>
+          <p>
+            Generate comprehensive reports and visualize payment trends with
+            ease.
+          </p>
         </div>
       </div>
     </section>
@@ -178,16 +230,33 @@
       <div class="search-container">
         <h2 data-aos="fade-up">Try It Yourself</h2>
         <p data-aos="fade-up" data-aos-delay="100">
-          Enter your Unique Identification (UId) below to check your contribution status.
+          Enter Unique Identification (UId) below to track contribution status.
         </p>
-        
-        <form data-aos="fade-up" data-aos-delay="200" class="search-form" id="search-form">
+
+        <form
+          data-aos="fade-up"
+          data-aos-delay="200"
+          class="search-form"
+          id="search-form"
+        >
           <div class="search-input-wrapper">
-            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              class="search-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input type="text" placeholder="Enter UId (e.g., ST12345)" required />
+            <input
+              type="text"
+              placeholder="Enter UId (e.g., 1234567890123456@GPT)"
+            />
           </div>
           <button type="submit">Search</button>
         </form>
@@ -221,7 +290,7 @@
           <h3>GPTracker</h3>
           <p>Transparent and secure group payment tracking for everyone.</p>
         </div>
-        
+
         <div class="footer-section">
           <h4>Quick Links</h4>
           <ul>
@@ -230,7 +299,7 @@
             <li><a href="#about">About</a></li>
           </ul>
         </div>
-        
+
         <div class="footer-section">
           <h4>Support</h4>
           <ul>
@@ -240,7 +309,7 @@
           </ul>
         </div>
       </div>
-      
+
       <div class="footer-bottom">
         <p>&copy; 2025 GPTracker. All rights reserved.</p>
       </div>
@@ -249,8 +318,20 @@
     <!-- Sign-In Modal -->
     <div id="signin-modal" class="modal-overlay hidden">
       <div class="modal-content">
-        <button id="close-modal-btn" class="close-modal-btn" aria-label="Close modal">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button
+          id="close-modal-btn"
+          class="close-modal-btn"
+          aria-label="Close modal"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -283,16 +364,57 @@
                 ></path>
               </svg>
             </div>
-            <span class="gsi-material-button-contents">Sign in with Google</span>
+            <span class="gsi-material-button-contents"
+              >Sign in with Google</span
+            >
           </div>
         </button>
       </div>
     </div>
 
+    <!-- Search Results Modal -->
+    <div id="search-modal" class="modal-overlay hidden">
+      <div class="modal-window">
+        <div class="modal-header">
+          <div class="title">Payment Search Results</div>
+          <div class="spacer"></div>
+          <div class="window-controls">
+            <button
+              class="btn-restore"
+              id="restore-search-modal"
+              aria-label="Restore window"
+            >
+              ⎚
+            </button>
+            <button
+              class="btn-close"
+              id="close-search-modal"
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <div id="search-results-content">
+            <!-- Search results will be displayed here -->
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="close-search-results">Close</button>
+          <button id="export-results">Export Results</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
+    <script src="js/notificationEngine.js"></script>
     <script type="module" src="js/googleAuth.js"></script>
     <script type="module" src="js/LandingPage.js"></script>
+    <script type="module" src="js/searchModal.js"></script>
+<script type="module" src="js/LandingPage.js"></script>
   </body>
 </html>

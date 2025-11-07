@@ -89,6 +89,7 @@ initial 3rd wave ~~ V0
  - Adjustments in LandPage | Oct 10, 1:02 PM GMT+8
  - Adjustments in Dashboard page (MAIN PAGE) | Oct 10, 2:46 PM GMT+8
  -  fixing issue about (Flexibility, responsiveness, authentication, color grading, condition meets, bugs, unknown error) |  Oct 10, 6:56 PM GMT+8
+
   --------- V1.1
 - Land Page tested working | Oct 10, 9:00 PM GMT+8
 - Main Page tested working | Oct 10, 10:35 PM GMT+8
@@ -120,3 +121,30 @@ initial 4th wave ~~ V0
   --------- V1
   -UI x UX Personilization Implementation in Dashboard | Oct 21, 12:04 AM GMT+8
   
+  --------- V2
+  - UI x UX Personilization V2 | Oct 22, 11:48 AM GMT+8
+  - Tab logic adjustments | Oct 22, 4:04 PM GMT+8
+  - UI X UI adjustments of adding member in payment | Oct 24, 8:00 PM GMT+8 
+  - Tab independency | Oct 24, 1:52 AM GMT+8 
+
+   --------- V3
+   - Editable member name | Oct 27, 5:45 AM GMT+8 
+   - Gif as loader implimentation in dashboard (Collaboration_Animation.gif) | Oct 27, 12:58 PM GMT+8 
+   - Loading screen Implementatiion (GROUP PAYMENT Tracker) | Oct 27, 9:21 PM GMT+8 
+   - Implementing UI state/s for better USER view | Oct 27, 11:00 PM GMT+8 
+   
+
+4th wave ~~ V3.0
+   - UID implementation | Oct 28, 6:10 PM GMT+8 
+   - UID copy Icon | Oct 28, 10:42 PM GMT+8 
+   - Secured visuals of UID -- MASKING | Oct 28, 10:50 PM GMT+8 
+   - fixing bugs, errors, unaligned flows | Oct 29, 7:39 PM GMT+8 
+
+
+initial 5th wave ~~ V0
+   - Serch functionality implementation in Home Page A.K.A Langding page | Oct 29, 11:27 AM GMT+8 
+   - Modal for searching implementation | Oct 29, 8:57 PM GMT+8      
+   - Main JS file function separation for home and dashboard functionalities reusabilities | Oct 31, 4:05 AM GMT+8
+   - Quick Info covert to dynamic rendering | Nov 1, 1:29 PM GMT+8
+   - implementing CRUD functionalities in Quick Info section | Nov 7, 7:48 PM GMT+8
+   - adding Tooltip for deleting as well as for editing  | Nov 6, 8:50 PM GMT+8
