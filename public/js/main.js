@@ -825,6 +825,11 @@ function getUID() {
   return `${randomPart}@GPT`;
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 async function createTab(name = "New Tab", docId = null) {
   console.log("createTab");
   // If docId is not provided, create a new Firestore document for this tab
@@ -877,11 +882,26 @@ async function createTab(name = "New Tab", docId = null) {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     activeTabId = docId;
-    populateMemberSelect(members.filter(m => m.tabId === activeTabId));
+
+    // Show UID for this tab
+    const foundTab = tabs.find(t => t.id === activeTabId);
+    const span = document.getElementById("payment-uid");
+    if (foundTab && foundTab.uid) {
+      reyalAydi = foundTab.uid;
+      span.textContent = maskUID(foundTab.uid);
+    }
+
+    // Filter data for current tab
+    const filteredMembers = members.filter(m => m.tabId === activeTabId);
+    const filteredPayments = payments.filter(p => p.tabId === activeTabId);
+    const filteredQuickInfo = quickInfoData.filter(qi => qi.tabId === activeTabId);
+
+    // Update UI with filtered data
+    populateMemberSelect(filteredMembers);
     renderTableV2();
     renderHistory();
-
-
+    renderQuickInfo(filteredQuickInfo);
+    UIState(); // ✅ ADD THIS LINE - This was missing!
   });
 
   tab.querySelector(".tab-close").addEventListener("click", async (e) => {
@@ -897,26 +917,23 @@ async function createTab(name = "New Tab", docId = null) {
     // 🧹 Remove from local state
     tabs = tabs.filter(t => t.id !== tabDocId);
     members = members.filter(m => m.tabId !== tabDocId);
-    // payments = payments.filter(p => members.some(m => m.Name === p.name && m.tabId === p.tabId));
-    // payments = payments.filter(p => members.some(m => m.tabId === p.tabId));
     payments = payments.filter(p => p.tabId !== tabDocId);
-
-
 
     // 🧱 Remove tab from DOM
     tab.remove();
 
-    // 🧩 If there are NO tabs left, hide everything right away
-
     const newActive = tabs[0];
-    activeTabId = newActive.id;
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    document.querySelector(`.tab[data-doc-id="${activeTabId}"]`)?.classList.add("active");
+    activeTabId = newActive?.id || null;
+    if (activeTabId) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelector(`.tab[data-doc-id="${activeTabId}"]`)?.classList.add("active");
+    }
 
     // 🔁 Update dependent UI
     populateMemberSelect(members.filter(m => m.tabId === activeTabId));
     renderTableV2();
     renderHistory();
+    UIState(); // ✅ Also add here for when deleting tabs
     checkTabLimit();
 
     showNotification("Tab deleted successfully", "success");
@@ -924,8 +941,7 @@ async function createTab(name = "New Tab", docId = null) {
 
 
 
-  // Insert tab element into DOM and enforce max tabs visual logic
-  tabsContainer.insertBefore(tab, addTabBtn);
+   tabsContainer.insertBefore(tab, addTabBtn);
   if (docId === activeTabId) tab.classList.add("active");
 
   tab.addEventListener("dragstart", (e) => {
@@ -937,8 +953,12 @@ async function createTab(name = "New Tab", docId = null) {
   });
 
   tabsContainer.insertBefore(tab, addTabBtn);
-  checkTabLimit();
+  checkTabLimit();;
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 function extractTabName(docId) {
   console.log("extractTabName");
@@ -997,6 +1017,7 @@ function renderTabsToUI() {
 
   // Rebuild tabs
   tabs.forEach(tab => {
+
     const tabEl = document.createElement("div");
     tabEl.className = "tab flex items-center";
     tabEl.dataset.docId = tab.id;
@@ -1058,6 +1079,7 @@ function renderTabsToUI() {
       populateMemberSelect(members.filter(m => m.tabId === activeTabId));
       renderTableV2();
       renderHistory();
+        UIState();
       checkTabLimit();
       showNotification("Tab deleted successfully", "success");
     });
@@ -1266,7 +1288,7 @@ async function addQuickInfo(label, value) {
   }
 
   const qiId = `qi_${Date.now()}`;
-  
+
   // Add to global quickInfoData
   quickInfoData.push({
     label: label.trim(),
@@ -1277,7 +1299,7 @@ async function addQuickInfo(label, value) {
 
   // Save to Firestore blob
   await saveData();
-  
+
   // Update UI
   addQuickInfoRowToUI(label, value, qiId);
 
@@ -1299,9 +1321,9 @@ function addQuickInfoRowToUI(label, value, id = `qi_${Date.now()}`) {
       <span class="info-value qi-editable" data-type="value">${value}</span>
     </div>
   `;
-  
+
   infoContent.appendChild(newRow);
-  
+
   // Add event listeners for the editable elements
   addQuickInfoEditListeners(newRow, id, label, value);
 }
@@ -1312,7 +1334,7 @@ function addQuickInfoRowToUI(label, value, id = `qi_${Date.now()}`) {
 function addQuickInfoEditListeners(row, id, currentLabel, currentValue) {
   const labelElement = row.querySelector('.info-label.qi-editable');
   const valueElement = row.querySelector('.info-value.qi-editable');
-  
+
   // Single-click for rename
   labelElement.addEventListener('click', (e) => {
     if (e.detail === 1) {
@@ -1324,7 +1346,7 @@ function addQuickInfoEditListeners(row, id, currentLabel, currentValue) {
       }, 300);
     }
   });
-  
+
   valueElement.addEventListener('click', (e) => {
     if (e.detail === 1) {
       setTimeout(() => {
@@ -1335,13 +1357,13 @@ function addQuickInfoEditListeners(row, id, currentLabel, currentValue) {
       }, 300);
     }
   });
-  
+
   // Double-click for delete
   labelElement.addEventListener('dblclick', (e) => {
     labelElement.dataset.doubleClick = "true";
     handleQuickInfoDelete(id, currentLabel, currentValue);
   });
-  
+
   valueElement.addEventListener('dblclick', (e) => {
     valueElement.dataset.doubleClick = "true";
     handleQuickInfoDelete(id, currentLabel, currentValue);
@@ -1353,45 +1375,45 @@ function addQuickInfoEditListeners(row, id, currentLabel, currentValue) {
 async function handleQuickInfoRename(element, type, id, currentLabel, currentValue) {
   const currentText = element.textContent.trim();
   const fieldName = type === 'label' ? 'Label' : 'Value';
-  
+
   const newText = prompt(`Enter new ${fieldName.toLowerCase()} for "${currentText}":`, currentText);
-  
+
   if (!newText || newText.trim() === "" || newText === currentText) {
     return;
   }
-  
+
   const trimmedNewText = newText.trim();
-  
+
   // Validate input
   if (trimmedNewText.length < (type === 'label' ? 3 : 1)) {
     showNotification(`${fieldName} must be at least ${type === 'label' ? 3 : 1} characters`, 'error');
     return;
   }
-  
+
   try {
     // Find and update the Quick Info item
     const quickInfoItem = quickInfoData.find(qi => qi.id === id && qi.tabId === activeTabId);
-    
+
     if (!quickInfoItem) {
       showNotification("Quick Info item not found", "error");
       return;
     }
-    
+
     // Update the appropriate field
     if (type === 'label') {
       quickInfoItem.label = trimmedNewText;
     } else {
       quickInfoItem.value = trimmedNewText;
     }
-    
+
     // Update the UI
     element.textContent = trimmedNewText;
-    
+
     // Save to Firestore
     await saveData();
-    
+
     showNotification(`${fieldName} updated successfully`, "success");
-    
+
   } catch (error) {
     handleError(error, `Update ${fieldName.toLowerCase()}`);
     // Revert on error
@@ -1404,22 +1426,22 @@ async function handleQuickInfoDelete(id, label, value) {
   if (!confirm(`Are you sure you want to delete "${label}: ${value}"?`)) {
     return;
   }
-  
+
   try {
     // Remove from data array
     quickInfoData = quickInfoData.filter(qi => !(qi.id === id && qi.tabId === activeTabId));
-    
+
     // Remove from UI
     const row = document.querySelector(`[data-qi-id="${id}"]`);
     if (row) {
       row.remove();
     }
-    
+
     // Save to Firestore
     await saveData();
-    
+
     showNotification(`"${label}: ${value}" deleted successfully`, "success");
-    
+
   } catch (error) {
     handleError(error, "Delete Quick Info");
   }

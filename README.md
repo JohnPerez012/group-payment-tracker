@@ -148,3 +148,6 @@ initial 5th wave ~~ V0
    - Quick Info covert to dynamic rendering | Nov 1, 1:29 PM GMT+8
    - implementing CRUD functionalities in Quick Info section | Nov 7, 7:48 PM GMT+8
    - adding Tooltip for deleting as well as for editing  | Nov 6, 8:50 PM GMT+8
+
+   --------- V1
+      - fixation of tab activation | Nov 8, 8:18 AM GMT+8
