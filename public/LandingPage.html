@@ -51,6 +51,8 @@
       href="https://fonts.googleapis.com/css2?family=Alan+Sans:wght@300..900&family=Fredericka+the+Great&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/GPTico.svg" />
+
   </head>
   <body>
   <!-- Wf = workfile | i = index | PV = projectVersion | W = wave | ! = not initial-->
@@ -375,8 +377,16 @@
     <!-- Search Results Modal -->
     <div id="search-modal" class="modal-overlay hidden">
       <div class="modal-window">
-        <div class="modal-header">
-          <div class="title">Payment Search Results</div>
+        <div class="modal-header" id="refresh-search-results-text">
+          <div class="title">
+            <img 
+          src="assets/icons/GPTico.svg" 
+          alt="GPTracker Logo" 
+          class="modal-logo"
+          id="refresh-search-results"
+        />
+        Payment Search Results
+      </div>
           <div class="spacer"></div>
           <div class="window-controls">
             <button

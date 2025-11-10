@@ -241,8 +241,10 @@ let payments = [];
 let tabs = [];
 let activeTabId;
 let chart = null;
+let tabDefaultAmounts = {}; // Store tab-level defaults: { tabId: amount }
 
-const REQUIRED_TOTAL_AMOUNT = 400;
+
+const DEFAULT_REQUIRED_AMOUNT = 1; // Renamed from REQUIRED_TOTAL_AMOUNT for clarity
 const MAX_TABS = 5;
 
 
@@ -274,12 +276,13 @@ async function saveData() {
       return;
     }
 
-    // Include quickInfoData in the encoded blob
+    // Include quickInfoData and tabDefaultAmounts in the encoded blob
     const encodedBlob = encodeData({
       members: members.filter(m => m.tabId === activeTabId),
       payments: payments.filter(p => p.tabId === activeTabId),
       tabs: tabs,
-      quickInfo: quickInfoData.filter(qi => qi.tabId === activeTabId)
+      quickInfo: quickInfoData.filter(qi => qi.tabId === activeTabId),
+      tabDefaultAmounts: tabDefaultAmounts // Add this
     });
 
     await setDoc(doc(db, "members", activeTabId), {
@@ -293,17 +296,25 @@ async function saveData() {
 }
 
 
-function calculateMemberProgressV2(memberName, payments) {
-  console.log("calculateMemberProgressV2 for", memberName);
-  const memberPayments = payments.filter(p => p.name === memberName);
+function calculateMemberProgressV2(member, payments) {
+  console.log("calculateMemberProgressV2 for", member.Name);
+  const memberPayments = payments.filter(p => p.name === member.Name);
   const totalPaid = memberPayments.reduce((s, p) => s + p.amount, 0);
-  const progress = Math.min((totalPaid / REQUIRED_TOTAL_AMOUNT) * 100, 100);
+
+  // Determine required amount: custom > tab default > global default
+  const tabDefault = tabDefaultAmounts[member.tabId] || DEFAULT_REQUIRED_AMOUNT;
+  const requiredAmount = member.requiredAmount || tabDefault;
+
+  const progress = Math.min((totalPaid / requiredAmount) * 100, 100);
+
   return {
     progress,
-    isPaid: totalPaid >= REQUIRED_TOTAL_AMOUNT,
+    isPaid: totalPaid >= requiredAmount,
     totalPaid,
-    amountRemaining: Math.max(0, REQUIRED_TOTAL_AMOUNT - totalPaid),
-    requiredAmount: REQUIRED_TOTAL_AMOUNT
+    amountRemaining: Math.max(0, requiredAmount - totalPaid),
+    requiredAmount: requiredAmount,
+    isCustomAmount: !!member.requiredAmount,
+    isTabDefault: !member.requiredAmount && tabDefault !== DEFAULT_REQUIRED_AMOUNT
   };
 }
 
@@ -324,33 +335,47 @@ document.getElementById("total-collected").textContent = "₱0";
 document.getElementById("total-outstanding").textContent = "₱0";
 updateChart(0, 0);
 
+
+
 function renderTableV2() {
   console.log("renderTableV2");
   const tbody = document.getElementById("tracker-body");
   tbody.innerHTML = "";
   const filteredMembers = members.filter(m => m.tabId === activeTabId);
-  const filteredPayments = payments.filter(p => p.tabId === activeTabId); // ✅ FIX HERE
+  const filteredPayments = payments.filter(p => p.tabId === activeTabId);
+
   if (!filteredMembers.length) {
     tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">No members found for this tab | scroll down to add member/s</td></tr>';
-    // 🧹 Clear summary + chart when tab has no members
     updateSummary(0, 0);
-
-
     return;
   }
 
-  let totalCollected = 0, totalRequired = REQUIRED_TOTAL_AMOUNT * filteredMembers.length;
+  let totalCollected = 0, totalRequired = 0;
 
   filteredMembers.forEach(member => {
-    const prog = calculateMemberProgressV2(member.Name, filteredPayments);
+    const prog = calculateMemberProgressV2(member, filteredPayments);
     totalCollected += prog.totalPaid;
+    totalRequired += prog.requiredAmount;
+
     let barColor = prog.isPaid ? "bg-green-500" : prog.progress > 0 ? "bg-red-500" : "bg-orange-400";
-    // let statusIndicator = prog.isPaid ? '<p class="text-xs text-center font-bold text-green-600">✓ Fully Paid</p>' : `<p class="text-xs text-center text-red-600">Need: ₱${prog.amountRemaining}</p>`;
+
+    // Determine icon and styling
+    let amountIcon = '✅'; // Default
+    let amountClass = 'text-green-600';
+
+    if (prog.isCustomAmount) {
+      amountIcon = '✏️';
+      amountClass = 'text-purple-600 font-bold';
+    } else if (prog.isTabDefault) {
+      amountIcon = '⚙️';
+      amountClass = 'text-blue-600';
+    }
+
     tbody.innerHTML += `
 <tr class="border-b hover:bg-gray-50">
   <td class="px-4 py-3 font-medium name-cell transition-all duration-300 relative">
-<span class="member-name relative z-10">${member.Name}</span>
-</td>
+    <span class="member-name relative z-10" title="Click to rename • Double-click to delete">${member.Name}</span>
+  </td>
 
   <td class="px-4 py-3">
     <div class="progress-bar-bg mb-2">
@@ -363,20 +388,29 @@ function renderTableV2() {
         : `<p class="text-xs text-center text-red-600">Need: ₱${prog.amountRemaining}</p>`
       }
   </td>
-  <td class="px-4 py-3 text-right">${formatCurrency(prog.totalPaid)} / ${formatCurrency(REQUIRED_TOTAL_AMOUNT)}</td>
+  <td class="px-4 py-3 text-right">
+    <span class="amount-display ${amountClass} cursor-pointer hover:underline transition-all duration-200" 
+          data-member-id="${member.id}"
+          title="Click to edit • Double-click to delete">
+      ${formatCurrency(prog.totalPaid)} / ${formatCurrency(prog.requiredAmount)} ${amountIcon}
+    </span>
+  </td>
 </tr>`;
   });
 
   updateSummary(totalCollected, totalRequired);
-
-
 }
+
+
 ////////////////////////////////////////
 
 
 document.getElementById("tracker-body").addEventListener("click", async (e) => {
   const nameSpan = e.target.closest(".member-name");
+
   if (!nameSpan) return;
+
+
 
   // Double-click detection
   if (e.detail === 2) {
@@ -472,6 +506,78 @@ async function handleMemberRename(nameSpan) {
     });
   }
 }
+
+// Handle amount clicks (NEW - custom amount editing)
+document.addEventListener("click", async (e) => {
+  const amountSpan = e.target.closest(".amount-display");
+
+  if (amountSpan) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const memberId = amountSpan.dataset.memberId;
+    await handleAmountEdit(memberId);
+    return;
+  }
+});
+
+// Amount editing function
+async function handleAmountEdit(memberId) {
+  const member = members.find(m => m.id === memberId && m.tabId === activeTabId);
+  if (!member) {
+    showNotification("Member not found", "error");
+    return;
+  }
+
+  const tabDefault = tabDefaultAmounts[activeTabId] || DEFAULT_REQUIRED_AMOUNT;
+  const currentAmount = member.requiredAmount || tabDefault;
+
+  const newAmount = prompt(
+    `Set custom amount for ${member.Name}:\n\n` +
+    `Current: ₱${currentAmount}\n` +
+    `Tab default: ₱${tabDefault}\n` +
+    `Global default: ₱${DEFAULT_REQUIRED_AMOUNT}\n\n` +
+    `Enter new amount or leave blank to use tab default:`,
+    member.requiredAmount || ''
+  );
+
+  if (newAmount === null) return; // User cancelled
+
+  let finalAmount;
+  let action;
+
+  if (newAmount.trim() === "") {
+    // Reset to tab default (remove custom amount)
+    delete member.requiredAmount;
+    finalAmount = tabDefault;
+    action = "reset to tab default";
+  } else {
+    // Validate and set custom amount
+    const parsedAmount = parseFloat(newAmount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      showNotification("Please enter a valid positive amount", "error");
+      return;
+    }
+    member.requiredAmount = parsedAmount;
+    finalAmount = parsedAmount;
+    action = "updated";
+  }
+
+  try {
+    await saveData();
+    renderTableV2();
+    renderHistory();
+
+    showNotification(`Amount for ${member.Name} ${action} to ₱${finalAmount}`, "success");
+
+  } catch (error) {
+    handleError(error, "Update amount");
+  }
+}
+
+
+
+
 
 // Delete confirmation function
 async function handleMemberDelete(nameSpan) {
@@ -678,18 +784,22 @@ document.getElementById("payment-form").querySelector('button[type="add-member"]
   addMemberBtn.disabled = true;
   addMemberBtn.textContent = 'Adding...';
   try {
+    const tabDefault = tabDefaultAmounts[activeTabId] || DEFAULT_REQUIRED_AMOUNT;
+
     members.push({
       Name: newMemberName,
       id: `member${Date.now()}`,
       timestamp: Date.now(),
       addedBy: currentUser.email,
-      tabId: activeTabId // Assign to active tab
+      tabId: activeTabId,
+      requiredAmount: null // Start with tab default, not custom
     });
+
     await saveData();
     populateMemberSelect(members.filter(m => m.tabId === activeTabId));
     nameSelect.value = newMemberName;
     renderTableV2();
-    showNotification(`Member ${newMemberName} added successfully`, 'success');
+    showNotification(`Member ${newMemberName} added successfully with default amount ₱${tabDefault}`, 'success');
   } catch (error) {
     handleError(error, 'Add member');
   } finally {
@@ -776,10 +886,30 @@ addTabBtn.addEventListener("click", async () => {
     return;
   }
 
+  // Create custom dialog for tab creation
+  const tabName = prompt("Enter tab name:");
+  if (!tabName) return;
 
+  // Ask for default amount
+  const defaultAmountInput = prompt(
+    `Enter default amount per member for "${tabName}":\n\n` +
+    `Current global default: ₱${DEFAULT_REQUIRED_AMOUNT}`,
+    DEFAULT_REQUIRED_AMOUNT
+  );
 
-  const name = prompt("Enter tab name:");
-  if (!name) return;
+  if (defaultAmountInput === null) return; // User cancelled
+
+  let defaultAmount;
+  if (defaultAmountInput.trim() === "") {
+    defaultAmount = DEFAULT_REQUIRED_AMOUNT;
+  } else {
+    const parsedAmount = parseFloat(defaultAmountInput);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      showNotification("Please enter a valid positive amount", "error");
+      return;
+    }
+    defaultAmount = parsedAmount;
+  }
 
   // ✅ Disable button immediately to prevent double clicks
   addTabBtn.disabled = true;
@@ -788,15 +918,15 @@ addTabBtn.addEventListener("click", async () => {
 
   try {
     const newTab = {
-      tabName: name,
+      tabName: tabName,
       tabsArrangement: tabs.length + 1,
       tabsBy: currentUser.email,
       id: `tab${Date.now()}`
     };
 
     tabs.push(newTab);
-    await createTab(name); // Firestore doc + UI creation handled here
-    showNotification(`Tab "${name}" added successfully`, 'success');
+    await createTab(tabName, null, defaultAmount); // Pass default amount
+    showNotification(`Tab "${tabName}" created with default amount ₱${defaultAmount}`, 'success');
   } catch (err) {
     handleError(err, "Add tab");
   } finally {
@@ -830,7 +960,7 @@ function getUID() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-async function createTab(name = "New Tab", docId = null) {
+async function createTab(name = "New Tab", docId = null, defaultAmount = DEFAULT_REQUIRED_AMOUNT) {
   console.log("createTab");
   // If docId is not provided, create a new Firestore document for this tab
   if (!docId) {
@@ -838,6 +968,7 @@ async function createTab(name = "New Tab", docId = null) {
       showNotification("You must be signed in to create a tab", "error");
       return;
     }
+
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -846,11 +977,35 @@ async function createTab(name = "New Tab", docId = null) {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const timestamp = `${year}${month}${day}${hours}:${minutes}`;
 
-    // Build the docId exactly as you requested
     docId = `${currentUser.email}TAB${name}--v${timestamp}`;
 
-    // Save an initial document for the tab
-    const initialBlob = encodeData({ members: [], payments: [], tabs: [] });
+    tabDefaultAmounts[docId] = defaultAmount;
+
+    const protectedQuickInfoId = `protected_default_amount_${docId}`;
+    // In createTab function, when creating the initial Quick Info:
+    quickInfoData.push({
+      label: "Default amount per member:",
+      value: `₱${defaultAmount}`,
+      id: protectedQuickInfoId,
+      tabId: docId,
+      isProtected: true,
+      isConstantLabel: true  // This makes the label constant
+    });
+
+    const initialBlob = encodeData({
+      members: [],
+      payments: [],
+      tabs: [],
+      quickInfo: [{
+        label: "Default amount per member:",
+        value: `₱${defaultAmount}`,
+        id: protectedQuickInfoId,
+        isProtected: true,
+        isConstantLabel: true
+      }],
+      tabDefaultAmounts: { [docId]: defaultAmount }
+    });
+
     await setDoc(doc(db, "members", docId), {
       blob_data: initialBlob,
       uid: getUID(),
@@ -901,7 +1056,7 @@ async function createTab(name = "New Tab", docId = null) {
     renderTableV2();
     renderHistory();
     renderQuickInfo(filteredQuickInfo);
-    UIState(); // ✅ ADD THIS LINE - This was missing!
+    UIState();
   });
 
   tab.querySelector(".tab-close").addEventListener("click", async (e) => {
@@ -919,6 +1074,10 @@ async function createTab(name = "New Tab", docId = null) {
     members = members.filter(m => m.tabId !== tabDocId);
     payments = payments.filter(p => p.tabId !== tabDocId);
 
+    // Remove tab default amount and protected quick info
+    delete tabDefaultAmounts[tabDocId];
+    quickInfoData = quickInfoData.filter(qi => !(qi.tabId === tabDocId && qi.isProtected));
+
     // 🧱 Remove tab from DOM
     tab.remove();
 
@@ -933,15 +1092,13 @@ async function createTab(name = "New Tab", docId = null) {
     populateMemberSelect(members.filter(m => m.tabId === activeTabId));
     renderTableV2();
     renderHistory();
-    UIState(); // ✅ Also add here for when deleting tabs
+    UIState();
     checkTabLimit();
 
     showNotification("Tab deleted successfully", "success");
   });
 
-
-
-   tabsContainer.insertBefore(tab, addTabBtn);
+  tabsContainer.insertBefore(tab, addTabBtn);
   if (docId === activeTabId) tab.classList.add("active");
 
   tab.addEventListener("dragstart", (e) => {
@@ -953,7 +1110,7 @@ async function createTab(name = "New Tab", docId = null) {
   });
 
   tabsContainer.insertBefore(tab, addTabBtn);
-  checkTabLimit();;
+  checkTabLimit();
 }
 
 
@@ -1012,12 +1169,12 @@ function renderTabsToUI() {
   const tabsWrapper = document.getElementById("tabs");
   if (!tabsWrapper) return;
 
-  // Remove existing tab elements but keep the add button
   tabsWrapper.querySelectorAll(".tab").forEach(t => t.remove());
 
-  // Rebuild tabs
   tabs.forEach(tab => {
-
+    if (!tabDefaultAmounts[tab.id]) {
+      tabDefaultAmounts[tab.id] = DEFAULT_REQUIRED_AMOUNT;
+    }
     const tabEl = document.createElement("div");
     tabEl.className = "tab flex items-center";
     tabEl.dataset.docId = tab.id;
@@ -1079,7 +1236,7 @@ function renderTabsToUI() {
       populateMemberSelect(members.filter(m => m.tabId === activeTabId));
       renderTableV2();
       renderHistory();
-        UIState();
+      UIState();
       checkTabLimit();
       showNotification("Tab deleted successfully", "success");
     });
@@ -1105,8 +1262,7 @@ function renderTabsToUI() {
 
 }
 
-// Move this outside renderTabsToUI
-// Update the renderQuickInfo function to include IDs
+// Update the renderQuickInfo function to include all properties
 function renderQuickInfo(quickInfoItems) {
   const infoContent = document.getElementById("info-content");
   if (!infoContent) return;
@@ -1115,7 +1271,13 @@ function renderQuickInfo(quickInfoItems) {
 
   if (quickInfoItems && quickInfoItems.length > 0) {
     quickInfoItems.forEach(item => {
-      addQuickInfoRowToUI(item.label, item.value, item.id);
+      addQuickInfoRowToUI(
+        item.label,
+        item.value,
+        item.id,
+        item.isProtected || false,
+        item.isConstantLabel || false  // Add this line
+      );
     });
   }
 }
@@ -1169,6 +1331,7 @@ async function loadData() {
     members = []; // reset global arrays
     payments = [];
     quickInfoData = []; // reset quick info
+    tabDefaultAmounts = {}; // reset tab defaults
     let count = 0;
 
     snapshot.forEach((docSnap) => {
@@ -1180,12 +1343,13 @@ async function loadData() {
         const data = docSnap.data();
         const decoded = decodeData(data.blob_data || "{}") || {};
 
-        // Load all data types from blob
+        // In loadData function:
         if (decoded.members) {
           decoded.members.forEach(m => {
             members.push({
               ...m,
-              tabId: m.tabId || docSnap.id
+              tabId: m.tabId || docSnap.id,
+              preservedAtOldAmount: m.preservedAtOldAmount || false // Load preservation flag
             });
           });
         }
@@ -1199,14 +1363,22 @@ async function loadData() {
           });
         }
 
-        // Load quick info from blob
+        // In the loadData function, inside the snapshot.forEach loop:
+        // In the loadData function, inside the snapshot.forEach loop:
         if (decoded.quickInfo) {
           decoded.quickInfo.forEach(qi => {
             quickInfoData.push({
               ...qi,
-              tabId: qi.tabId || docSnap.id
+              tabId: qi.tabId || docSnap.id,
+              isProtected: qi.isProtected || false,
+              isConstantLabel: qi.isConstantLabel || false // Ensure this is set
             });
           });
+        }
+
+        // Load tab default amounts
+        if (decoded.tabDefaultAmounts) {
+          Object.assign(tabDefaultAmounts, decoded.tabDefaultAmounts);
         }
 
         const tabObj = {
@@ -1246,6 +1418,13 @@ modalForm.addEventListener("submit", async (e) => {
     addBtn.textContent = "Adding...";
 
     try {
+      // Check if this is the default amount label (prevent duplicates)
+      if (leftText.toLowerCase().includes("default amount")) {
+        showNotification("'Default amount per member:' is automatically created for each tab", "warning");
+        hideModal();
+        return;
+      }
+
       const success = await addQuickInfo(leftText, rightText);
       if (success) {
         hideModal();
@@ -1294,81 +1473,405 @@ async function addQuickInfo(label, value) {
     label: label.trim(),
     value: value.trim(),
     id: qiId,
-    tabId: activeTabId
+    tabId: activeTabId,
+    isProtected: false,
+    isConstantLabel: false
   });
 
   // Save to Firestore blob
   await saveData();
 
-  // Update UI
-  addQuickInfoRowToUI(label, value, qiId);
+  // Update UI - pass all parameters
+  addQuickInfoRowToUI(label, value, qiId, false, false);
 
   showNotification("Quick info added successfully", "success");
   return true;
 }
 
 
-function addQuickInfoRowToUI(label, value, id = `qi_${Date.now()}`) {
+function addQuickInfoRowToUI(label, value, id = `qi_${Date.now()}`, isProtected = false, isConstantLabel = false) {
   const infoContent = document.getElementById("info-content");
   const newRow = document.createElement("div");
   newRow.className = "info-row group relative";
   newRow.dataset.qiId = id;
-  newRow.innerHTML = `
-    <div class="flex-1">
-      <span class="info-label qi-editable" data-type="label">${label}</span>
-    </div>
-    <div class="flex-1 text-right">
-      <span class="info-value qi-editable" data-type="value">${value}</span>
-    </div>
-  `;
+  newRow.dataset.isProtected = isProtected;
+  newRow.dataset.constantLabel = isConstantLabel;
+
+  if (isProtected || isConstantLabel) {
+    newRow.innerHTML = `
+      <div class="flex-1">
+        <span class="info-label text-gray-600 font-semibold constant-label">${label}</span>
+      </div>
+      <div class="flex-1 text-right">
+        <span class="info-value qi-editable text-blue-600 font-bold" data-type="value" data-protected="true">${value}</span>
+      </div>
+    `;
+  } else {
+    newRow.innerHTML = `
+      <div class="flex-1">
+        <span class="info-label qi-editable" data-type="label">${label}</span>
+      </div>
+      <div class="flex-1 text-right">
+        <span class="info-value qi-editable" data-type="value">${value}</span>
+      </div>
+    `;
+  }
 
   infoContent.appendChild(newRow);
 
   // Add event listeners for the editable elements
-  addQuickInfoEditListeners(newRow, id, label, value);
+  addQuickInfoEditListeners(newRow, id, label, value, isProtected, isConstantLabel);
 }
 
-
-// Add new quick info (triggers save to blob)
 // Add edit/delete functionality to Quick Info rows
-function addQuickInfoEditListeners(row, id, currentLabel, currentValue) {
-  const labelElement = row.querySelector('.info-label.qi-editable');
+// Add edit/delete functionality to Quick Info rows
+// Update the function signature to include isConstantLabel
+function addQuickInfoEditListeners(row, id, currentLabel, currentValue, isProtected = false, isConstantLabel = false) {
+  const labelElement = row.querySelector('.info-label');
   const valueElement = row.querySelector('.info-value.qi-editable');
 
-  // Single-click for rename
-  labelElement.addEventListener('click', (e) => {
-    if (e.detail === 1) {
-      setTimeout(() => {
-        if (!labelElement.dataset.doubleClick) {
-          handleQuickInfoRename(labelElement, 'label', id, currentLabel, currentValue);
-        }
-        delete labelElement.dataset.doubleClick;
-      }, 300);
+  // Single-click for rename - Skip if protected OR constant label
+  if (labelElement && !isProtected && !isConstantLabel && !labelElement.classList.contains('constant-label')) {
+    labelElement.addEventListener('click', (e) => {
+      if (e.detail === 1) {
+        setTimeout(() => {
+          if (!labelElement.dataset.doubleClick) {
+            handleQuickInfoRename(labelElement, 'label', id, currentLabel, currentValue);
+          }
+          delete labelElement.dataset.doubleClick;
+        }, 300);
+      }
+    });
+  }
+
+  // Value editing - Always allow for protected/constant items, but with special handling
+  if (valueElement) {
+    valueElement.addEventListener('click', (e) => {
+      if (e.detail === 1) {
+        setTimeout(() => {
+          if (!valueElement.dataset.doubleClick) {
+            if (isProtected || isConstantLabel) {
+              handleProtectedAmountEdit(id, currentLabel, currentValue);
+            } else {
+              handleQuickInfoRename(valueElement, 'value', id, currentLabel, currentValue);
+            }
+          }
+          delete valueElement.dataset.doubleClick;
+        }, 300);
+      }
+    });
+  }
+
+  // Double-click for delete - Skip if protected or constant label
+  if (!isProtected && !isConstantLabel) {
+    if (labelElement && !labelElement.classList.contains('constant-label')) {
+      labelElement.addEventListener('dblclick', (e) => {
+        labelElement.dataset.doubleClick = "true";
+        handleQuickInfoDelete(id, currentLabel, currentValue);
+      });
     }
-  });
 
-  valueElement.addEventListener('click', (e) => {
-    if (e.detail === 1) {
-      setTimeout(() => {
-        if (!valueElement.dataset.doubleClick) {
-          handleQuickInfoRename(valueElement, 'value', id, currentLabel, currentValue);
-        }
-        delete valueElement.dataset.doubleClick;
-      }, 300);
+    if (valueElement) {
+      valueElement.addEventListener('dblclick', (e) => {
+        valueElement.dataset.doubleClick = "true";
+        handleQuickInfoDelete(id, currentLabel, currentValue);
+      });
     }
-  });
+  }
+}
 
-  // Double-click for delete
-  labelElement.addEventListener('dblclick', (e) => {
-    labelElement.dataset.doubleClick = "true";
-    handleQuickInfoDelete(id, currentLabel, currentValue);
-  });
 
-  valueElement.addEventListener('dblclick', (e) => {
-    valueElement.dataset.doubleClick = "true";
-    handleQuickInfoDelete(id, currentLabel, currentValue);
+// Handle protected default amount editing
+// Handle protected default amount editing with member selection
+// Handle protected default amount editing with member selection - CORRECTED VERSION
+async function handleProtectedAmountEdit(id, label, currentValue) {
+  const quickInfoItem = quickInfoData.find(qi => qi.id === id && qi.tabId === activeTabId);
+  if (!quickInfoItem) {
+    showNotification("Quick Info item not found", "error");
+    return;
+  }
+
+  // Extract current amount value (remove ₱ symbol and any formatting)
+  const currentAmountValue = currentValue.replace('₱', '').replace(/,/g, '');
+
+  const newAmount = prompt(
+    `Edit default amount for all members in this tab:\n\n` +
+    `This will affect members using the tab default amount.\n\n` +
+    `Current default: ₱${currentAmountValue}`,
+    currentAmountValue
+  );
+
+  if (newAmount === null) return; // User cancelled
+
+  if (newAmount.trim() === "") {
+    showNotification("Default amount cannot be empty", "error");
+    return;
+  }
+
+  const parsedAmount = parseFloat(newAmount);
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    showNotification("Please enter a valid positive amount", "error");
+    return;
+  }
+
+  // Get members using tab default (not custom amounts)
+  const membersUsingDefault = members.filter(member =>
+    member.tabId === activeTabId && !member.requiredAmount
+  );
+
+  if (membersUsingDefault.length === 0) {
+    // No members using default, just update the tab default
+    await updateTabDefaultAmount(parsedAmount, quickInfoItem, { memberIds: [], option: 'future' });
+    return;
+  }
+
+  // Ask user how to apply the change
+  const selectionResult = await showMemberSelectionDialog(membersUsingDefault, parsedAmount, currentAmountValue);
+
+  if (selectionResult === null) return; // User cancelled
+
+  await updateTabDefaultAmount(parsedAmount, quickInfoItem, selectionResult);
+}
+
+
+
+
+// Update tab default amount and apply to selected members
+// Update tab default amount and apply to selected members
+// Enhanced update function with preservation tracking
+// Update tab default amount and apply to selected members - FIXED VERSION
+async function updateTabDefaultAmount(newAmount, quickInfoItem, selectionResult) {
+  try {
+    const oldAmount = tabDefaultAmounts[activeTabId];
+    tabDefaultAmounts[activeTabId] = newAmount;
+    quickInfoItem.value = `₱${newAmount.toLocaleString()}`;
+
+    let updatedMembersCount = 0;
+    let preservedMembersCount = 0;
+
+    const { memberIds: selectedMemberIds, option } = selectionResult;
+
+    if (option === 'all') {
+      // Apply to ALL members - set them all to use the new amount
+      members.forEach(member => {
+        if (member.tabId === activeTabId) {
+          member.requiredAmount = newAmount; // Set custom amount to new value
+          updatedMembersCount++;
+        }
+      });
+    } else if (option === 'select') {
+      // Apply to selected members only
+      members.forEach(member => {
+        if (selectedMemberIds.includes(member.id)) {
+          member.requiredAmount = newAmount; // Set custom amount to new value
+          updatedMembersCount++;
+        }
+      });
+    } else if (option === 'default_only') {
+      // Apply only to members currently using default
+      members.forEach(member => {
+        if (selectedMemberIds.includes(member.id) && !member.requiredAmount) {
+          // They continue using default (no requiredAmount set)
+          updatedMembersCount++;
+        }
+      });
+    } else if (option === 'future') {
+      // "Only for NEW members" - preserve existing members
+      const membersUsingDefault = members.filter(member =>
+        member.tabId === activeTabId && !member.requiredAmount
+      );
+
+      membersUsingDefault.forEach(member => {
+        // Set requiredAmount to lock them at the OLD amount
+        member.requiredAmount = oldAmount;
+        preservedMembersCount++;
+      });
+    }
+
+    await saveData();
+    renderTableV2();
+    renderHistory();
+
+    const filteredQuickInfo = quickInfoData.filter(qi => qi.tabId === activeTabId);
+    renderQuickInfo(filteredQuickInfo);
+
+    let message = `Default amount updated to ₱${newAmount.toLocaleString()}. `;
+
+    if (option === 'all') {
+      message += `All ${updatedMembersCount} member(s) updated to ₱${newAmount}.`;
+    } else if (option === 'select') {
+      message += `${updatedMembersCount} selected member(s) updated to ₱${newAmount}.`;
+    } else if (option === 'default_only') {
+      message += `${updatedMembersCount} member(s) using default will now use ₱${newAmount}.`;
+    } else if (option === 'future') {
+      message += `${preservedMembersCount} existing member(s) preserved at ₱${oldAmount}. New members will use ₱${newAmount}.`;
+    }
+
+    showNotification(message, "success");
+
+  } catch (error) {
+    handleError(error, "Update default amount");
+  }
+}
+
+
+
+
+
+// Show member selection dialog with checkboxes - FIXED VERSION
+async function showMemberSelectionDialog(membersUsingDefault, newAmount, currentAmount) {
+  return new Promise((resolve) => {
+    // Get ALL members in the current tab (not just those using default)
+    const allMembersInTab = members.filter(member => member.tabId === activeTabId);
+
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modalOverlay.innerHTML = `
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold mb-4">Apply New Default Amount</h3>
+        
+        <div class="mb-4 p-3 bg-blue-50 rounded border border-blue-200">
+          <p class="text-sm text-blue-800">
+            <strong>Changing:</strong> ₱${currentAmount} → ₱${newAmount}
+          </p>
+          <p class="text-xs text-blue-600 mt-1">
+            ${allMembersInTab.length} total member(s) in this tab
+          </p>
+        </div>
+
+        <div class="mb-4">
+          <p class="text-sm font-medium mb-2">Apply to:</p>
+          
+          <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded p-3">
+            <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+  <input type="radio" name="applyOption" value="all" checked class="rounded text-blue-600">
+  <span class="flex-1">
+    <span class="font-medium">All members in this tab</span>
+    <span class="text-xs text-gray-500 block">(${allMembersInTab.length} members - will update everyone)</span>
+  </span>
+</label>
+
+            <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+              <input type="radio" name="applyOption" value="select" class="rounded text-blue-600">
+              <span class="font-medium">Select specific members</span>
+            </label>
+
+<div id="memberCheckboxes" class="ml-6 mt-2 space-y-2 hidden">
+  ${allMembersInTab.map(member => {
+      const isUsingDefault = !member.requiredAmount;
+      const memberCurrentAmount = member.requiredAmount || currentAmount; // Changed variable name
+      const icon = isUsingDefault ? '⚙️' : '✏️';
+
+      return `
+    <label class="flex items-center space-x-3 p-1 hover:bg-gray-50 rounded cursor-pointer">
+      <input type="checkbox" value="${member.id}" class="rounded text-blue-600 member-checkbox" ${isUsingDefault ? 'checked' : ''}>
+      <span class="flex items-center gap-2">
+        <span class="text-xs">${icon}</span>
+        <span>${member.Name}</span>
+        <span class="text-xs text-gray-500">(₱${memberCurrentAmount})</span> <!-- Use new variable name -->
+      </span>
+    </label>
+  `}).join('')}
+</div>
+
+            <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+              <input type="radio" name="applyOption" value="default_only" class="rounded text-blue-600">
+              <span class="flex-1">
+                <span class="font-medium">Only members using default</span>
+                <span class="text-xs text-gray-500 block">(${membersUsingDefault.length} members with ⚙️ icon)</span>
+              </span>
+            </label>
+
+            <label class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+              <input type="radio" name="applyOption" value="future" class="rounded text-blue-600">
+              <span class="flex-1">
+                <span class="font-medium">Only for NEW members</span>
+                <span class="text-xs text-gray-500 block">(Existing members remain unchanged)</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <button type="button" id="cancelBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+            Cancel
+          </button>
+          <button type="button" id="applyBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Apply Changes
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modalOverlay);
+
+    // Add event listeners
+    const applyOptionRadios = modalOverlay.querySelectorAll('input[name="applyOption"]');
+    const memberCheckboxes = modalOverlay.querySelector('#memberCheckboxes');
+    const cancelBtn = modalOverlay.querySelector('#cancelBtn');
+    const applyBtn = modalOverlay.querySelector('#applyBtn');
+
+    // Toggle checkboxes visibility
+    applyOptionRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'select') {
+          memberCheckboxes.classList.remove('hidden');
+        } else {
+          memberCheckboxes.classList.add('hidden');
+        }
+      });
+    });
+
+    // Cancel button
+    cancelBtn.addEventListener('click', () => {
+      document.body.removeChild(modalOverlay);
+      resolve(null);
+    });
+
+    // Apply button
+    applyBtn.addEventListener('click', () => {
+      const selectedOption = modalOverlay.querySelector('input[name="applyOption"]:checked').value;
+      let selectedMembers = [];
+
+      if (selectedOption === 'all') {
+        // Apply to ALL members
+        selectedMembers = allMembersInTab.map(m => m.id);
+      } else if (selectedOption === 'select') {
+        // Get selected member IDs from checkboxes
+        const checkedBoxes = modalOverlay.querySelectorAll('.member-checkbox:checked');
+        selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
+
+        if (selectedMembers.length === 0) {
+          showNotification("Please select at least one member", "warning");
+          return;
+        }
+      } else if (selectedOption === 'default_only') {
+        // Apply only to members currently using default
+        selectedMembers = membersUsingDefault.map(m => m.id);
+      } else if (selectedOption === 'future') {
+        // Only update tab default, don't change any existing members
+        selectedMembers = [];
+      }
+
+      document.body.removeChild(modalOverlay);
+      resolve({
+        memberIds: selectedMembers,
+        option: selectedOption
+      });
+    });
+
+    // Close on overlay click
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        document.body.removeChild(modalOverlay);
+        resolve(null);
+      }
+    });
   });
 }
+
+
 
 
 // Handle Quick Info rename
