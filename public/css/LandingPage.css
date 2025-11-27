@@ -8,8 +8,6 @@
   padding: 0;
 }
 
-
-
 html {
   scroll-behavior: smooth;
 }
@@ -226,15 +224,6 @@ html, body {
 }
 
 
-
-
-
-
-
-
-
-
-
 /* ====================
    HERO SECTION
 ==================== */
@@ -352,81 +341,6 @@ html, body {
   100% { opacity: 0; transform: translateY(15px); }
 }
 
-/* ====================
-   ANIMATED BLOBS
-==================== */
-
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.blob1 {
-  top: 10%;
-  left: -5%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.6), transparent 70%);
-  animation: float 20s ease-in-out infinite;
-}
-
-.blob2 {
-  top: 50%;
-  right: -5%;
-  width: 450px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(134, 239, 172, 0.5), transparent 70%);
-  animation: float 25s ease-in-out infinite reverse;
-  animation-delay: 5s;
-}
-
-.blob3 {
-  bottom: 10%;
-  left: 40%;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(147, 197, 253, 0.6), transparent 70%);
-  animation: float 22s ease-in-out infinite;
-  animation-delay: 10s;
-}
-
-.blob-bottom {
-  bottom: 10%;
-  left: 10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent 70%);
-  animation: float 18s ease-in-out infinite;
-}
-
-.blob-bottom-right {
-  bottom: 20%;
-  right: 15%;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.3), transparent 70%);
-  animation: float 20s ease-in-out infinite reverse;
-  animation-delay: 7s;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(30px, -40px) scale(1.1);
-  }
-  50% {
-    transform: translate(-25px, 25px) scale(0.95);
-  }
-  75% {
-    transform: translate(35px, 15px) scale(1.05);
-  }
-}
 
 /* ====================
    FEATURES SECTION
@@ -524,6 +438,31 @@ html, body {
   color: #4b5563;
   font-size: 1rem;
   line-height: 1.7;
+}
+
+.feature-card .icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 15px;
+
+}
+
+.feature-card .icon i {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  
+}
+
+.feature-card:hover .icon i {
+  transform: scale(0.8);
+  color: #1d4ed8;
 }
 
 /* ====================
@@ -1344,3 +1283,37 @@ html, body {
 .modal-window.maximized::before {
   border-radius: 0 !important;
 }
+
+/* ====================
+    SOME KIND OF AMBOTIC FLOATING ICONS
+==================== */
+
+/* Floating icons*/
+.floating-icons {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.float-icon {
+  position: absolute;
+  font-size: 2.5rem;
+  opacity: 0.15;
+  animation: float 20s infinite linear;
+  filter: blur(1px);
+}
+
+@keyframes float {
+  0%   { transform: translateY(100vh) rotate(0deg); }
+  100% { transform: translateY(-100px) rotate(360deg); }
+}
+
+/* Different delays and positions */
+.float-icon:nth-child(1) { left: 10%; animation-delay: 0s; }
+.float-icon:nth-child(2) { left: 20%; animation-delay: 4s; animation-duration: 25s; }
+.float-icon:nth-child(3) { left: 35%; animation-delay: 8s; animation-duration: 30s; }
+.float-icon:nth-child(4) { left: 50%; animation-delay: 2s; }
+.float-icon:nth-child(5) { left: 65%; animation-delay: 10s; animation-duration: 22s; }
+.float-icon:nth-child(6) { left: 80%; animation-delay: 6s; }

@@ -10,8 +10,6 @@ body.modal-open {
   height: 100vh; /* Locks the height to prevent iOS bounce */
 }
 
-
-
 .container {
   max-width: 1280px;
 }
@@ -158,8 +156,9 @@ tbody tr:hover {
 
 #info-modal {
   z-index: 100;
-  transition: opacity 0.3s ease;
-  opacity: 0;
+  transition: opacity 0.5s ease;
+  opacity: 100;
+  animation: fadeIn 0.5s ease-out;
 }
 
 #info-modal:not(.hidden) {
@@ -179,6 +178,43 @@ tbody tr:hover {
   max-height: 90vh; /* Prevent overflow on tall modals */
   overflow-y: auto; /* Scroll inside modal if content is too long */
 }
+
+/* ====== ABOUT MODAL ENHANCED DESIGN ====== */
+
+#info-modal {
+  animation: fadeIn 0.3s ease-out;
+}
+
+
+/* Modal Card */
+#info-modal .modal-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 22px;
+  padding: 2rem 2.4rem;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  transform: scale(0.95);
+  animation: popIn 0.35s ease forwards;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+#info-modal h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #1d4ed8, #06a9c6);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-align: center;
+}
+
+#info-modal p {
+  line-height: 1.6;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+
 @media (max-width: 640px) {
   #info-modal .bg-white {
     width: 95%; /* Better fit on mobile */
@@ -1089,6 +1125,37 @@ input[type="radio"]:checked {
   background-color: rgba(107, 114, 128, 0.1);
 }
 
+
+/* Landing Page Feature Icons */
+/* Add this to your CSS */
+.floating-icons {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.float-icon {
+  position: absolute;
+  font-size: 2.5rem;
+  opacity: 0.15;
+  animation: float 20s infinite linear;
+  filter: blur(1px);
+}
+
+@keyframes float {
+  0%   { transform: translateY(100vh) rotate(0deg); }
+  100% { transform: translateY(-100px) rotate(360deg); }
+}
+
+/* Different delays and positions */
+.float-icon:nth-child(1) { left: 10%; animation-delay: 0s; }
+.float-icon:nth-child(2) { left: 20%; animation-delay: 4s; animation-duration: 25s; }
+.float-icon:nth-child(3) { left: 35%; animation-delay: 8s; animation-duration: 30s; }
+.float-icon:nth-child(4) { left: 50%; animation-delay: 2s; }
+.float-icon:nth-child(5) { left: 65%; animation-delay: 10s; animation-duration: 22s; }
+.float-icon:nth-child(6) { left: 80%; animation-delay: 6s; }
 
 
 

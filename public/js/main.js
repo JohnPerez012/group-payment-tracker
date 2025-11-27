@@ -132,7 +132,7 @@ function checkHiddenSections() {
     gifContainer = document.createElement("div");
     gifContainer.id = gifId;
     gifContainer.innerHTML = `
-      <img src="/assets/icons/Collaboration_Animation.gif" 
+      <img src="assets/icons/Collaboration_Animation.gif" 
            alt="Collaboration animation" />
       <div id="message-container">
         <p id="empty-text">Hello There!</p>

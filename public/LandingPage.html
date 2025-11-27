@@ -54,6 +54,9 @@
     />
     <link rel="icon" type="image/svg+xml" href="assets/icons/GPTico.svg" />
 
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
   </head>
   <body>
   <!-- Wf = workfile | i = index | PV = projectVersion | W = wave | ! = not initial-->
@@ -123,9 +126,6 @@
 
     <!-- Hero Section -->
     <section id="about" class="hero">
-      <div class="blob blob1"></div>
-      <div class="blob blob2"></div>
-      <div class="blob blob3"></div>
 
       <div class="hero-content">
         <h1 class="web-title" data-aos="fade-up" data-aos-duration="800">
@@ -147,10 +147,23 @@
         </a>
       </div>
 
+      <!-- Floating Icons -->
+       
+       <div class="floating-icons">
+        <i class="fas fa-wallet float-icon" style="color:#000000;"></i>
+        <i class="fas fa-receipt float-icon" style="color:#000000;"></i>
+        <i class="fas fa-mobile-alt float-icon" style="color:#000000;"></i>
+        <i class="fas fa-shield-alt float-icon" style="color:#000000;"></i>
+        <i class="fas fa-check-circle float-icon" style="color:#000000;"></i>
+        <i class="fas fa-credit-card float-icon" style="color:#000000;"></i>
+      </div>
+
       <!-- Scroll Indicator -->
       <div class="scroll-indicator" data-aos="fade-up" data-aos-delay="600">
         <div class="scroll-indicator-inner"></div>
       </div>
+
+     
     </section>
 
     <!-- Features Section -->
@@ -162,7 +175,11 @@
 
       <div class="features-grid">
         <div data-aos="fade-up" data-aos-delay="0" class="feature-card">
-          <div class="icon">🔍</div>
+          <div class="icon">
+            
+            <i class="fas fa-folder-open"></i>
+            
+          </div>
           <h3>Transparent Records</h3>
           <p>
             Parents can search student IDs and instantly verify contributions
@@ -171,7 +188,11 @@
         </div>
 
         <div data-aos="fade-up" data-aos-delay="100" class="feature-card">
-          <div class="icon">📊</div>
+          <div class="icon">
+            
+            <i class="fas fa-user-edit"></i>
+
+          </div>
           <h3>Real-Time Updates</h3>
           <p>
             Every contribution is logged instantly for accuracy, trust, and
@@ -180,7 +201,11 @@
         </div>
 
         <div data-aos="fade-up" data-aos-delay="200" class="feature-card">
-          <div class="icon">🔒</div>
+          <div class="icon">
+
+            <i class="fas fa-user-shield"></i>
+             
+          </div>
           <h3>Secure & Reliable</h3>
           <p>
             Built with bank-level security to protect data and ensure
@@ -189,7 +214,12 @@
         </div>
 
         <div data-aos="fade-up" data-aos-delay="0" class="feature-card">
-          <div class="icon">💳</div>
+          <div class="icon">
+            
+            <i class="fas fa-money-check-alt"></i>
+
+          </div>
+
           <h3>Easy Payment Tracking</h3>
           <p>
             Monitor all group payments in one centralized dashboard with
@@ -198,7 +228,11 @@
         </div>
 
         <div data-aos="fade-up" data-aos-delay="100" class="feature-card">
-          <div class="icon">📱</div>
+          <div class="icon">
+            
+            <i class="fas fa-mobile-alt"></i>
+          
+          </div>
           <h3>Mobile Friendly</h3>
           <p>
             Access your payment information anywhere, anytime, on any device.
@@ -206,7 +240,11 @@
         </div>
 
         <div data-aos="fade-up" data-aos-delay="200" class="feature-card">
-          <div class="icon">📈</div>
+          <div class="icon">
+            
+            <i class="fas fa-chart-pie"></i>
+          
+          </div>
           <h3>Detailed Analytics</h3>
           <p>
             Generate comprehensive reports and visualize payment trends with
@@ -410,10 +448,11 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script type="module" src="js/utils/notificationEngine.js"></script>
+    <script type="module" src="js/utils/notificationEngine.js"></script>
     <script type="module" src="js/googleAuth.js"></script>
     <script type="module" src="js/LandingPage.js"></script>
     <script type="module" src="js/searchModal.js"></script>
-<script type="module" src="js/LandingPage.js"></script>
+    <script type="module" src="js/LandingPage.js"></script>
+
   </body>
 </html>
