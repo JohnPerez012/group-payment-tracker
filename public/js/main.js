@@ -30,11 +30,6 @@ function UIState() {
     }
   });
 
-  const footer = document.getElementById('footer');
-  if (footer) {
-    if (shouldShow) footer.classList.remove('fixfooter');
-    else footer.classList.add('fixfooter');
-  }
 
   checkHiddenSections();
 }
@@ -63,7 +58,6 @@ function checkHiddenSections() {
 
   const gifId = "empty-state-gif";
   let gifContainer = document.getElementById(gifId);
-  const footer = document.getElementById("footer");
 
   // 🧩 Inject responsive CSS only once
   if (!document.getElementById("empty-state-style")) {
@@ -211,14 +205,10 @@ function checkHiddenSections() {
     gifContainer.style.display = "block";
     requestAnimationFrame(() => (gifContainer.style.opacity = "1"));
     startMessageScroll();
-
-    if (footer) footer.classList.add("fixfooter");
   } else {
     gifContainer.style.opacity = "0";
     stopMessageScroll();
     setTimeout(() => (gifContainer.style.display = "none"), 400);
-
-    if (footer) footer.classList.remove("fixfooter");
   }
 }
 
@@ -251,6 +241,7 @@ const MAX_TABS = 5;
 
 const formatCurrency = amount => `₱${amount.toLocaleString()}`;
 const formatDate = ts => ts ? new Date(ts).toLocaleDateString() + " " + new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A";
+
 const showNotification = (msg, type = 'info') => {
   const n = document.createElement('div');
   n.className = `fixed top-4 right-4 p-4 rounded shadow-lg z-[10001] ${type === 'success' ? 'bg-green-500 text-white' :
@@ -1126,6 +1117,48 @@ function extractTabName(docId) {
   return { ownerEmail, tabName };
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('info-modal');
+  const openButtons = document.querySelectorAll('[data-open-info]');
+  const closeButtons = document.querySelectorAll('[data-close-info]');
+
+  // Open modal
+  openButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault(); // Prevent any default behavior (e.g., anchor scroll)
+      modal.classList.remove('hidden');
+      document.body.classList.add('modal-open');
+      // Optional: Scroll modal into view if needed (rarely required for fixed)
+      modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  // Close modal
+  closeButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      modal.classList.add('hidden');
+      document.body.classList.remove('modal-open');
+    });
+  });
+
+  // Close on overlay click (outside the card)
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+      document.body.classList.remove('modal-open');
+    }
+  });
+
+  // Optional: Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+      modal.classList.add('hidden');
+      document.body.classList.remove('modal-open');
+    }
+  });
+});
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const copyBtn = document.getElementById("copy-uid-btn");
@@ -1950,6 +1983,44 @@ async function handleQuickInfoDelete(id, label, value) {
   }
 }
 
+
+
+document.addEventListener('DOMContentLoaded', function() {
+        // Get the move up button and link
+        const moveUpBtn = document.getElementById('moveUpBtn');
+        const moveUpLink = document.getElementById('moveUpLink');
+        
+        // Function to scroll to top smoothly
+        function scrollToTop() {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }
+        
+        // Add click event to the move up button
+        if (moveUpBtn) {
+          moveUpBtn.addEventListener('click', scrollToTop);
+        }
+        
+        // Add click event to the move up link in footer
+        if (moveUpLink) {
+          moveUpLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            scrollToTop();
+          });
+        }
+        
+        // Show/hide the move up button based on scroll position
+        window.addEventListener('scroll', function() {
+          if (window.pageYOffset > 300) {
+            moveUpBtn.style.display = 'flex';
+          } else {
+            moveUpBtn.style.display = 'none';
+          }
+        });
+      });
+      
 
 // Load on page init (add to your DOMContentLoaded)
 document.addEventListener("DOMContentLoaded", loadQuickInfo);

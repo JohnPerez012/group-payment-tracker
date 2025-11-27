@@ -35,6 +35,7 @@
     <!-- STYLESHEET LOCAL -->
     <link rel="stylesheet" href="css/googleSignInButtonStandardStyle.css" />
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/footerStyle.css" />
 
     <!-- ICONS LOCAL -->
     <link rel="icon" type="image/svg+xml" href="assets/icons/GPTico.svg" />
@@ -57,9 +58,13 @@
         <span class="word tracker"> Tracker</span>
       </h1>
     </div>
-    <!-- Wf = workfile | i = index | PV = projectVersion | W = wave | ! = not initial-->
-    <span class="versionStatus">Wf{i}, PV:5W~~V0!</span>
-    <!-- Header -->
+
+
+       <button id="moveUpBtn" title="Scroll to top">
+      <span class="material-symbols-outlined">arrow_upward</span>
+    </button>
+
+    
     <header class="main-header">
       <div class="header-container">
         <div class="logo-area">
@@ -74,7 +79,7 @@
 
         <nav class="flex items-center space-x-6 text-sm sm:text-base">
           <a href="LandingPage.html" class="nav-link">Home</a>
-          <a href="#openAboutModal" class="nav-link" data-open-info>About</a>
+          <button class="nav-link" data-open-info>About</button>
         </nav>
 
         <div class="user-auth">
@@ -116,6 +121,7 @@
     </header>
 
     <!-- Modal Overlay -->
+    <!-- Modal Overlay -->
     <div
       id="info-modal"
       class="fixed inset-0 hidden bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
@@ -133,21 +139,84 @@
           <strong>TRANSPARENCY and ACCOUNTABILITY</strong> in managing the
           student fund within the school community.
         </p>
-        <hr style="border: none; border-top: 3px solid black" />
-        <br />
+
+        <hr class="border-t-2 border-gray-300 my-4" />
+
         <p class="mb-4 text-gray-700 text-justify">
           It provides an organized way to
           <strong>RECORD, TRACK, and MONITOR PAYMENTS</strong> contributed by
           members. By keeping records visible and easy to follow, this tool
           helps build trust, ensures fairness, and reduces the risk of errors.
         </p>
-        <hr style="border: none; border-top: 3px solid black" />
-        <br />
+
+        <hr class="border-t-2 border-gray-300 my-4" />
+
         <p class="text-gray-700 text-justify">
           Designed with simplicity in mind, it ensures that
           <strong>STUDENTS, GROUP MEMBERS, and GUARDIANS</strong> can access
           real-time financial updates with ease.
         </p>
+
+        <!-- NEW PROJECT INFO SECTION -->
+        <hr class="border-t-2 border-blue-300 my-4" />
+        <br />
+
+        <div class="mt-6 text-center text-sm text-gray-600">
+          <p>
+            <strong>Group Payment Tracker</strong> • Prototype project of
+            <em>Group 5</em> for
+            <span class="font-medium"
+              ><b>System Integration and Architecture 1</b>
+            </span>
+            (CTU Course Code, PC 316)
+          </p>
+
+          <p class="mt-1">
+            Led by
+            <a
+              href="https://www.facebook.com/johncadaro.p975"
+              target="_blank"
+              class="text-blue-600 hover:underline font-medium"
+              >John Cadaro</a
+            >
+          </p>
+
+          <details class="mt-2">
+            <summary class="cursor-pointer text-blue-600 hover:underline">
+              View Other Group Members
+            </summary>
+            <ul class="mt-2 space-y-1">
+              <li>
+                <a
+                  href="https://www.facebook.com/laurencezambas.pepito"
+                  target="_blank"
+                  class="text-gray-700 hover:text-blue-600"
+                  >Lourence Arcilla Zambas</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com/ereyes.gyu"
+                  target="_blank"
+                  class="text-gray-700 hover:text-blue-600"
+                  >Allan De Jesus</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com/beatradio.dejito1"
+                  target="_blank"
+                  class="text-gray-700 hover:text-blue-600"
+                  >Bea Dejito</a
+                >
+              </li>
+            </ul>
+          </details>
+
+          <p class="mt-3">
+            ⚙️ <strong>Tech Stack:</strong> Firebase, Chart.js, Tailwind CSS
+          </p>
+        </div>
 
         <div class="mt-6 flex justify-center">
           <button
@@ -412,72 +481,39 @@
     </div>
 
     <!-- Footer -->
-    <footer id="footer" class="bg-white border-t mt-12">
-      <div class="container mx-auto px-6 py-4">
-        <div class="text-center text-sm text-gray-500">
-          <p>
-            <strong>Group Payment Tracker</strong> • Prototype project of
-            <em>Group 5</em> for the course
-            <span class="font-medium"
-              >Systems Integration and Architecture 1</span
-            >
-            (CTU, Course Code: PC 316).
-          </p>
+    <footer id="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>GPTracker</h3>
+          <p>Transparent and secure group payment tracking for everyone.</p>
+        </div>
 
-          <!-- Lead -->
-          <p class="mt-1">
-            Led by
-            <a
-              href="https://www.facebook.com/johncadaro.p975"
-              target="_blank"
-              class="text-blue-600 hover:underline font-medium"
-            >
-              John Cadaro
-            </a>
-          </p>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a class="cursor-pointer" data-open-info>About</a></li>
+            <li>
+              <a href="landingPage.html#search" >Search</a>
+            </li>
 
-          <!-- Collapsible group members -->
-          <details class="mt-2">
-            <summary class="cursor-pointer text-blue-600 hover:underline">
-              View Other Group Members
-            </summary>
-            <ul class="mt-2 space-y-1">
-              <li>
-                <a
-                  href="https://www.facebook.com/laurencezambas.pepito"
-                  target="_blank"
-                  class="text-gray-700 hover:text-blue-600"
-                >
-                  Lourence Arcilla Zambas
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.facebook.com/ereyes.gyu"
-                  target="_blank"
-                  class="text-gray-700 hover:text-blue-600"
-                >
-                  Allan De Jesus
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.facebook.com/beatradio.dejito1"
-                  target="_blank"
-                  class="text-gray-700 hover:text-blue-600"
-                >
-                  Bea Dejito
-                </a>
-              </li>
-            </ul>
-          </details>
+          </ul>
+        </div>
 
-          <p class="mt-3">
-            ⚙️ <strong>Tech Stack:</strong> Firebase, Chart.js, Tailwind CSS
-          </p>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#help">Help Center</a></li>
+            <li><a href="#privacy">Privacy Policy</a></li>
+            <li><a href="#terms">Terms of Service</a></li>
+          </ul>
         </div>
       </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 GPTracker. All rights reserved.</p>
+      </div>
     </footer>
+
     <script src="js/tooltipAnimation.js"></script>
     <script src="js/loadingScreen.js"></script>
     <script type="module" src="js/googleAuth.js"></script>

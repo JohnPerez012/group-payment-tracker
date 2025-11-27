@@ -24,20 +24,10 @@ html, body {
   line-height: 1.6;
 }
 
-.hero, .features, .search-section, footer, header {
+.hero, .features, .search-section,  header {
   overflow-x: clip;
 }
 
-
-.versionStatus{
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  color: white;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  z-index: 11111;
-}
 /* ====================
    HEADER + NAVIGATION
 ==================== */
@@ -171,25 +161,79 @@ html, body {
   color: #1d4ed8;
 }
 
-/* Mobile Menu Toggle */
-.mobile-menu-toggle {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  z-index: 1001;
+/* ====================
+   MOBILE MENU STYLES
+==================== */
+
+/* Mobile menu toggle active state */
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
 }
 
-.mobile-menu-toggle span {
-  width: 25px;
-  height: 3px;
-  background: #1d4ed8;
-  border-radius: 3px;
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Mobile navigation */
+.nav-center.active {
+  display: flex !important;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  flex-direction: column;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(59, 130, 246, 0.1);
+  animation: slideDown 0.3s ease-out;
+}
+
+.nav-center.active .nav-link {
+  padding: 1rem 0;
+  font-size: 1.1rem;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+  width: 100%;
+  text-align: center;
   transition: all 0.3s ease;
 }
+
+.nav-center.active .nav-link:hover {
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: 8px;
+  transform: translateX(5px);
+}
+
+.nav-center.active .nav-link:last-child {
+  border-bottom: none;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 /* ====================
    HERO SECTION
@@ -625,75 +669,6 @@ html, body {
   font-weight: 500;
 }
 
-/* ====================
-   FOOTER
-==================== */
-
-footer {
-  background: linear-gradient(135deg, #1e3a8a, #1e40af);
-  color: #e0e7ff;
-  padding: 3rem 2rem 1.5rem;
-}
-
-.footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 3rem;
-  margin-bottom: 2rem;
-}
-
-.footer-section h3 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 1rem;
-}
-
-.footer-section h4 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 1rem;
-}
-
-.footer-section p {
-  color: #bfdbfe;
-  line-height: 1.7;
-  margin-bottom: 1rem;
-}
-
-.footer-section ul {
-  list-style: none;
-  padding: 0;
-}
-
-.footer-section ul li {
-  margin-bottom: 0.75rem;
-}
-
-.footer-section ul li a {
-  color: #bfdbfe;
-  text-decoration: none;
-  transition: color 0.3s ease;
-  display: inline-block;
-}
-
-.footer-section ul li a:hover {
-  color: white;
-  transform: translateX(5px);
-}
-
-.footer-bottom {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  text-align: center;
-  color: #bfdbfe;
-  font-size: 0.95rem;
-}
 
 /* ====================
    MODAL
@@ -807,14 +782,6 @@ footer {
 ==================== */
 
 @media (max-width: 968px) {
-  .nav-center {
-    display: none;
-  }
-
-  .mobile-menu-toggle {
-    display: flex;
-  }
-
   .header-container {
     padding: 1rem 1.5rem;
   }
@@ -825,10 +792,12 @@ footer {
 }
 
 @media (max-width: 768px) {
-  .header-container {
-    flex-wrap: wrap;
+   .header-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
   }
-
   .hero {
     padding: 5rem 1.5rem 3rem;
   }
@@ -860,13 +829,15 @@ footer {
     gap: 1.5rem;
   }
 
-  .footer-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
 }
 
+
 @media (max-width: 480px) {
+  .nav-center{
+    font-size: 0.9rem;
+    gap: 1.5rem;
+
+  }
   .logo-text {
     font-size: 1.25rem;
   }
@@ -1091,7 +1062,7 @@ footer {
   position: relative;
 }
 
-.modal-footer::before {
+.modal-footer ::before {
   content: '';
   position: absolute;
   top: 0;

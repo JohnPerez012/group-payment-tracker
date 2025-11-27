@@ -1,8 +1,14 @@
+
 // ====================
 // Search Modal Functionality
 // ====================
 
 // Draggable and Maximize functionality
+
+import { showNotification, initNotificationStyles } from './utils/notificationEngine.js';
+initNotificationStyles();
+
+
 let isDragging = false;
 let currentX;
 let currentY;
@@ -32,6 +38,11 @@ export function initSearchModal() {
   setupModalEvents();
   setupRefreshFunctionality();
 }
+
+
+
+
+
 
 function setupRefreshFunctionality() {
   const refreshLogo = document.getElementById('refresh-search-results');
@@ -73,7 +84,6 @@ function setupSearchForm() {
       inputWrapper.classList.remove('shake', 'error');
 
       if (!searchValue) {
-        // Show error state and shake animation
         showNotification('Please enter a UId to search', 'error');
         return;
       }
@@ -518,18 +528,3 @@ function showSearchError(searchValue) {
 // Export functions for external use
 export { openSearchModal, displaySearchResults };
 
-// Notification function
-function showNotification(msg, type = 'info') {
-  const notification = document.createElement('div');
-  notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-    type === 'error' ? 'bg-red-500 text-white' : 
-    type === 'success' ? 'bg-green-500 text-white' : 
-    'bg-blue-500 text-white'
-  }`;
-  notification.textContent = msg;
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.remove();
-  }, 3000);
-}

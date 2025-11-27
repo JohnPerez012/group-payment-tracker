@@ -39,6 +39,7 @@
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/LandingPage.css" />
+    <link rel="stylesheet" href="css/footerStyle.css" />
     <link rel="stylesheet" href="css/googleSignInButtonStandardStyle.css" />
     <link rel="stylesheet" href="css/searchModal.css" />
     <!-- AOS Animation Library -->
@@ -56,13 +57,10 @@
   </head>
   <body>
   <!-- Wf = workfile | i = index | PV = projectVersion | W = wave | ! = not initial-->
-    <span class="versionStatus"
-      >Wf{lp}, PV:5W~~V0!</span
-    >
+
     <!-- Header -->
     <header class="main-header">
       <div class="header-container">
-        <!-- Logo (Left side) -->
         <div class="logo-area">
           <div class="logo-icon">
             <img
@@ -119,16 +117,7 @@
           </button>
         </div>
 
-        <!-- Mobile Menu Toggle -->
-        <button
-          class="mobile-menu-toggle"
-          id="mobile-menu-toggle"
-          aria-label="Toggle menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+
       </div>
     </header>
 
@@ -293,14 +282,14 @@
           <p>Transparent and secure group payment tracking for everyone.</p>
         </div>
 
-        <div class="footer-section">
+        <!-- <div class="footer-section">
           <h4>Quick Links</h4>
           <ul>
             <li><a href="#features">Features</a></li>
             <li><a href="#search">Search</a></li>
             <li><a href="#about">About</a></li>
           </ul>
-        </div>
+        </div> -->
 
         <div class="footer-section">
           <h4>Support</h4>
@@ -421,7 +410,7 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="js/notificationEngine.js"></script>
+<script type="module" src="js/utils/notificationEngine.js"></script>
     <script type="module" src="js/googleAuth.js"></script>
     <script type="module" src="js/LandingPage.js"></script>
     <script type="module" src="js/searchModal.js"></script>

@@ -1,0 +1,162 @@
+footer{
+    overflow-x: clip;
+}
+
+footer {
+  background: linear-gradient(135deg, #005dff, #567adf);
+  color: #e0e7ff;
+  padding: 3rem 2rem 1.5rem;
+  
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 3rem;
+  margin-bottom: 2rem;
+}
+
+.footer-section h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.footer-section h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.footer-section p {
+  color: #bfdbfe;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-section ul li a {
+  color: #bfdbfe;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  display: inline-block;
+}
+
+.footer-section ul li a:hover {
+  color: white;
+  transform: translateX(5px);
+}
+
+.footer-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  color: #bfdbfe;
+  font-size: 0.95rem;
+}
+
+
+
+
+
+
+/* Medium screens (tablets) */
+@media (max-width: 1024px) {
+  footer {
+    padding: 2.5rem 1.5rem 1.5rem;
+  }
+
+
+  .footer-content {
+    gap: 2.5rem;
+  }
+
+  .footer-section h3 {
+    font-size: 1.35rem;
+  }
+
+  .footer-section h4 {
+    font-size: 1rem;
+  }
+}
+
+/* Small screens (phones) */
+@media (max-width: 768px) {
+  
+  .footer-content {
+    grid-template-columns: 1fr;  /* 1 columns on mobile */
+    text-align: center;
+    gap: 2rem;
+  }
+
+  .footer-section {
+    align-items: center;
+  }
+
+  .footer-section ul li a {
+    display: block;
+  }
+}
+
+/* Extra-small screens (very small phones) */
+@media (max-width: 480px) {
+  footer {
+    padding: 2rem 1rem 1.5rem;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr; /* Stack vertically */
+    gap: 1.8rem;
+  }
+
+  .footer-section h3 {
+    font-size: 1.2rem;
+  }
+
+  .footer-section h4 {
+    font-size: 1rem;
+  }
+
+  .footer-section p,
+  .footer-section ul li a {
+    font-size: 0.9rem;
+  }
+
+  .footer-bottom {
+    font-size: 0.8rem;
+  }
+}
+
+/* Ultra-small screens (<= 360px) */
+@media (max-width: 360px) {
+  footer {
+    padding: 1.5rem 0.8rem 1rem;
+  }
+
+  .footer-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .footer-section h4 {
+    font-size: 0.95rem;
+  }
+
+  .footer-section p,
+  .footer-section ul li a {
+    font-size: 0.85rem;
+  }
+}

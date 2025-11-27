@@ -27,26 +27,32 @@ window.addEventListener("scroll", () => {
 // ====================
 // Smooth scrolling for nav links
 // ====================
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-  anchor.addEventListener("click", (e) => {
-    e.preventDefault();
+// const header = document.querySelector(".main-header");
 
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener("click", e => {
     const targetID = anchor.getAttribute("href");
-    if (targetID === "#") return;
-    
+
+    // Ignore empty hashes
+    if (targetID === "#" || !targetID.startsWith("#")) return;
+
     const target = document.querySelector(targetID);
     if (!target) return;
 
+    e.preventDefault();
+
     const headerOffset = header ? header.offsetHeight : 0;
-    const targetPosition = target.offsetTop;
-    const offsetPosition = targetPosition - headerOffset;
+    const elementPosition = target.getBoundingClientRect().top + window.scrollY;
+
+    const offsetPosition = elementPosition - headerOffset;
 
     window.scrollTo({
       top: offsetPosition,
-      behavior: "smooth",
+      behavior: "smooth"
     });
   });
 });
+
 
 // ====================
 // Reveal on scroll animation
@@ -73,6 +79,9 @@ revealOnScroll();
 // Dashboard Access Control
 // ====================
 document.addEventListener("DOMContentLoaded", () => {
+  initSearchModal();
+
+
   const dashboardLink = document.querySelector('a[href="index.html"]');
   const modal = document.getElementById("signin-modal");
   const closeModalBtn = document.getElementById("close-modal-btn");
@@ -111,25 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ====================
-// Mobile Menu Toggle
-// ====================
-const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
-const navCenter = document.querySelector(".nav-center");
-
-if (mobileMenuToggle && navCenter) {
-  mobileMenuToggle.addEventListener("click", () => {
-    navCenter.classList.toggle("active");
-    mobileMenuToggle.classList.toggle("active");
-  });
-}
-
-// ====================
-// Initialize Search Modal
-// ====================
-document.addEventListener('DOMContentLoaded', () => {
-  initSearchModal();
-});
 
 // ====================
 // Console welcome message

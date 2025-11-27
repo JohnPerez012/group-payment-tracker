@@ -2,18 +2,15 @@ body {
   font-family: "Alan Sans", sans-serif;
   background: #fafafa;
   min-height: 100vh;
-  background: linear-gradient(to bottom, #e0f2fe, #06a9c6, #ffffff);
+  background: linear-gradient(to bottom, #e0f2fe, #87bef8, #ffffff);
 }
 
-.versionStatus{
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  color: black;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  z-index: 11111;
+body.modal-open {
+  overflow: hidden;
+  height: 100vh; /* Locks the height to prevent iOS bounce */
 }
+
+
 
 .container {
   max-width: 1280px;
@@ -161,6 +158,32 @@ tbody tr:hover {
 
 #info-modal {
   z-index: 100;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+#info-modal:not(.hidden) {
+  opacity: 1;
+}
+
+#info-modal .bg-white { /* The card */
+  transition: transform 0.3s ease;
+  transform: scale(0.95);
+}
+
+#info-modal:not(.hidden) .bg-white {
+  transform: scale(1);
+}
+
+#info-modal .bg-white {
+  max-height: 90vh; /* Prevent overflow on tall modals */
+  overflow-y: auto; /* Scroll inside modal if content is too long */
+}
+@media (max-width: 640px) {
+  #info-modal .bg-white {
+    width: 95%; /* Better fit on mobile */
+    max-width: none;
+  }
 }
 
 .tabs-container {
@@ -479,12 +502,48 @@ tbody tr:hover {
 }
 
 
-.fixfooter{
+
+/* .fixfooter{
   position: fixed;
   left: 0;
   bottom: 0;
   width: 100%;
-}
+} */
+
+      #moveUpBtn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #4c77e2;
+
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+      
+      #moveUpBtn:hover {
+        background-color: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      }
+      
+      #moveUpBtn:active {
+        transform: translateY(0);
+      }
+      
+      #moveUpBtn .material-symbols-outlined {
+        font-size: 24px;
+      }
+
 
 #empty-text {
   display: inline-block;
@@ -1029,3 +1088,12 @@ input[type="radio"]:checked {
 .amount-display[data-amount-status="global_default"]:hover {
   background-color: rgba(107, 114, 128, 0.1);
 }
+
+
+
+
+
+
+
+
+
