@@ -140,7 +140,7 @@ html, body {
   transform: translateY(-2px);
 }
 
-.nav-link img {
+.nav-link i {
   width: 16px;
   height: 16px;
   margin-left: 6px;
