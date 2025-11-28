@@ -29,32 +29,39 @@ html, body {
 /* ====================
    HEADER + NAVIGATION
 ==================== */
-
 .main-header {
   position: fixed;
   top: 0;
   width: 100%;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(23, 81, 217, 0.05) 100%; /* Initial: More transparent */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   z-index: 1000;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth all changes */
+  overflow: hidden; /* To clip curvy edges nicely */
+  border-radius: 0px; /* Initial: No curve */
 }
 
 .main-header.scrolled {
-  /* background: rgba(255, 255, 255, 0.95); */
+  background: rgba(255, 255, 255, 0.3); /* On scroll: Less transparent (more solid) */
   box-shadow: 0 4px 16px rgba(78, 78, 78, 0.1);
+  border-radius: 100px 100px 100px 100px; /* Curvy bottom edges */
 }
 
 .header-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1rem 2rem;
+  padding: 1rem 2rem; /* Initial padding (taller) */
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
+  transition: padding 0.3s ease; /* Smooth height compression */
+}
+
+.main-header.scrolled .header-container {
+  padding: 0.5rem 1.5rem; /* Compressed padding (shorter header) */
 }
 
 /* Logo Area */
@@ -80,6 +87,11 @@ html, body {
   justify-content: center;
   color: white;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: transform 0.3s ease; /* For slight compression */
+}
+
+.main-header.scrolled .logo-icon {
+  transform: scale(0.9); /* Slightly compress logo on scroll */
 }
 
 .logo-icon svg {
@@ -95,27 +107,48 @@ html, body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.5px;
+  transition: font-size 0.3s ease;
+}
+
+.main-header.scrolled .logo-text {
+  font-size: 1.2rem; /* Smaller logo text on scroll */
 }
 
 /* Navigation */
 .nav-center {
   display: flex;
-  gap: 2.5rem;
+  gap: 2.5rem; /* Initial gap */
   align-items: center;
+  transition: gap 0.3s ease; /* Smooth compression */
+}
+
+.main-header.scrolled .nav-center {
+  gap: 1.5rem; /* Compressed gap on scroll */
 }
 
 .nav-link {
   text-decoration: none;
   color: #222;
   font-weight: 500;
+  font-size: 1rem; /* Initial font size */
   position: relative;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, font-size 0.3s ease, transform 0.3s ease; /* Smooth size change */
 }
 
 .nav-link:hover {
   color: #1d4ed8;
-    transform: translateY(-2px);
+  transform: translateY(-2px);
+}
 
+.nav-link img {
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+.main-header.scrolled .nav-link {
+  font-size: 0.9rem; /* Compressed (smaller) font on scroll */
 }
 
 .nav-link::after {
@@ -145,6 +178,11 @@ html, body {
   flex-direction: column;
   align-items: flex-end;
   gap: 0.5rem;
+  transition: transform 0.3s ease; /* Slight compression */
+}
+
+.main-header.scrolled .user-auth {
+  transform: scale(0.9); /* Compress whole auth section slightly */
 }
 
 .user-info {
@@ -222,6 +260,7 @@ html, body {
     transform: translateY(0);
   }
 }
+
 
 
 /* ====================
@@ -401,7 +440,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(29, 78, 216, 0.1));
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.5), rgba(29, 78, 216, 0.1));
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -1309,6 +1348,7 @@ html, body {
   0%   { transform: translateY(100vh) rotate(0deg); }
   100% { transform: translateY(-100px) rotate(360deg); }
 }
+
 
 /* Different delays and positions */
 .float-icon:nth-child(1) { left: 10%; animation-delay: 0s; }
