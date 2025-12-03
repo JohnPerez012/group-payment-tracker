@@ -119,8 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
-
 // ====================
 // Console welcome message
 // ====================

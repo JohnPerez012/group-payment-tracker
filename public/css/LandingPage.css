@@ -12,6 +12,10 @@ html {
   scroll-behavior: smooth;
 }
 
+html .noOverflow {
+  overflow: hidden;
+}
+
 html, body {
   font-family: "Alan Sans", sans-serif;
   margin: 0;
@@ -20,6 +24,8 @@ html, body {
   overflow-x: hidden;
   color: #1f2937;
   line-height: 1.6;
+  overflow-x: hidden;
+
 }
 
 .hero, .features, .search-section,  header {
@@ -862,36 +868,6 @@ html, body {
   transform: translateY(0);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ====================
    WINDOW-STYLE MODAL WITH GRADIENT BORDER
 ==================== */
@@ -1349,7 +1325,6 @@ html, body {
   100% { transform: translateY(-100px) rotate(360deg); }
 }
 
-
 /* Different delays and positions */
 .float-icon:nth-child(1) { left: 10%; animation-delay: 0s; }
 .float-icon:nth-child(2) { left: 20%; animation-delay: 4s; animation-duration: 25s; }
@@ -1357,3 +1332,26 @@ html, body {
 .float-icon:nth-child(4) { left: 50%; animation-delay: 2s; }
 .float-icon:nth-child(5) { left: 65%; animation-delay: 10s; animation-duration: 22s; }
 .float-icon:nth-child(6) { left: 80%; animation-delay: 6s; }
+
+.modal-content {
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  background-color: rgba(56, 92, 236, 0.5);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h3 {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 8px rgba(60, 60, 60, 0.6);
+  color: #ffffff;
+}
+
+.modal-content p {
+  color: #f3f4f6;
+  font-size: 1.05rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+

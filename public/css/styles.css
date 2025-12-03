@@ -633,16 +633,9 @@ tbody tr:hover {
 
 
 /* Tooltip for user education */
-
-
 .member-name:hover::before {
   opacity: 1;
 }
-
-
-
-
-
 
 /*  
 
@@ -658,15 +651,6 @@ tbody tr:hover {
 
 /*  */
 /* */
-
-
-
-
-
-
-
-
-
 
 .quick-info-section {
   background-color: white;
@@ -719,9 +703,6 @@ tbody tr:hover {
   font-size: 0.875rem;
 }
 
-
-
-
 .info-label {
   color: #4b5563;
 }
@@ -737,16 +718,6 @@ tbody tr:hover {
 .info-value.font-bold {
   font-weight: 600;
 }
-
-
-
-
-
-
-
-
-
-
 /* --- modal style --- */
 /* Improved Modal Styles */
 .modal {
@@ -806,7 +777,6 @@ tbody tr:hover {
   background-color: #2563eb;
 }
 
-
 .modal-content label {
   display: block;
   margin: 0.5rem 0 0.25rem;
@@ -837,11 +807,6 @@ tbody tr:hover {
     flex: 1 1 45%;  /* Side-by-side */
   }
 }
-
-
-
-
-
 
 /* Quick Info editable elements */
 .info-label.qi-editable,
@@ -886,8 +851,6 @@ tbody tr:hover {
 }
 
 /* Tooltip for Quick Info */
-
-
 .info-label.qi-editable:hover::before,
 .info-value.qi-editable:hover::before {
   opacity: 1;
@@ -916,15 +879,6 @@ tbody tr:hover {
   text-align: right;
 }
 
-
-
-
-
-
-
-
-
-
 /* Amount display styling */
 .amount-display {
   transition: all 0.2s ease;
@@ -948,37 +902,9 @@ tbody tr:hover {
   color: #2563eb;
 }
 
-
-
 .amount-display:hover::before {
   opacity: 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /* Constant label styling - non-editable */
@@ -1007,18 +933,6 @@ tbody tr:hover {
   background-color: transparent;
   transform: none;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* Member Selection Modal Styles */
 .fixed.inset-0.bg-black.bg-opacity-50 {
@@ -1089,10 +1003,6 @@ input[type="radio"]:checked {
 .text-green-800 {
   color: #166534;
 }
-
-
-
-
 
 /* Enhanced amount display styles */
 .amount-display.text-orange-600 {
