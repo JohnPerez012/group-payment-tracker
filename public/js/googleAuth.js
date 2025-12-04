@@ -63,6 +63,12 @@ function updateUI(user) {
     userIdEl.textContent = isSignedIn
       ? user.displayName || user.email
       : "Guest";
+    // expose email on the element for other scripts to use
+    if (isSignedIn) {
+      userIdEl.dataset.email = user.email || "";
+    } else {
+      userIdEl.dataset.email = "";
+    }
   }
 
   authButtons.forEach((btn) => {
