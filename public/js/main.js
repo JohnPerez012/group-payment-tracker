@@ -670,10 +670,10 @@ function renderHistory() {
   filteredPayments.forEach(payment => {
     const tr = document.createElement("tr"); tr.className = "border-b hover:bg-gray-50";
     tr.innerHTML = `
-        <td class="px-3 py-2 font-medium">${payment.name}</td>
-        <td class="px-3 py-2">${formatCurrency(payment.amount)}</td>
-        <td class="px-3 py-2 text-sm">${formatDate(payment.timestamp)}</td>
-        <td class="px-3 py-2 flex gap-2">
+        <td class="px-4 py-3 font-medium text-left">${payment.name}</td>
+        <td class="px-4 py-3 text-right">${formatCurrency(payment.amount)}</td>
+        <td class="px-4 py-3 text-sm text-left">${formatDate(payment.timestamp)}</td>
+        <td class="px-4 py-3 text-center flex gap-2 justify-center">
             <button data-id="${payment.id}" class="update-btn text-blue-600 hover:text-blue-800 hover:underline text-sm">Update</button>
             <button data-id="${payment.id}" class="delete-btn text-red-600 hover:text-red-800 hover:underline text-sm">Delete</button>
         </td>
