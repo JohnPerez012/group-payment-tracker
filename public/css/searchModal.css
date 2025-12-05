@@ -497,6 +497,26 @@ modal-logo:hover {
   position: relative;
 }
 
+/* Ensure progress bar has a visible default color when utility classes
+   (e.g. Tailwind's bg-*) are not available in the page context. The
+   bg-*-fallbacks below match the colors used elsewhere in the app. */
+.progress-bar {
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  min-width: 6px; /* show a sliver when percent is very small */
+  display: block;
+}
+
+/* Fallback utility classes (override with !important so they win when present) */
+.bg-green-500 { background-color: #10b981 !important; }
+.bg-blue-500  { background-color: #3b82f6 !important; }
+.bg-gray-300  { background-color: #d1d5db !important; }
+
+/* Improve contrast for percentage text on light backgrounds */
+.progress-bar.bg-gray-300 .progress-percentage {
+  color: #111827; /* dark text when bar is light gray */
+  text-shadow: none;
+}
+
 .progress-percentage {
   position: absolute;
   right: 8px;

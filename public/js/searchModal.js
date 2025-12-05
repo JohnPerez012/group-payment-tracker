@@ -6,6 +6,7 @@
 // Draggable and Maximize functionality
 
 import { showNotification, initNotificationStyles } from './utils/notificationEngine.js';
+import { exportSearchResultsToPDF } from './utils/pdfExport.js';
 initNotificationStyles();
 
 
@@ -32,6 +33,8 @@ const searchResultsContent = document.getElementById("search-results-content");
 let currentSearchValue = '';
 // Current unsubscribe function for realtime listener
 let currentSearchUnsubscribe = null;
+// Store current search data for export
+let currentSearchData = null;
 
 // Initialize search modal functionality
 export function initSearchModal() {
@@ -39,6 +42,7 @@ export function initSearchModal() {
   setupSearchForm();
   setupModalEvents();
   setupRefreshFunctionality();
+  setupExportFunctionality();
 }
 
 
@@ -53,6 +57,16 @@ function setupRefreshFunctionality() {
   if (refreshLogo || refreshtext) {
     refreshLogo.addEventListener('click', refreshSearchResults);
   } 
+}
+
+function setupExportFunctionality() {
+  const exportBtn = document.getElementById('export-results');
+  
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportSearchResultsToPDF(currentSearchData, currentSearchValue);
+    });
+  }
 }
 
 function stopRealtimeListener() {
@@ -378,6 +392,9 @@ function validateSearchData(decodedData) {
 
 // Function to render search results
 function renderSearchResults(searchData, searchValue) {
+  // Store current search data for export
+  currentSearchData = searchData;
+  
   const { tabName, uid, decodedData } = searchData;
   
   if (!decodedData || !validateSearchData(decodedData)) {
@@ -491,7 +508,7 @@ ${currentUserName}
       creatorHTML = `
         <div class="search-creator-info" style="display:flex;gap:1rem;align-items:center;margin:0.75rem 0;padding:0.5rem 0;border-top:1px solid #eef2ff;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
           <div style="font-size:0.9rem;color:#374151;">Creator:
-            <a href="${gmailCompose}" target="_blank" rel="noopener noreferrer" title="✨ Click to compose a professional message with a template (opens Gmail)" style="color:#1d4ed8;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;transition:all 0.2s ease;background:rgba(29,78,216,0.05);" onmouseover="this.style.background='rgba(29,78,216,0.1)'" onmouseout="this.style.background='rgba(29,78,216,0.05)'">
+            <a href="${gmailCompose}" target="_blank" rel="noopener noreferrer" title="Click to compose a professional message with a template (opens Gmail)" style="color:#1d4ed8;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;transition:all 0.2s ease;background:rgba(29,78,216,0.05);" onmouseover="this.style.background='rgba(29,78,216,0.1)'" onmouseout="this.style.background='rgba(29,78,216,0.05)'">
               <span>${ownerEsc}</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
             </a>
