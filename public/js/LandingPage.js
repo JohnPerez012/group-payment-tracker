@@ -91,6 +91,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   onAuthStateChanged(auth, (user) => {
     isUserSignedIn = !!user && !user.isAnonymous;
+
+    // If user signs in while signin modal is open, automatically redirect
+    // to the dashboard (index.html) so user doesn't need to close modal.
+    try {
+      const modalEl = document.getElementById("signin-modal");
+      if (isUserSignedIn && modalEl && !modalEl.classList.contains('hidden')) {
+        // close modal and redirect
+        modalEl.classList.add('hidden');
+        window.location.href = "index.html";
+      }
+    } catch (err) {
+      console.warn('Error handling auth redirect:', err);
+    }
   });
 
   if (dashboardLink) {
