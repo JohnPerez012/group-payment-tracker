@@ -312,15 +312,15 @@
         <!-- Stats Section -->
         <div class="stats-grid" data-aos="fade-up" data-aos-delay="300">
           <div class="stat-card">
-            <div class="stat-number">1,200+</div>
+            <div class="stat-number" id="active-groups-stat">0</div>
             <div class="stat-label">Active Groups</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">₱2.5M+</div>
+            <div class="stat-number" id="total-tracked-stat">₱0</div>
             <div class="stat-label">Total Tracked</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">10,000+</div>
+            <div class="stat-number" id="happy-users-stat">10,000+</div>
             <div class="stat-label">Happy Users</div>
           </div>
         </div>
@@ -618,10 +618,10 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script type="module" src="js/utils/notificationEngine.js"></script>
     <script type="module" src="js/googleAuth.js"></script>
+    <script type="module" src="js/dynamicStats.js"></script>
     <script type="module" src="js/LandingPage.js"></script>
     <script type="module" src="js/searchModal.js"></script>
     <script src="js/termsModal.js"></script>
-    <script type="module" src="js/LandingPage.js"></script>
 
     <script>
   // Add 'scrolled' class when user scrolls down 50px

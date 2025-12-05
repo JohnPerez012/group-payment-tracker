@@ -1,9 +1,29 @@
 body {
   font-family: "Alan Sans", sans-serif;
-  background: #fafafa;
+  background: #000000;
   min-height: 100vh;
-  background: linear-gradient(to bottom, #e0f2fe, #87bef8, #ffffff);
+  position: relative;
 }
+
+/* Gradient overlay that fades in smoothly */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, #e0f2fe, #87bef8, #ffffff);
+  opacity: 0;
+  transition: opacity 4.9s ease-in-out;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body.gradient-active::before {
+  opacity: 1;
+}
+
 
 body.modal-open {
   overflow: hidden;

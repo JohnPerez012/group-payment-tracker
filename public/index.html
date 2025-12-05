@@ -47,13 +47,24 @@
 
 <body class="bg-gray-50 min-h-screen">
   <div id="loading-screen">
-    <h1 id="title">
-      <span class="word g">G</span>
-      <span class="word group">ROUP</span>
-      <span class="word p"> P</span>
-      <span class="word payment">AYMENT</span>
-      <span class="word tracker"> Tracker</span>
-    </h1>
+    <div class="loading-inner">
+      <h1 id="title">
+        <span class="word g">G</span>
+        <span class="word group">ROUP</span>
+        <span class="word p">P</span>
+        <span class="word payment">AYMENT</span>
+        <span class="word tracker">Tracker</span>
+      </h1>
+
+      <!-- Progress UI: percentage + bar + optional hint -->
+      <div id="loading-progress" aria-hidden="true">
+        <div id="progress-text">wait…</div>
+        <div id="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="progress-fill"></div>
+        </div>
+        <div id="progress-hint" class="muted">This may take a moment — checking resources.</div>
+      </div>
+    </div>
   </div>
 
   <button id="moveUpBtn" title="Scroll to top">

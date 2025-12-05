@@ -745,13 +745,8 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("info-modal").classList.add("hidden")
     );
 
-    anime({
-      targets: '#loading-screen',
-      opacity: [1, 0],
-      duration: 600,
-      easing: 'easeOutQuad',
-      complete: () => document.getElementById('loading-screen').style.display = 'none'
-    });
+    // Signal that app is ready - loading screen will handle the animation
+    window.dispatchEvent(new Event('app-ready'));
   });
 });
 
