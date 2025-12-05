@@ -1321,36 +1321,6 @@ function renderQuickInfo(quickInfoItems) {
 
 
 
-// Quick Info Modal Improvements
-const plusButton = document.getElementById("QI-plusButton");
-const modal = document.getElementById("inputModal");
-const addBtn = document.getElementById("addBtn");
-const cancelBtn = document.getElementById("cancelBtn");
-const closeBtn = document.getElementById("modal-close");
-const leftInput = document.getElementById("leftInput");
-const rightInput = document.getElementById("rightInput");
-const infoContent = document.getElementById("info-content");
-const modalForm = document.getElementById("modal-form");
-
-// Show modal with animation
-plusButton.addEventListener("click", () => {
-  modal.style.display = "flex";
-  setTimeout(() => modal.classList.add("show"), 10);  // Trigger animation
-});
-
-// Hide modal function
-const hideModal = () => {
-  modal.classList.remove("show");
-  setTimeout(() => {
-    modal.style.display = "none";
-    leftInput.value = "";
-    rightInput.value = "";
-  }, 300);  // Match CSS transition duration
-};
-
-cancelBtn.addEventListener("click", hideModal);
-closeBtn.addEventListener("click", hideModal);
-
 
 async function loadData() {
   console.log("loadData");
@@ -1438,40 +1408,10 @@ async function loadData() {
   }
 }
 
-// Add new info on form submit (with validation)
-modalForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const leftText = leftInput.value.trim();
-  const rightText = rightInput.value.trim();
-
-  if (modalForm.checkValidity() && leftText && rightText) {
-    // Disable button during save
-    const addBtn = document.getElementById("addBtn");
-    addBtn.disabled = true;
-    addBtn.textContent = "Adding...";
-
-    try {
-      // Check if this is the default amount label (prevent duplicates)
-      if (leftText.toLowerCase().includes("default amount")) {
-        showNotification("'Default amount per member:' is automatically created for each tab", "warning");
-        hideModal();
-        return;
-      }
-
-      const success = await addQuickInfo(leftText, rightText);
-      if (success) {
-        hideModal();
-      }
-    } catch (error) {
-      handleError(error, "Add quick info");
-    } finally {
-      addBtn.disabled = false;
-      addBtn.textContent = "Add";
-    }
-  } else {
-    alert("Please fill in both fields (label min 3 chars, value min 1 char).");
-  }
-});
+// Old modal form code - now handled by quickInfoModal.js
+// modalForm.addEventListener("submit", async (e) => {
+//   ... moved to quickInfoModal.js
+// });
 
 
 
@@ -1521,6 +1461,62 @@ async function addQuickInfo(label, value) {
   return true;
 }
 
+// Expose addQuickInfo to non-module scripts (quickInfoModal.js)
+try {
+  window.addQuickInfo = addQuickInfo;
+} catch (e) {
+  // ignore if window is not writable for any reason
+}
+
+// Update a quick info item and persist
+async function updateQuickInfoItem(id, newLabel, newValue) {
+  try {
+    const qi = quickInfoData.find(q => q.id === id && q.tabId === activeTabId);
+    if (!qi) {
+      showNotification('Quick info item not found', 'error');
+      return false;
+    }
+
+    qi.label = (newLabel || qi.label).toString().trim();
+    qi.value = (newValue || qi.value).toString().trim();
+
+    await saveData();
+
+    const filteredQuickInfo = quickInfoData.filter(q => q.tabId === activeTabId);
+    renderQuickInfo(filteredQuickInfo);
+    showNotification('Quick info updated', 'success');
+    return true;
+  } catch (err) {
+    handleError(err, 'Update quick info');
+    return false;
+  }
+}
+
+// Delete a quick info item and persist
+async function deleteQuickInfoItem(id) {
+  try {
+    const before = quickInfoData.length;
+    quickInfoData = quickInfoData.filter(q => !(q.id === id && q.tabId === activeTabId));
+    if (quickInfoData.length === before) {
+      showNotification('Quick info item not found', 'error');
+      return false;
+    }
+
+    await saveData();
+
+    const filteredQuickInfo = quickInfoData.filter(q => q.tabId === activeTabId);
+    renderQuickInfo(filteredQuickInfo);
+    showNotification('Quick info deleted', 'success');
+    return true;
+  } catch (err) {
+    handleError(err, 'Delete quick info');
+    return false;
+  }
+}
+
+try { window.updateQuickInfoItem = updateQuickInfoItem; } catch (e) {}
+try { window.deleteQuickInfoItem = deleteQuickInfoItem; } catch (e) {}
+
 
 function addQuickInfoRowToUI(label, value, id = `qi_${Date.now()}`, isProtected = false, isConstantLabel = false) {
   const infoContent = document.getElementById("info-content");
@@ -1552,66 +1548,12 @@ function addQuickInfoRowToUI(label, value, id = `qi_${Date.now()}`, isProtected 
 
   infoContent.appendChild(newRow);
 
-  // Add event listeners for the editable elements
-  addQuickInfoEditListeners(newRow, id, label, value, isProtected, isConstantLabel);
+  // Event listeners for editable elements are now handled by quickInfoModal.js
 }
 
 // Add edit/delete functionality to Quick Info rows
-// Add edit/delete functionality to Quick Info rows
-// Update the function signature to include isConstantLabel
-function addQuickInfoEditListeners(row, id, currentLabel, currentValue, isProtected = false, isConstantLabel = false) {
-  const labelElement = row.querySelector('.info-label');
-  const valueElement = row.querySelector('.info-value.qi-editable');
-
-  // Single-click for rename - Skip if protected OR constant label
-  if (labelElement && !isProtected && !isConstantLabel && !labelElement.classList.contains('constant-label')) {
-    labelElement.addEventListener('click', (e) => {
-      if (e.detail === 1) {
-        setTimeout(() => {
-          if (!labelElement.dataset.doubleClick) {
-            handleQuickInfoRename(labelElement, 'label', id, currentLabel, currentValue);
-          }
-          delete labelElement.dataset.doubleClick;
-        }, 300);
-      }
-    });
-  }
-
-  // Value editing - Always allow for protected/constant items, but with special handling
-  if (valueElement) {
-    valueElement.addEventListener('click', (e) => {
-      if (e.detail === 1) {
-        setTimeout(() => {
-          if (!valueElement.dataset.doubleClick) {
-            if (isProtected || isConstantLabel) {
-              handleProtectedAmountEdit(id, currentLabel, currentValue);
-            } else {
-              handleQuickInfoRename(valueElement, 'value', id, currentLabel, currentValue);
-            }
-          }
-          delete valueElement.dataset.doubleClick;
-        }, 300);
-      }
-    });
-  }
-
-  // Double-click for delete - Skip if protected or constant label
-  if (!isProtected && !isConstantLabel) {
-    if (labelElement && !labelElement.classList.contains('constant-label')) {
-      labelElement.addEventListener('dblclick', (e) => {
-        labelElement.dataset.doubleClick = "true";
-        handleQuickInfoDelete(id, currentLabel, currentValue);
-      });
-    }
-
-    if (valueElement) {
-      valueElement.addEventListener('dblclick', (e) => {
-        valueElement.dataset.doubleClick = "true";
-        handleQuickInfoDelete(id, currentLabel, currentValue);
-      });
-    }
-  }
-}
+// Quick Info edit/delete functionality moved to quickInfoModal.js
+// This section is now handled by the QuickInfoModal class
 
 
 // Handle protected default amount editing
@@ -1907,81 +1849,7 @@ async function showMemberSelectionDialog(membersUsingDefault, newAmount, current
 
 
 
-// Handle Quick Info rename
-async function handleQuickInfoRename(element, type, id, currentLabel, currentValue) {
-  const currentText = element.textContent.trim();
-  const fieldName = type === 'label' ? 'Label' : 'Value';
-
-  const newText = prompt(`Enter new ${fieldName.toLowerCase()} for "${currentText}":`, currentText);
-
-  if (!newText || newText.trim() === "" || newText === currentText) {
-    return;
-  }
-
-  const trimmedNewText = newText.trim();
-
-  // Validate input
-  if (trimmedNewText.length < (type === 'label' ? 3 : 1)) {
-    showNotification(`${fieldName} must be at least ${type === 'label' ? 3 : 1} characters`, 'error');
-    return;
-  }
-
-  try {
-    // Find and update the Quick Info item
-    const quickInfoItem = quickInfoData.find(qi => qi.id === id && qi.tabId === activeTabId);
-
-    if (!quickInfoItem) {
-      showNotification("Quick Info item not found", "error");
-      return;
-    }
-
-    // Update the appropriate field
-    if (type === 'label') {
-      quickInfoItem.label = trimmedNewText;
-    } else {
-      quickInfoItem.value = trimmedNewText;
-    }
-
-    // Update the UI
-    element.textContent = trimmedNewText;
-
-    // Save to Firestore
-    await saveData();
-
-    showNotification(`${fieldName} updated successfully`, "success");
-
-  } catch (error) {
-    handleError(error, `Update ${fieldName.toLowerCase()}`);
-    // Revert on error
-    element.textContent = type === 'label' ? currentLabel : currentValue;
-  }
-}
-
-// Handle Quick Info delete
-async function handleQuickInfoDelete(id, label, value) {
-  if (!confirm(`Are you sure you want to delete "${label}: ${value}"?`)) {
-    return;
-  }
-
-  try {
-    // Remove from data array
-    quickInfoData = quickInfoData.filter(qi => !(qi.id === id && qi.tabId === activeTabId));
-
-    // Remove from UI
-    const row = document.querySelector(`[data-qi-id="${id}"]`);
-    if (row) {
-      row.remove();
-    }
-
-    // Save to Firestore
-    await saveData();
-
-    showNotification(`"${label}: ${value}" deleted successfully`, "success");
-
-  } catch (error) {
-    handleError(error, "Delete Quick Info");
-  }
-}
+// handleQuickInfoRename and handleQuickInfoDelete moved to quickInfoModal.js
 
 
 
