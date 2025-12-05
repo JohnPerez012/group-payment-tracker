@@ -166,6 +166,16 @@ async function refreshSearchResults() {
   `;
   
   try {
+    // helper to escape HTML inserted into innerHTML
+    const escapeHtml = (str) => {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
     // Re-fetch the data
     await displaySearchResults(currentSearchValue);
     showNotification('Search results refreshed', 'success');
@@ -389,6 +399,113 @@ function renderSearchResults(searchData, searchValue) {
   // Get default amount for this tab
   const tabDefaultAmount = tabDefaultAmounts[searchData.docId] || 1;
 
+  // Helper to escape HTML inserted into innerHTML (defined before try block)
+  const escapeHtml = (str) => {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  };
+
+  // Build creator/owner info block from docId pattern: ownerEmailTAB<tabName>--v<YYYYMMDDHH:MM>
+  let creatorHTML = '';
+  try {
+    const docId = searchData.docId || '';
+    if (docId && docId.includes('TAB')) {
+      const parts = docId.split('TAB');
+      const ownerEmail = parts[0] || searchData.user || '';
+      const rest = parts[1] || '';
+      // find timestamp after --v
+      const vIndex = rest.indexOf('--v');
+      let rawTs = '';
+      if (vIndex !== -1) {
+        rawTs = rest.slice(vIndex + 3); // e.g. 2025112713:24
+      }
+
+      // Parse rawTs into a Date and format to 12-hour with AM/PM
+      let formattedTs = rawTs;
+      if (rawTs && /\d{8}\d{2}:\d{2}/.test(rawTs)) {
+        try {
+          const year = parseInt(rawTs.slice(0,4), 10);
+          const month = parseInt(rawTs.slice(4,6), 10) - 1; // zero-based
+          const day = parseInt(rawTs.slice(6,8), 10);
+          const hour = parseInt(rawTs.slice(8,10), 10);
+          const minute = parseInt(rawTs.slice(11,13), 10);
+          const d = new Date(year, month, day, hour, minute);
+          const options = { year: 'numeric', month: 'short', day: 'numeric' };
+          const datePart = d.toLocaleDateString(undefined, options);
+          let hour12 = d.getHours() % 12;
+          if (hour12 === 0) hour12 = 12;
+          const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
+          const minutePadded = String(d.getMinutes()).padStart(2, '0');
+          formattedTs = `${datePart} ${hour12}:${minutePadded} ${ampm}`;
+        } catch (err) {
+          // leave formattedTs as rawTs on error
+        }
+      }
+
+      const ownerEsc = escapeHtml(ownerEmail);
+      const rawEsc = escapeHtml(rawTs || docId);
+      const mailto = `mailto:${encodeURIComponent(ownerEmail)}`;
+      
+      // Get current user's email/name from page (user-id element)
+      const userIdEl = document.getElementById('user-id');
+      const currentUserName = userIdEl ? userIdEl.textContent.trim() : 'A Concerned User';
+      
+      // Build modern, professional email template with better formatting
+      const emailSubject = `Group Payment Tracking - "${tabName}" on GPTracker`;
+      const emailBody = `Hi ${ownerEsc},
+I hope you're doing well!
+
+I'm reaching out to you as ${currentUserName} regarding your payment tracking tab on GPTracker.
+
+Tab Information:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Tab Name: ${escapeHtml(tabName || 'Untitled Tab')}
+Created by you on ${formattedTs}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+My Concern:
+I wanted to bring the following matter to your attention:
+
+[Please share your specific concern or feedback here]
+
+Next Steps:
+I believe this is important for maintaining transparency and accuracy in our group's payment tracking. I'd appreciate your prompt response and any insights you might have.
+
+Thank you for your attention to this matter. Looking forward to your response!
+
+Best regards,
+${currentUserName}
+
+---
+📱 Sent via GPTracker - Transparent Group Payment Tracking  
+🌐 Keep your group's finances organized and transparent!
+➡️ Start your organized GPTracking here: https://group-payment-tracker.web.app/`;
+      
+      const gmailCompose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(ownerEmail)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+
+      creatorHTML = `
+        <div class="search-creator-info" style="display:flex;gap:1rem;align-items:center;margin:0.75rem 0;padding:0.5rem 0;border-top:1px solid #eef2ff;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;">
+          <div style="font-size:0.9rem;color:#374151;">Creator:
+            <a href="${gmailCompose}" target="_blank" rel="noopener noreferrer" title="✨ Click to compose a professional message with a template (opens Gmail)" style="color:#1d4ed8;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;transition:all 0.2s ease;background:rgba(29,78,216,0.05);" onmouseover="this.style.background='rgba(29,78,216,0.1)'" onmouseout="this.style.background='rgba(29,78,216,0.05)'">
+              <span>${ownerEsc}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+            </a>
+          </div>
+          <div style="font-size:0.9rem;color:#6b7280;">Created: <strong style="color:#111827;">${formattedTs}</strong></div>
+          <div style="font-size:0.8rem;color:#9ca3af;">Raw: <code style="background:#f8fafc;padding:2px 6px;border-radius:4px">${rawEsc}</code></div>
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.warn('Failed to build creator info:', err);
+    creatorHTML = '';
+  }
+
   const resultsHTML = `
     <div class="search-result-header">
       <h3>Tab Name: <strong><span class="tab-name-inSRH">${tabName || 'Untitled Tab'} </span></strong></h3>
@@ -399,6 +516,7 @@ function renderSearchResults(searchData, searchValue) {
         <span><strong>Default Amount:</strong> ₱${tabDefaultAmount.toLocaleString()}</span>
       </div>
     </div>
+    ${creatorHTML}
 
     <div class="payment-summary-cards">
       <div class="summary-card">
