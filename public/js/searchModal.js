@@ -30,6 +30,8 @@ const searchResultsContent = document.getElementById("search-results-content");
 
 // Track current search for refresh functionality
 let currentSearchValue = '';
+// Current unsubscribe function for realtime listener
+let currentSearchUnsubscribe = null;
 
 // Initialize search modal functionality
 export function initSearchModal() {
@@ -51,6 +53,17 @@ function setupRefreshFunctionality() {
   if (refreshLogo || refreshtext) {
     refreshLogo.addEventListener('click', refreshSearchResults);
   } 
+}
+
+function stopRealtimeListener() {
+  if (currentSearchUnsubscribe && typeof currentSearchUnsubscribe === 'function') {
+    try {
+      currentSearchUnsubscribe();
+    } catch (err) {
+      console.warn('Error while unsubscribing realtime listener:', err);
+    }
+  }
+  currentSearchUnsubscribe = null;
 }
 
 function setupDragAndDrop() {
@@ -100,6 +113,7 @@ function setupModalEvents() {
     closeSearchModal.addEventListener("click", () => {
       searchModal.classList.add("hidden");
       currentSearchValue = ''; // Reset current search
+      stopRealtimeListener();
     });
   }
 
@@ -107,6 +121,7 @@ function setupModalEvents() {
     closeSearchResults.addEventListener("click", () => {
       searchModal.classList.add("hidden");
       currentSearchValue = ''; // Reset current search
+      stopRealtimeListener();
     });
   }
 
@@ -116,6 +131,7 @@ function setupModalEvents() {
       if (e.target === searchModal) {
         searchModal.classList.add("hidden");
         currentSearchValue = ''; // Reset current search
+        stopRealtimeListener();
       }
     });
   }
@@ -125,6 +141,7 @@ function setupModalEvents() {
     if (e.key === "Escape" && !searchModal.classList.contains("hidden")) {
       searchModal.classList.add("hidden");
       currentSearchValue = ''; // Reset current search
+      stopRealtimeListener();
     }
   });
 }
@@ -295,14 +312,39 @@ async function displaySearchResults(searchValue) {
       </div>
     `;
 
-    // Search Firestore for the UID
-    const { searchFirestoreByUID } = await import('./firebaseSearch.js');
-    const searchData = await searchFirestoreByUID(searchValue);
+    // Stop any previous realtime listener
+    stopRealtimeListener();
 
-    if (searchData) {
-      renderSearchResults(searchData, searchValue);
+    // Subscribe to realtime updates for this UID
+    const mod = await import('./firebaseSearch.js');
+
+    if (mod && typeof mod.subscribeToFirestoreByUID === 'function') {
+      // Set a temporary loading state until first snapshot arrives
+      let first = true;
+      currentSearchUnsubscribe = mod.subscribeToFirestoreByUID(searchValue, (searchData) => {
+        if (first) {
+          first = false;
+        }
+
+        if (searchData) {
+          renderSearchResults(searchData, searchValue);
+        } else {
+          showNoResults(searchValue);
+        }
+      }, (err) => {
+        console.error('Realtime search error:', err);
+        showSearchError(searchValue);
+      });
     } else {
-      showNoResults(searchValue);
+      // Fallback to one-time fetch if realtime not available
+      const { searchFirestoreByUID } = mod;
+      const searchData = await searchFirestoreByUID(searchValue);
+
+      if (searchData) {
+        renderSearchResults(searchData, searchValue);
+      } else {
+        showNoResults(searchValue);
+      }
     }
   } catch (error) {
     console.error('Search error:', error);
@@ -349,9 +391,9 @@ function renderSearchResults(searchData, searchValue) {
 
   const resultsHTML = `
     <div class="search-result-header">
-      <h3>Payment Details for: ${searchValue}</h3>
+      <h3>Tab Name: <strong><span class="tab-name-inSRH">${tabName || 'Untitled Tab'} </span></strong></h3>
       <div class="search-result-meta">
-        <span><strong>Tab Name:</strong> ${tabName || 'Untitled Tab'}</span>
+        <span><strong>Payment Details for: </strong> ${searchValue}</span>
         <span><strong>Total Members:</strong> ${members.length}</span>
         <span><strong>Total Payments:</strong> ${payments.length}</span>
         <span><strong>Default Amount:</strong> ₱${tabDefaultAmount.toLocaleString()}</span>

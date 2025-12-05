@@ -369,6 +369,9 @@ modal-logo:hover {
   font-weight: 700;
 }
 
+.tab-name-inSRH{
+   letter-spacing: 0.1em;
+}
 .search-result-meta {
   display: flex;
   gap: 2rem;
