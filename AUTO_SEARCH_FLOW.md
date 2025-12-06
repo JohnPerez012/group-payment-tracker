@@ -10,7 +10,7 @@ When you scan the QR code, everything happens automatically - including opening 
 📱 SCAN QR CODE
     ↓
 🌐 Browser Opens URL
-    https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71@GPT
+    https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71@GPT
     ↓
 📄 Landing Page Loads
     ↓
@@ -152,7 +152,7 @@ async function displaySearchResults(searchValue) {
 ### Step 2: Browser Opens
 ```
 🌐 [Browser]
-   Loading https://group-payment-tracker.web.app/...
+   Loading https://group-payment-tracker.web.app/LandingPage.html...
 ```
 
 ### Step 3: Landing Page Appears

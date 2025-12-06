@@ -20,12 +20,12 @@ Added a QR code generation feature that allows users to share payment tracking t
 
 ### 3. QR Code URL Format
 ```
-https://group-payment-tracker.web.app/?searchuid=<UID>
+https://group-payment-tracker.web.app/LandingPage.html?searchuid=<UID>
 ```
 
 ### 4. Auto-Search Functionality
 When a user scans the QR code or clicks the link:
-1. Redirects to the landing page
+1. Opens LandingPage.html with the searchuid parameter
 2. Automatically scrolls to the search section
 3. Fills in the UID in the search input
 4. Triggers the search automatically
@@ -86,7 +86,7 @@ Handles URL parameter processing:
 
 ### User Flow (Scanning)
 1. Someone scans the QR code with their phone
-2. Browser opens: `https://group-payment-tracker.web.app/?searchuid=<UID>`
+2. Browser opens: `https://group-payment-tracker.web.app/LandingPage.html?searchuid=<UID>`
 3. Page loads and automatically:
    - Scrolls to search section
    - Fills in the UID
@@ -103,9 +103,10 @@ Handles URL parameter processing:
 - Colors: Black on white
 
 ### URL Parameter Format
+- Full URL: `https://group-payment-tracker.web.app/LandingPage.html?searchuid=<UID>`
 - Parameter name: `searchuid`
 - Value: The actual UID (not masked)
-- Example: `?searchuid=abc123xyz@GPT`
+- Example: `https://group-payment-tracker.web.app/LandingPage.html?searchuid=abc123xyz@GPT`
 
 ### Global Variable Exposure
 The `reyalAydi` variable (which contains the actual UID) is exposed globally as `window.reyalAydi` so that:

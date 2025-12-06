@@ -2,8 +2,8 @@
 // This handles the ?searchuid=<UID> parameter to automatically search and display results
 //
 // SUPPORTS BOTH URL FORMATS:
-// ✅ https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71@GPT
-// ✅ https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71%40GPT
+// ✅ https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71@GPT
+// ✅ https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71%40GPT
 // URLSearchParams automatically decodes %40 to @ so both work identically
 
 document.addEventListener("DOMContentLoaded", () => {

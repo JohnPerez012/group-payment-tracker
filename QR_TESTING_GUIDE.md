@@ -4,12 +4,12 @@
 
 When you scan the QR code containing:
 ```
-https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71%40GPT
+https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71%40GPT
 ```
 
 The browser will automatically decode `%40` to `@`, resulting in:
 ```
-https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71@GPT
+https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71@GPT
 ```
 
 ## What Happens Automatically:
@@ -43,7 +43,7 @@ https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71@GPT
 1. In the QR modal, click "Copy Link"
 2. ✅ Link should be copied to clipboard
 3. ✅ Button should turn green and show "✓ Copied!"
-4. ✅ Paste the link - it should be: `https://group-payment-tracker.web.app/?searchuid=<YOUR_UID>`
+4. ✅ Paste the link - it should be: `https://group-payment-tracker.web.app/LandingPage.html?searchuid=<YOUR_UID>`
 
 ### Test 4: Scan QR Code (Mobile)
 1. Use your phone's camera or QR scanner app

@@ -11,7 +11,7 @@ Both URL formats work identically because `URLSearchParams` automatically decode
 
 ### Format 1: Non-Encoded (Human-Readable)
 ```
-https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71@GPT
+https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71@GPT
 ```
 - **Contains**: `@` symbol directly
 - **Result**: `searchUid = "1u4p2y5m3w2v3y71@GPT"`
@@ -19,7 +19,7 @@ https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71@GPT
 
 ### Format 2: URL-Encoded (QR Code Format)
 ```
-https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71%40GPT
+https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71%40GPT
 ```
 - **Contains**: `%40` (encoded `@` symbol)
 - **Result**: `searchUid = "1u4p2y5m3w2v3y71@GPT"` (automatically decoded)
@@ -110,7 +110,7 @@ searchBtn.click();  // Searches for the correct UID
 ## Testing Both Formats:
 
 ### Test 1: Copy-Paste Non-Encoded URL
-1. Copy: `https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71@GPT`
+1. Copy: `https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71@GPT`
 2. Paste in browser
 3. ✅ Auto-search triggers
 4. ✅ Results display correctly
@@ -118,12 +118,12 @@ searchBtn.click();  // Searches for the correct UID
 ### Test 2: Scan QR Code (Encoded URL)
 1. Generate QR code
 2. Scan with phone
-3. Opens: `https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71%40GPT`
+3. Opens: `https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71%40GPT`
 4. ✅ Auto-search triggers
 5. ✅ Results display correctly
 
 ### Test 3: Manual Encoded URL
-1. Copy: `https://group-payment-tracker.web.app/?searchuid=1u4p2y5m3w2v3y71%40GPT`
+1. Copy: `https://group-payment-tracker.web.app/LandingPage.html?searchuid=1u4p2y5m3w2v3y71%40GPT`
 2. Paste in browser
 3. ✅ Auto-search triggers
 4. ✅ Results display correctly

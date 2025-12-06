@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Generate QR code URL
-      const baseUrl = "https://group-payment-tracker.web.app/";
+      const baseUrl = "https://group-payment-tracker.web.app/LandingPage.html";
       const qrUrl = `${baseUrl}?searchuid=${encodeURIComponent(window.reyalAydi)}`;
 
       // Display UID
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const baseUrl = "https://group-payment-tracker.web.app/";
+      const baseUrl = "https://group-payment-tracker.web.app/LandingPage.html";
       const qrUrl = `${baseUrl}?searchuid=${window.reyalAydi}`;
 
       try {
