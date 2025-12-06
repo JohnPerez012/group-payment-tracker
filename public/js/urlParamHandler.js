@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
         console.log("🧹 Cleaned up URL");
-      }, 1000);
-    }, 800);
-  }, 1500);
+      }, 500);
+    }, 100);
+  }, 1000);
 });
