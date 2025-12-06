@@ -52,7 +52,7 @@ html, body {
 .main-header.scrolled {
   background: rgba(255, 255, 255, 0.3); /* On scroll: Less transparent (more solid) */
   box-shadow: 0 4px 16px rgba(78, 78, 78, 0.1);
-  border-radius: 100px 100px 100px 100px; /* Curvy bottom edges */
+  border-radius: 0px 0px 55px 55px; /* Curvy bottom edges */
 }
 
 .header-container {

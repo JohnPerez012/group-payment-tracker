@@ -226,6 +226,8 @@ const db = getFirestore(app);
 
 let currentUser = null;
 let reyalAydi;
+// Expose reyalAydi globally for QR code modal
+window.reyalAydi = null;
 let members = [];
 let payments = [];
 let tabs = [];
@@ -1029,6 +1031,7 @@ async function createTab(name = "New Tab", docId = null, defaultAmount = DEFAULT
     const span = document.getElementById("payment-uid");
     if (foundTab && foundTab.uid) {
       reyalAydi = foundTab.uid;
+      window.reyalAydi = foundTab.uid; // Expose globally for QR code
       span.textContent = maskUID(foundTab.uid);
     }
 
@@ -1223,6 +1226,7 @@ function renderTabsToUI() {
       const span = document.getElementById("payment-uid");
       if (foundTab && foundTab.uid) {
         reyalAydi = foundTab.uid;
+        window.reyalAydi = foundTab.uid; // Expose globally for QR code
         span.textContent = maskUID(foundTab.uid);
       }
 
@@ -1533,10 +1537,10 @@ function addQuickInfoRowToUI(label, value, id = `qi_${Date.now()}`, isProtected 
   } else {
     newRow.innerHTML = `
       <div class="flex-1">
-        <span class="info-label qi-editable" data-type="label">${label}</span>
+        <span class="info-label qi-editable" title="Click to rename • Double-click to delete" data-type="label">${label}</span>
       </div>
       <div class="flex-1 text-right">
-        <span class="info-value qi-editable" data-type="value">${value}</span>
+        <span class="info-value qi-editable" title="Click to rename • Double-click to delete" data-type="value">${value}</span>
       </div>
     `;
   }
