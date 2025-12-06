@@ -69,11 +69,21 @@ function trackActiveGroups() {
     const currentCount = snapshot.size;
     console.log('Active Groups updated:', currentCount);
     
+    // Remove loading state from card and add loaded animation
+    const card = document.getElementById('active-groups-card');
+    if (card && card.classList.contains('loading')) {
+      card.classList.remove('loading');
+      card.classList.add('loaded');
+      activeGroupsElement.classList.add('loaded');
+    }
+    
     // Animate from previous to current
     animateCounter(activeGroupsElement, previousActiveGroups, currentCount, 1500, '', '+');
     previousActiveGroups = currentCount;
   }, (error) => {
     console.error('Error tracking active groups:', error);
+    const card = document.getElementById('active-groups-card');
+    if (card) card.classList.remove('loading');
     activeGroupsElement.textContent = '0+';
   });
 }
@@ -125,6 +135,14 @@ function trackTotalAmount() {
 
     console.log(`Total Tracked updated: ₱${totalAmount.toLocaleString()} (${totalTabs} tabs, ${totalMembers} members, ${totalPayments} payments)`);
     
+    // Remove loading state from card and add loaded animation
+    const card = document.getElementById('total-tracked-card');
+    if (card && card.classList.contains('loading')) {
+      card.classList.remove('loading');
+      card.classList.add('loaded');
+      totalTrackedElement.classList.add('loaded');
+    }
+    
     // Animate the number
     const startAmount = previousTotalTracked;
     const endAmount = totalAmount;
@@ -150,6 +168,8 @@ function trackTotalAmount() {
     previousTotalTracked = totalAmount;
   }, (error) => {
     console.error('Error tracking total amount:', error);
+    const card = document.getElementById('total-tracked-card');
+    if (card) card.classList.remove('loading');
     totalTrackedElement.textContent = '₱0';
   });
 }

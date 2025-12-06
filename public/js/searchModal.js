@@ -59,13 +59,125 @@ function setupRefreshFunctionality() {
   } 
 }
 
+// Flag to track if we should auto-export after login
+let pendingExport = false;
+
 function setupExportFunctionality() {
   const exportBtn = document.getElementById('export-results');
   
   if (exportBtn) {
+    // Check if user is logged in
+    updateExportButtonState(exportBtn);
+    
+    // Listen for auth state changes to auto-export after login
+    setupAuthStateListener();
+    
     exportBtn.addEventListener('click', () => {
-      exportSearchResultsToPDF(currentSearchData, currentSearchValue);
+      // Get current user info
+      const userIdElement = document.getElementById('user-id');
+      const currentUser = userIdElement ? userIdElement.textContent.trim() : null;
+      
+      if (!currentUser || currentUser === 'Guest' || currentUser === 'Loading...') {
+        // User not logged in - trigger sign-in flow
+        triggerSignInForExport();
+        return;
+      }
+      
+      // User logged in - export directly
+      performExport(currentUser);
     });
+  }
+}
+
+// Trigger sign-in and set flag for auto-export
+function triggerSignInForExport() {
+  // Set flag to auto-export after successful login
+  pendingExport = true;
+  
+  // Show notification with sign-in prompt
+  showNotification('Redirecting to sign in...', 'info');
+  
+  // Find and click the auth button to trigger Google sign-in
+  const authBtn = document.querySelector('#auth-btn-header, #auth-btn-modal');
+  if (authBtn) {
+    // Small delay to show the notification
+    setTimeout(() => {
+      authBtn.click();
+    }, 500);
+  } else {
+    showNotification('Sign-in button not found. Please sign in manually.', 'error');
+    pendingExport = false;
+  }
+}
+
+// Setup listener for auth state changes
+function setupAuthStateListener() {
+  // Import Firebase auth if available
+  import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js')
+    .then(({ getAuth, onAuthStateChanged }) => {
+      const auth = getAuth();
+      
+      onAuthStateChanged(auth, (user) => {
+        const exportBtn = document.getElementById('export-results');
+        
+        // Update button state
+        updateExportButtonState(exportBtn);
+        
+        // If user just signed in and we have a pending export
+        if (user && !user.isAnonymous && pendingExport) {
+          pendingExport = false; // Reset flag
+          
+          // Get user info
+          const userName = user.displayName || user.email;
+          
+          // Auto-export after successful login
+          setTimeout(() => {
+            showNotification('Sign-in successful! Exporting PDF...', 'success');
+            performExport(userName);
+          }, 1000);
+        } else if (!user || user.isAnonymous) {
+          // User signed out or canceled - reset flag
+          if (pendingExport) {
+            pendingExport = false;
+            showNotification('Sign-in canceled. Export not completed.', 'info');
+          }
+        }
+      });
+    })
+    .catch(err => {
+      console.warn('Could not setup auth listener:', err);
+    });
+}
+
+// Perform the actual export
+function performExport(userName) {
+  if (!currentSearchData || !currentSearchValue) {
+    showNotification('No data available to export', 'error');
+    return;
+  }
+  
+  exportSearchResultsToPDF(currentSearchData, currentSearchValue, userName);
+}
+
+// Update export button state based on user login
+function updateExportButtonState(exportBtn) {
+  if (!exportBtn) return;
+  
+  const userIdElement = document.getElementById('user-id');
+  const currentUser = userIdElement ? userIdElement.textContent.trim() : null;
+  
+  if (!currentUser || currentUser === 'Guest' || currentUser === 'Loading...') {
+    // User not logged in - show sign-in button
+    exportBtn.disabled = false; // Keep enabled so it's clickable
+    exportBtn.classList.add('export-signin-required');
+    exportBtn.title = '🔒 Click to sign in and export data';
+    exportBtn.innerHTML = '🔒 Sign In & Export';
+  } else {
+    // User logged in - show export button
+    exportBtn.disabled = false;
+    exportBtn.classList.remove('export-signin-required');
+    exportBtn.title = 'Export search results as PDF';
+    exportBtn.innerHTML = 'Export Results';
   }
 }
 
@@ -524,6 +636,36 @@ ${currentUserName}
   }
 
   const resultsHTML = `
+    <div class="modal-search-bar">
+      <form id="modal-search-form" class="modal-search-form">
+        <div class="modal-search-input-wrapper">
+          <svg
+            class="modal-search-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input
+            type="text"
+            id="modal-search-input"
+            placeholder="Search by UID or member name..."
+            value="${searchValue}"
+          />
+          <button type="button" id="clear-smart-search" class="clear-search-btn" style="display: none;">✕</button>
+        </div>
+        <button type="submit" class="modal-search-button">Search</button>
+      </form>
+      <div id="smart-search-hint" class="smart-search-hint"></div>
+      <div id="smart-search-results" class="search-results-info"></div>
+    </div>
+
     <div class="search-result-header">
       <h3>Tab Name: <strong><span class="tab-name-inSRH">${tabName || 'Untitled Tab'} </span></strong></h3>
       <div class="search-result-meta">
@@ -559,8 +701,8 @@ ${currentUserName}
     ${members.length > 0 ? `
     <div class="payment-info">
       <h4>Member Progress (${members.length} members)</h4>
-      <div class="info-grid">
-        ${members.map(member => {
+      <div class="info-grid" id="members-grid">
+        ${members.map((member, index) => {
           const memberPayments = payments.filter(p => p.name === member.Name);
           const totalPaid = memberPayments.reduce((sum, p) => sum + p.amount, 0);
           const requiredAmount = member.requiredAmount || tabDefaultAmount;
@@ -572,7 +714,7 @@ ${currentUserName}
           let statusIcon = isPaid ? "✅" : progress > 0 ? "🟡" : "⚪";
           
           return `
-            <div class="info-item member-progress-item">
+            <div class="info-item member-progress-item" data-member-name="${escapeHtml(member.Name.toLowerCase())}" data-member-index="${index}">
               <div class="member-header">
                 <span class="member-name">${statusIcon} ${member.Name}</span>
                 <span class="member-amount">${formatCurrency(totalPaid)} / ${formatCurrency(requiredAmount)}</span>
@@ -608,17 +750,33 @@ ${currentUserName}
         <table class="history-table">
           <thead>
             <tr>
-              <th>Member</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Time</th>
+              <th class="sortable" data-sort="member">
+                Member
+                <span class="sort-icon">⇅</span>
+              </th>
+              <th class="sortable" data-sort="amount">
+                Amount
+                <span class="sort-icon">⇅</span>
+              </th>
+              <th class="sortable" data-sort="date">
+                Date
+                <span class="sort-icon">⇅</span>
+              </th>
+              <th class="sortable" data-sort="time">
+                Time
+                <span class="sort-icon">⇅</span>
+              </th>
             </tr>
           </thead>
-          <tbody>
-            ${payments.map(payment => {
+          <tbody id="payments-tbody">
+            ${payments.map((payment, index) => {
               const date = new Date(payment.timestamp);
               return `
-                <tr>
+                <tr data-payment-name="${escapeHtml(payment.name.toLowerCase())}" 
+                    data-payment-index="${index}"
+                    data-member="${escapeHtml(payment.name)}"
+                    data-amount="${payment.amount}"
+                    data-timestamp="${payment.timestamp}">
                   <td class="payment-member">${payment.name}</td>
                   <td class="payment-amount">${formatCurrency(payment.amount)}</td>
                   <td class="payment-date">${date.toLocaleDateString()}</td>
@@ -663,11 +821,533 @@ ${currentUserName}
   `;
   
   searchResultsContent.innerHTML = resultsHTML;
+  
+  // Setup smart search handler
+  setupSmartSearchHandler();
+  
+  // Setup table sorting
+  setupTableSorting();
+}
+
+// Smart search handler - detects UID vs Name
+function setupSmartSearchHandler() {
+  const searchInput = document.getElementById('modal-search-input');
+  const searchForm = document.getElementById('modal-search-form');
+  const clearBtn = document.getElementById('clear-smart-search');
+  const hintElement = document.getElementById('smart-search-hint');
+  const resultsElement = document.getElementById('smart-search-results');
+  
+  let searchTimeout;
+  
+  if (!searchInput || !searchForm) return;
+  
+  // Real-time search as user types
+  searchInput.addEventListener('input', (e) => {
+    const searchValue = e.target.value.trim();
+    
+    // Show/hide clear button
+    if (clearBtn) {
+      clearBtn.style.display = searchValue ? 'flex' : 'none';
+    }
+    
+    // Debounce search
+    clearTimeout(searchTimeout);
+    
+    if (!searchValue) {
+      resetSearch(hintElement, resultsElement);
+      return;
+    }
+    
+    searchTimeout = setTimeout(() => {
+      performSmartSearch(searchValue, hintElement, resultsElement, false); // false = don't scroll
+    }, 300);
+  });
+  
+  // Form submission for UID search or name search with scrolling
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const searchValue = searchInput.value.trim();
+    
+    if (!searchValue) {
+      showNotification('Please enter a search term', 'error');
+      return;
+    }
+    
+    // Check if it looks like a UID
+    if (isLikelyUID(searchValue)) {
+      // Update current search value and perform new UID search
+      currentSearchValue = searchValue;
+      displaySearchResults(searchValue);
+    } else {
+      // Perform name search WITH scrolling (button clicked)
+      performSmartSearch(searchValue, hintElement, resultsElement, true); // true = scroll to results
+    }
+  });
+  
+  // Clear button
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      clearBtn.style.display = 'none';
+      resetSearch(hintElement, resultsElement);
+    });
+  }
+}
+
+// Detect if search term is likely a UID
+function isLikelyUID(searchTerm) {
+  // UID patterns: contains @GPT, or is long alphanumeric (16+ chars), or has specific patterns
+  const uidPatterns = [
+    /@GPT/i,                           // Contains @GPT
+    /^[a-zA-Z0-9]{16,}$/,              // Long alphanumeric string (16+ chars)
+    /^\d{10,}@/,                       // Starts with many digits followed by @
+    /^[a-f0-9]{8}-[a-f0-9]{4}-/i       // UUID-like pattern
+  ];
+  
+  return uidPatterns.some(pattern => pattern.test(searchTerm));
+}
+
+// Perform smart search - searches both members and payments
+function performSmartSearch(searchTerm, hintElement, resultsElement, shouldScroll = false) {
+  const searchLower = searchTerm.toLowerCase();
+  
+  // Determine search type
+  const isUID = isLikelyUID(searchTerm);
+  
+  if (isUID) {
+    // Show hint that this looks like a UID
+    if (hintElement) {
+      hintElement.innerHTML = `<span class="hint-uid">🔍 This looks like a UID. Press Enter to search for this tab.</span>`;
+      hintElement.style.display = 'block';
+    }
+    if (resultsElement) {
+      resultsElement.style.display = 'none';
+    }
+    return;
+  }
+  
+  // It's a name search - search in current results
+  if (hintElement) {
+    hintElement.innerHTML = `<span class="hint-name">👤 Searching for "${searchTerm}" in current results...</span>`;
+    hintElement.style.display = 'block';
+  }
+  
+  // Search members
+  const memberMatches = searchInMembers(searchLower);
+  
+  // Search payments
+  const paymentMatches = searchInPayments(searchLower);
+  
+  // Display results
+  displaySmartSearchResults(searchTerm, memberMatches, paymentMatches, resultsElement, shouldScroll);
+}
+
+// Search in members list
+function searchInMembers(searchTerm) {
+  const membersGrid = document.getElementById('members-grid');
+  if (!membersGrid) return [];
+  
+  const memberItems = membersGrid.querySelectorAll('.member-progress-item');
+  const matches = [];
+  
+  memberItems.forEach((item) => {
+    const memberName = item.getAttribute('data-member-name') || '';
+    
+    if (memberName.includes(searchTerm)) {
+      item.style.display = '';
+      item.classList.remove('search-highlight');
+      matches.push(item);
+    } else {
+      item.style.display = 'none';
+    }
+  });
+  
+  return matches;
+}
+
+// Search in payments list
+function searchInPayments(searchTerm) {
+  const paymentsTbody = document.getElementById('payments-tbody');
+  if (!paymentsTbody) return [];
+  
+  const paymentRows = paymentsTbody.querySelectorAll('tr');
+  const matches = [];
+  
+  paymentRows.forEach((row) => {
+    const paymentName = row.getAttribute('data-payment-name') || '';
+    
+    if (paymentName.includes(searchTerm)) {
+      row.style.display = '';
+      row.classList.remove('search-highlight');
+      matches.push(row);
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  return matches;
+}
+
+// Display smart search results
+function displaySmartSearchResults(searchTerm, memberMatches, paymentMatches, resultsElement, shouldScroll = false) {
+  if (!resultsElement) return;
+  
+  const totalMatches = memberMatches.length + paymentMatches.length;
+  
+  if (totalMatches === 0) {
+    resultsElement.innerHTML = `<span class="search-error">✗ No results found for "${searchTerm}"</span>`;
+    resultsElement.style.display = 'block';
+    hideFloatingArrow();
+    return;
+  }
+  
+  // Build results message
+  let message = '<span class="search-success">✓ Found: ';
+  const parts = [];
+  
+  if (memberMatches.length > 0) {
+    parts.push(`${memberMatches.length} member${memberMatches.length > 1 ? 's' : ''}`);
+  }
+  
+  if (paymentMatches.length > 0) {
+    parts.push(`${paymentMatches.length} payment${paymentMatches.length > 1 ? 's' : ''}`);
+  }
+  
+  message += parts.join(' and ') + '</span>';
+  resultsElement.innerHTML = message;
+  resultsElement.style.display = 'block';
+  
+  // Highlight all matches (both members and payments)
+  memberMatches.forEach(match => match.classList.add('search-highlight'));
+  paymentMatches.forEach(match => match.classList.add('search-highlight'));
+  
+  // Only scroll and show arrow if shouldScroll is true (button clicked)
+  if (shouldScroll) {
+    // Smart scrolling logic
+    if (memberMatches.length > 0) {
+      // Scroll to first member match
+      setTimeout(() => {
+        smoothScrollToElement(memberMatches[0]);
+      }, 100);
+      
+      // Show floating arrow if there are also payment matches below
+      if (paymentMatches.length > 0) {
+        showFloatingArrow(paymentMatches[0]);
+      } else {
+        hideFloatingArrow();
+      }
+    } else if (paymentMatches.length > 0) {
+      // Only payment matches, scroll directly to first payment
+      setTimeout(() => {
+        smoothScrollToElement(paymentMatches[0]);
+      }, 100);
+      hideFloatingArrow();
+    }
+  } else {
+    // Just filtering, no scrolling - but setup arrow if conditions are met
+    if (memberMatches.length > 0 && paymentMatches.length > 0) {
+      // Setup arrow but don't scroll yet
+      showFloatingArrow(paymentMatches[0]);
+    } else {
+      hideFloatingArrow();
+    }
+  }
+}
+
+// Reset search - show all items
+function resetSearch(hintElement, resultsElement) {
+  // Show all members
+  const membersGrid = document.getElementById('members-grid');
+  if (membersGrid) {
+    const memberItems = membersGrid.querySelectorAll('.member-progress-item');
+    memberItems.forEach((item) => {
+      item.style.display = '';
+      item.classList.remove('search-highlight');
+    });
+  }
+  
+  // Show all payments
+  const paymentsTbody = document.getElementById('payments-tbody');
+  if (paymentsTbody) {
+    const paymentRows = paymentsTbody.querySelectorAll('tr');
+    paymentRows.forEach((row) => {
+      row.style.display = '';
+      row.classList.remove('search-highlight');
+    });
+  }
+  
+  // Clear hints and results
+  if (hintElement) {
+    hintElement.style.display = 'none';
+  }
+  if (resultsElement) {
+    resultsElement.style.display = 'none';
+  }
+  
+  // Hide floating arrow
+  hideFloatingArrow();
+}
+
+// Show floating arrow button with viewport detection
+function showFloatingArrow(targetElement) {
+  // Remove existing arrow if any
+  let arrow = document.getElementById('floating-payment-arrow');
+  
+  if (!arrow) {
+    // Create floating arrow
+    arrow = document.createElement('button');
+    arrow.id = 'floating-payment-arrow';
+    arrow.className = 'floating-payment-arrow';
+    arrow.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M19 12l-7 7-7-7"/>
+      </svg>
+      <span class="arrow-tooltip">Payment records below</span>
+    `;
+    
+    // Add to modal body
+    const modalBody = document.querySelector('.modal-body');
+    if (modalBody) {
+      modalBody.appendChild(arrow);
+    }
+    
+    // Setup viewport detection
+    setupArrowViewportDetection(arrow, targetElement);
+  }
+  
+  // Store target element reference (update even if arrow exists)
+  arrow.targetElement = targetElement;
+  
+  // Remove old click handler if exists
+  if (arrow.clickHandler) {
+    arrow.removeEventListener('click', arrow.clickHandler);
+  }
+  
+  // Create and store new click handler
+  arrow.clickHandler = () => {
+    if (arrow.targetElement) {
+      smoothScrollToElement(arrow.targetElement);
+      // Temporarily hide arrow after clicking
+      arrow.classList.remove('visible');
+    }
+  };
+  
+  // Add click handler
+  arrow.addEventListener('click', arrow.clickHandler);
+  
+  // Check initial visibility
+  checkArrowVisibility(arrow);
+}
+
+// Setup viewport detection for floating arrow
+function setupArrowViewportDetection(arrow, targetElement) {
+  const modalBody = document.querySelector('.modal-body');
+  if (!modalBody) return;
+  
+  // Store target element reference
+  arrow.dataset.targetElement = 'payment-section';
+  
+  // Remove existing scroll listener if any
+  if (modalBody.arrowScrollListener) {
+    modalBody.removeEventListener('scroll', modalBody.arrowScrollListener);
+  }
+  
+  // Create scroll listener
+  const scrollListener = () => {
+    checkArrowVisibility(arrow);
+  };
+  
+  // Store reference for cleanup
+  modalBody.arrowScrollListener = scrollListener;
+  
+  // Add scroll listener
+  modalBody.addEventListener('scroll', scrollListener);
+}
+
+// Check if arrow should be visible based on viewport
+function checkArrowVisibility(arrow) {
+  if (!arrow) return;
+  
+  const modalBody = document.querySelector('.modal-body');
+  const paymentInfo = document.querySelector('.payment-info');
+  const paymentHistory = document.querySelector('.payment-history');
+  
+  if (!modalBody || !paymentInfo || !paymentHistory) return;
+  
+  // Get viewport boundaries
+  const modalRect = modalBody.getBoundingClientRect();
+  const paymentInfoRect = paymentInfo.getBoundingClientRect();
+  const paymentHistoryRect = paymentHistory.getBoundingClientRect();
+  
+  // Check if user is viewing payment-info section (member progress)
+  // Member progress is visible if any part of it is in viewport
+  const isViewingMemberProgress = paymentInfoRect.top < modalRect.bottom && 
+                                   paymentInfoRect.bottom > modalRect.top;
+  
+  // Check if payment history is mostly below viewport or not fully visible
+  // Show arrow if payment history top is below 70% of viewport height
+  const viewportThreshold = modalRect.top + (modalRect.height * 0.7);
+  const isPaymentHistoryMostlyBelow = paymentHistoryRect.top > viewportThreshold;
+  
+  // Alternative: Check if payment history is not fully visible in viewport
+  const isPaymentHistoryNotFullyVisible = 
+    paymentHistoryRect.bottom > modalRect.bottom || 
+    paymentHistoryRect.top > modalRect.bottom - 100; // 100px buffer
+  
+  // Show arrow if:
+  // 1. User is viewing member progress section
+  // 2. AND payment history is mostly below or not fully visible
+  if (isViewingMemberProgress && (isPaymentHistoryMostlyBelow || isPaymentHistoryNotFullyVisible)) {
+    arrow.classList.add('visible');
+  } else {
+    arrow.classList.remove('visible');
+  }
+}
+
+// Hide floating arrow button
+function hideFloatingArrow() {
+  const arrow = document.getElementById('floating-payment-arrow');
+  const modalBody = document.querySelector('.modal-body');
+  
+  if (arrow) {
+    arrow.classList.remove('visible');
+    setTimeout(() => {
+      arrow.remove();
+    }, 300);
+  }
+  
+  // Remove scroll listener
+  if (modalBody && modalBody.arrowScrollListener) {
+    modalBody.removeEventListener('scroll', modalBody.arrowScrollListener);
+    modalBody.arrowScrollListener = null;
+  }
+}
+
+
+
+// Smooth scroll to element with direction-aware animation
+function smoothScrollToElement(element) {
+  if (!element) return;
+  
+  const modalBody = document.querySelector('.modal-body');
+  if (!modalBody) return;
+  
+  const elementRect = element.getBoundingClientRect();
+  const modalRect = modalBody.getBoundingClientRect();
+  const elementTop = elementRect.top - modalRect.top + modalBody.scrollTop;
+  
+  // Calculate if scrolling up or down
+  const currentScroll = modalBody.scrollTop;
+  const targetScroll = elementTop - 230; // 100px offset from top
+  const scrollingDown = targetScroll > currentScroll;
+  
+  // Add animation class based on direction
+  element.classList.add(scrollingDown ? 'scroll-reveal-down' : 'scroll-reveal-up');
+  
+  // Smooth scroll
+  modalBody.scrollTo({
+    top: targetScroll,
+    behavior: 'smooth'
+  });
+  
+  // Remove animation class after animation completes
+  setTimeout(() => {
+    element.classList.remove('scroll-reveal-down', 'scroll-reveal-up');
+  }, 800);
 }
 
 // Helper function to format currency
 function formatCurrency(amount) {
   return `₱${amount.toLocaleString()}`;
+}
+
+// Setup table sorting functionality
+function setupTableSorting() {
+  const sortableHeaders = document.querySelectorAll('.history-table th.sortable');
+  
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', () => {
+      const sortType = header.getAttribute('data-sort');
+      const currentOrder = header.getAttribute('data-order') || 'none';
+      
+      // Determine new sort order
+      let newOrder;
+      if (currentOrder === 'none' || currentOrder === 'desc') {
+        newOrder = 'asc'; // First click or after desc -> ascending
+      } else {
+        newOrder = 'desc'; // After asc -> descending
+      }
+      
+      // Remove sort indicators from all headers
+      sortableHeaders.forEach(h => {
+        h.setAttribute('data-order', 'none');
+        const icon = h.querySelector('.sort-icon');
+        if (icon) icon.textContent = '⇅';
+      });
+      
+      // Set new sort order
+      header.setAttribute('data-order', newOrder);
+      const icon = header.querySelector('.sort-icon');
+      if (icon) {
+        icon.textContent = newOrder === 'asc' ? '↑' : '↓';
+      }
+      
+      // Perform sort
+      sortTable(sortType, newOrder);
+    });
+  });
+}
+
+// Sort table by column
+function sortTable(sortType, order) {
+  const tbody = document.getElementById('payments-tbody');
+  if (!tbody) return;
+  
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  
+  // Sort rows
+  rows.sort((a, b) => {
+    let aValue, bValue;
+    
+    switch (sortType) {
+      case 'member':
+        aValue = a.getAttribute('data-member').toLowerCase();
+        bValue = b.getAttribute('data-member').toLowerCase();
+        return order === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      
+      case 'amount':
+        aValue = parseFloat(a.getAttribute('data-amount'));
+        bValue = parseFloat(b.getAttribute('data-amount'));
+        return order === 'asc' 
+          ? aValue - bValue
+          : bValue - aValue;
+      
+      case 'date':
+      case 'time':
+        aValue = parseInt(a.getAttribute('data-timestamp'));
+        bValue = parseInt(b.getAttribute('data-timestamp'));
+        return order === 'asc' 
+          ? aValue - bValue
+          : bValue - aValue;
+      
+      default:
+        return 0;
+    }
+  });
+  
+  // Clear tbody
+  tbody.innerHTML = '';
+  
+  // Append sorted rows with animation
+  rows.forEach((row, index) => {
+    row.style.animation = 'none';
+    setTimeout(() => {
+      row.style.animation = `fadeInRow 0.3s ease forwards ${index * 0.02}s`;
+      tbody.appendChild(row);
+    }, 10);
+  });
 }
 
 // Show no results message

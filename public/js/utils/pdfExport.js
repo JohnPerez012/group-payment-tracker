@@ -8,8 +8,9 @@ import { showNotification } from './notificationEngine.js';
  * Export search results to PDF in landscape mode
  * @param {Object} searchData - The search data object containing tab info and decoded data
  * @param {string} searchValue - The UID that was searched
+ * @param {string} exportedBy - The user who is exporting the data
  */
-export async function exportSearchResultsToPDF(searchData, searchValue) {
+export async function exportSearchResultsToPDF(searchData, searchValue, exportedBy = 'Unknown User') {
   if (!searchData || !searchValue) {
     showNotification('No data available to export', 'error');
     return;
@@ -77,13 +78,52 @@ export async function exportSearchResultsToPDF(searchData, searchValue) {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(22);
     doc.setFont(undefined, 'bold');
-    doc.text('GPTracker - Payment Search Results', margin, 12);
-    
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Export Date: ${new Date().toLocaleString()}`, margin, 19);
+    doc.text('GPTracker - Payment Search Results', margin, 15);
     
     yPosition = 35;
+    
+    // Transparency Section - Exported By, Tab Creator, and Export Date
+    doc.setFillColor(240, 249, 255); // Light blue background
+    doc.roundedRect(margin, yPosition, contentWidth, 22, 2, 2, 'F');
+    doc.setDrawColor(191, 219, 254);
+    doc.roundedRect(margin, yPosition, contentWidth, 22, 2, 2, 'S');
+    
+    doc.setTextColor(29, 78, 216);
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'bold');
+    doc.text('[ TRANSPARENCY & ACCOUNTABILITY ]', margin + 3, yPosition + 5);
+    
+    doc.setTextColor(55, 65, 81);
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
+    
+    // Extract tab creator from docId
+    let tabCreator = 'Unknown';
+    try {
+      if (docId && docId.includes('TAB')) {
+        const parts = docId.split('TAB');
+        tabCreator = parts[0] || 'Unknown';
+      }
+    } catch (err) {
+      console.warn('Could not extract tab creator:', err);
+    }
+    
+    // Format export date
+    const exportDate = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+    
+    doc.text(`Export Date: ${exportDate}`, margin + 3, yPosition + 10);
+    doc.text(`Exported By: ${exportedBy}`, margin + 3, yPosition + 15);
+    doc.text(`Tab Creator: ${tabCreator}`, margin + 3, yPosition + 20);
+    
+    yPosition = 70;
     
     // Tab Information Section
     doc.setTextColor(0, 0, 0);

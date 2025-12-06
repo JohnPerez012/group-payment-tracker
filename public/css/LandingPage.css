@@ -645,12 +645,117 @@ html, body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 0.5rem;
+  min-height: 3rem;
 }
 
 .stat-label {
   color: #6b7280;
   font-size: 1rem;
   font-weight: 500;
+}
+
+/* Loading state for entire card */
+.stat-card.loading {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    110deg,
+    #f0f4ff 0%,
+    #e0eaff 25%,
+    #f0f4ff 50%,
+    #e0eaff 75%,
+    #f0f4ff 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerCard 2s ease-in-out infinite;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.stat-card.loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  animation: shimmerOverlay 2s ease-in-out infinite;
+}
+
+.stat-card.loading .stat-number,
+.stat-card.loading .stat-label {
+  color: transparent;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 0.5rem;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-card.loading .stat-number {
+  width: 70%;
+  height: 2.5rem;
+  margin: 0 auto 0.5rem;
+}
+
+.stat-card.loading .stat-label {
+  width: 50%;
+  height: 1rem;
+  margin: 0 auto;
+}
+
+@keyframes shimmerCard {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes shimmerOverlay {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Fade in animation when data loads */
+.stat-card.loaded {
+  animation: cardFadeIn 0.8s ease-out forwards;
+}
+
+.stat-number.loaded,
+.stat-label.loaded {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 
