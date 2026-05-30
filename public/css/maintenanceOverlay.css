@@ -1,0 +1,235 @@
+/* ============================================
+   MAINTENANCE OVERLAY - Full Screen Blur
+   ============================================ */
+
+.maintenance-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 999999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeInOverlay 0.8s ease-in-out;
+  pointer-events: all;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+/* ============================================
+   DIALOG BOX - Sad Message
+   ============================================ */
+
+.maintenance-dialog {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 24px;
+  padding: 48px 40px;
+  max-width: 560px;
+  width: 90%;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  text-align: center;
+  animation: slideInDialog 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes slideInDialog {
+  from {
+    transform: translateY(-50px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Decorative gradient overlay */
+.maintenance-dialog::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ef4444, #f59e0b, #ef4444);
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ============================================
+   ICON - Sad Emoji
+   ============================================ */
+
+.maintenance-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  animation: sadBounce 2s ease-in-out infinite;
+  display: inline-block;
+  filter: grayscale(0.3);
+}
+
+@keyframes sadBounce {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-8px) rotate(-3deg);
+  }
+  75% {
+    transform: translateY(-4px) rotate(3deg);
+  }
+}
+
+/* ============================================
+   TEXT CONTENT
+   ============================================ */
+
+.maintenance-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.maintenance-message {
+  font-size: 18px;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.maintenance-submessage {
+  font-size: 15px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+/* ============================================
+   DECORATIVE ELEMENTS
+   ============================================ */
+
+.maintenance-footer {
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.maintenance-heart {
+  display: inline-block;
+  color: #ef4444;
+  animation: heartbeat 1.5s ease-in-out infinite;
+  margin: 0 4px;
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  10%, 30% {
+    transform: scale(1.1);
+  }
+  20%, 40% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 640px) {
+  .maintenance-dialog {
+    padding: 36px 28px;
+    max-width: 90%;
+    border-radius: 20px;
+  }
+
+  .maintenance-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+  }
+
+  .maintenance-title {
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+
+  .maintenance-message {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .maintenance-submessage {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .maintenance-footer {
+    font-size: 12px;
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .maintenance-dialog {
+    padding: 28px 20px;
+  }
+
+  .maintenance-icon {
+    font-size: 56px;
+  }
+
+  .maintenance-title {
+    font-size: 22px;
+  }
+
+  .maintenance-message {
+    font-size: 15px;
+  }
+
+  .maintenance-submessage {
+    font-size: 13px;
+  }
+}
+
+/* ============================================
+   PREVENT INTERACTION WITH BACKGROUND
+   ============================================ */
+
+body.maintenance-active {
+  overflow: hidden;
+}
+
+.maintenance-overlay * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
